@@ -1,6 +1,7 @@
 name: analytics_hub
 description: Analytics hub for all providers.
 version: 0.0.1
+homepage: https://github.com/4akLoon/analytics_hub
 
 environment:
   sdk: ">=3.5.0 <4.0.0"
