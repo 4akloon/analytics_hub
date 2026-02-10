@@ -1,0 +1,17 @@
+name: analytics_hub_firebase
+description: Firebase analytics provider for analytics_hub.
+version: 0.0.1
+
+environment:
+  sdk: ">=3.5.0 <4.0.0"
+
+dependencies:
+  analytics_hub: ^0.0.1
+  firebase_core: ">=2.0.0 <5.0.0"
+  firebase_analytics: ">=10.0.0 <13.0.0"
+
+dev_dependencies:
+  test: ^1.24.0
+  mocktail: ^1.0.4
+  flutter_test:
+    sdk: flutter

@@ -1,0 +1,15 @@
+name: root
+description: Root package for all projects.
+publish_to: none
+
+environment:
+  sdk: ">=3.5.0 <4.0.0"
+
+dev_dependencies:
+  lints: ^6.1.0
+  test: ">=1.0.0 <2.0.0"
+
+workspace:
+  - packages/analytics_hub
+  - packages/analytics_hub_firebase
+  - packages/analytics_hub_mixpanel

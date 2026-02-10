@@ -1,0 +1,17 @@
+name: analytics_hub_mixpanel
+description: Mixpanel analytics provider for analytics_hub.
+version: 0.0.1
+
+environment:
+  sdk: ">=3.5.0 <4.0.0"
+
+dependencies:
+  analytics_hub: ^0.0.1
+  mixpanel_flutter: ">=2.0.0 <4.0.0"
+
+dev_dependencies:
+  lints: ^6.0.0
+  mocktail: ^1.0.4
+  test: ^1.25.6
+  flutter_test:
+    sdk: flutter
