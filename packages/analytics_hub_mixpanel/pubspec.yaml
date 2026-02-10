@@ -1,6 +1,8 @@
 name: analytics_hub_mixpanel
 description: Mixpanel analytics provider for analytics_hub.
 version: 0.0.1
+homepage: https://github.com/4akLoon/analytics_hub
+repository: https://github.com/4akLoon/analytics_hub
 
 environment:
   sdk: ">=3.5.0 <4.0.0"
