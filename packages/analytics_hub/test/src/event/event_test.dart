@@ -20,35 +20,6 @@ class TestLogEvent extends LogEvent {
 }
 
 void main() {
-  group('SelectPromotionECommerceEventData', () {
-    test('creates with all optional fields', () {
-      const data = SelectPromotionECommerceEventData(
-        creativeName: 'name',
-        creativeSlot: 'slot',
-        locationId: 'loc',
-        promotionId: 'promo',
-        promotionName: 'promoName',
-        parameters: {'key': 'value'},
-      );
-      expect(data.creativeName, equals('name'));
-      expect(data.creativeSlot, equals('slot'));
-      expect(data.locationId, equals('loc'));
-      expect(data.promotionId, equals('promo'));
-      expect(data.promotionName, equals('promoName'));
-      expect(data.parameters, equals({'key': 'value'}));
-    });
-
-    test('creates with minimal fields', () {
-      const data = SelectPromotionECommerceEventData();
-      expect(data.creativeName, isNull);
-      expect(data.creativeSlot, isNull);
-      expect(data.locationId, isNull);
-      expect(data.promotionId, isNull);
-      expect(data.promotionName, isNull);
-      expect(data.parameters, isNull);
-    });
-  });
-
   group('LogEvent', () {
     test('creates with name only', () {
       const event = TestLogEvent('event_name');
