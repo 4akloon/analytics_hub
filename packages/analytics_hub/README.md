@@ -1,26 +1,38 @@
-## analytics_hub
+## Analytics Hub
+
+[![Pub Version](https://img.shields.io/pub/v/analytics_hub.svg)](https://pub.dev/packages/analytics_hub)
+[![Pub Likes](https://img.shields.io/pub/likes/analytics_hub.svg)](https://pub.dev/packages/analytics_hub)
+[![Pub Points](https://img.shields.io/pub/points/analytics_hub.svg)](https://pub.dev/packages/analytics_hub)
+[![Platform](https://img.shields.io/badge/platform-dart%20%7C%20flutter-blue.svg)](https://dart.dev)
 
 > This documentation is also available in [Ukrainian](README.ua.md).
 
 **analytics_hub** is a small aggregation layer on top of analytics SDKs
-such as Firebase, Mixpanel, and your own providers. It:
+such as Firebase, Mixpanel, and your own providers.
 
-- **unifies the event model** (log, custom, e‑commerce);
-- **provides a single entry point** (`AnalyticsHub`) instead of talking to each SDK directly;
-- **manages the user session** and propagates a `Session` to all providers;
-- makes it easy to **add or remove providers** without touching business logic.
+### Essence of the solution
 
-### Why you might want it
+In one sentence: **you describe analytics as strongly‑typed Dart events once,
+and `analytics_hub` fan‑outs them to any number of providers (Firebase, Mixpanel, in‑house) via a single API**.
+
+### Features
+
+- **Unified event model** (log, custom, e‑commerce) shared across providers.
+- **Single entry point** (`AnalyticsHub`) instead of talking to each SDK directly.
+- **Centralized session management** that propagates a `Session` to all providers.
+- Easy to **add or remove providers** without touching business logic.
+
+### When you might want it
 
 - You send the **same logical event** to multiple analytics SDKs.
 - You want to **decouple domain/UI code** from concrete analytics dependencies.
 - You need **centralized session and configuration management** for analytics.
 - You want to be able to toggle providers on/off per environment or product.
 
-Current providers in this monorepo:
+Current providers (each has its own README with integration steps):
 
-- Firebase: `analytics_hub_firebase`
-- Mixpanel: `analytics_hub_mixpanel`
+- **Firebase:** [analytics_hub_firebase](https://pub.dev/packages/analytics_hub_firebase) — log events + e‑commerce (`SelectPromotion`, etc.)
+- **Mixpanel:** [analytics_hub_mixpanel](https://pub.dev/packages/analytics_hub_mixpanel) — log events
 
 ## Installation
 
@@ -103,27 +115,39 @@ Example with a custom provider (simplified from `example/analytics_core_example.
 ```dart
 import 'package:analytics_hub/analytics_hub.dart';
 
-class EmptySessionDelegate implements HubSessionDelegate {
-  @override
-  Stream<Session?> get sessionStream => Stream.value(null);
+class AuthSessionDelegate implements HubSessionDelegate {
+  AuthSessionDelegate(this._auth);
+
+  final AuthManager _auth;
 
   @override
-  Future<Session?> getSession() async => null;
+  Stream<Session?> get sessionStream =>
+      _auth.authStateStream.map((user) => user != null ? Session(id: user.id) : null);
+
+  @override
+  Future<Session?> getSession() async {
+    final user = await _auth.currentUser;
+    return user != null ? Session(id: user.id) : null;
+  }
 }
 
 void main() async {
+  final auth = yourAuthManager; // e.g. from DI or app state
+
   final hub = AnalyticsHub(
-    sessionDelegate: EmptySessionDelegate(),
+    sessionDelegate: AuthSessionDelegate(auth),
     providers: [
-      ExampleAnalyticsProvider(),
-      ExampleAnalyticsProvider(name: 'Another Provider'),
+      BackendAnalyticsProvider(),
     ],
   );
 
   await hub.initialize();
 
   await hub.sendEvent(
-    const ExampleLogEvent(exampleProperty: 'example_value'),
+    ScreenViewEvent(
+      screenName: 'home',
+      screenClass: HomeScreen,
+    ),
   );
 
   await hub.dispose();
@@ -135,85 +159,95 @@ void main() async {
 ### Log event (`LogEvent`)
 
 ```dart
-class ExampleLogEvent extends LogEvent {
-  const ExampleLogEvent({required this.exampleProperty})
-      : super('example_log_event');
+class ScreenViewEvent extends LogEvent {
+  const ScreenViewEvent({
+    required this.screenName,
+    required this.screenClass,
+  }) : super('screen_view');
 
-  final String exampleProperty;
+  final String screenName;
+  final Type screenClass;
 
   @override
   Map<String, Object>? get properties => {
-        'example_property': exampleProperty,
+        'screen_name': screenName,
+        'screen_class': screenClass.toString(),
       };
 
   @override
   Set<ProviderKey<LogEventResolver>> get providerKeys => {
-        const ExampleAnalyticsProviderKey(),
-        const ExampleAnalyticsProviderKey(name: 'Another Provider'),
+        const BackendAnalyticsProviderKey(),
+        // or FirebaseAnalyticsHubProviderKey(), MixpanelAnalyticsHubProviderKey(), etc.
       };
 }
 ```
 
 Key points:
 
-- **`name`** – technical event name.
+- **`name`** – technical event name (e.g. for dashboards).
 - **`properties`** – payload that will be passed to providers.
 - **`providerKeys`** – which providers should receive this event.
 
 ### Custom log events (`CustomLogEvent<T>`)
 
 ```dart
-sealed class ExampleCustomLogEvent
-    extends CustomLogEvent<ExampleCustomLogEvent> {
-  const ExampleCustomLogEvent();
+sealed class OnboardingAnalyticsEvent
+    extends CustomLogEvent<OnboardingAnalyticsEvent> {
+  const OnboardingAnalyticsEvent();
 }
 
-abstract class FirstExampleCustomLogEvent extends ExampleCustomLogEvent {
-  const FirstExampleCustomLogEvent({required this.exampleProperty});
+class OnboardingStepCompletedEvent extends OnboardingAnalyticsEvent {
+  const OnboardingStepCompletedEvent({
+    required this.stepId,
+    this.durationMs,
+  });
 
-  final String exampleProperty;
-}
-
-abstract class FirstExampleCustomLogEventImpl
-    extends FirstExampleCustomLogEvent {
-  const FirstExampleCustomLogEventImpl({required super.exampleProperty});
+  final String stepId;
+  final int? durationMs;
 
   @override
-  Set<ProviderKey<CustomLogEventResolver<ExampleCustomLogEvent>>>
-      get providerKeys => {const ExampleAnalyticsProviderKey()};
+  Set<ProviderKey<CustomLogEventResolver<OnboardingAnalyticsEvent>>>
+      get providerKeys => {const BackendAnalyticsProviderKey()};
 }
 ```
 
 The idea:
 
 - you design your own event hierarchy;
-- the resolver (`CustomLogEventResolver<ExampleCustomLogEvent>`) decides how to handle each subtype.
+- the resolver (`CustomLogEventResolver<OnboardingAnalyticsEvent>`) decides how to handle each subtype (e.g. map to your backend schema).
 
 ### E‑commerce `SelectPromotionECommerceEvent`
 
 ```dart
-class ExampleSelectPromotionECommerceEvent
-    extends SelectPromotionECommerceEvent {
-  const ExampleSelectPromotionECommerceEvent({required this.creativeName});
+class PromoBannerClickEvent extends SelectPromotionECommerceEvent {
+  const PromoBannerClickEvent({
+    required this.bannerId,
+    required this.creativeName,
+    this.placement,
+  });
 
+  final String bannerId;
   final String creativeName;
+  final String? placement;
 
   @override
   SelectPromotionECommerceEventData get data =>
       SelectPromotionECommerceEventData(
         creativeName: creativeName,
+        locationId: placement,
+        promotionId: bannerId,
       );
 
   @override
   Set<ProviderKey<ECommerceEventResolver>> get providerKeys => {
-        // e.g. FirebaseAnalyticsHubProviderKey
+        const FirebaseAnalyticsHubProviderKey(), // from analytics_hub_firebase
       };
 }
 ```
 
 ## Implementing your own provider (step‑by‑step)
 
-A custom provider in `packages/analytics_hub` consists of:
+A custom provider (e.g. sending events to your backend) consists of:
 
 1. **Provider key** (`ProviderKey<R>`).
 2. **Event resolver(s)** (`EventResolver` + required interfaces).
@@ -224,8 +258,8 @@ A custom provider in `packages/analytics_hub` consists of:
 ```dart
 import 'package:analytics_hub/analytics_hub.dart';
 
-class ExampleAnalyticsProviderKey extends ProviderKey<ExampleEventResolver> {
-  const ExampleAnalyticsProviderKey({super.name});
+class BackendAnalyticsProviderKey extends ProviderKey<BackendEventResolver> {
+  const BackendAnalyticsProviderKey({super.name});
 }
 ```
 
@@ -238,23 +272,23 @@ class ExampleAnalyticsProviderKey extends ProviderKey<ExampleEventResolver> {
 ```dart
 import 'package:analytics_hub/analytics_hub.dart';
 
-class ExampleEventResolver
+class BackendEventResolver
     implements
         EventResolver,
         LogEventResolver,
-        CustomLogEventResolver<ExampleCustomLogEvent> {
-  const ExampleEventResolver();
+        CustomLogEventResolver<OnboardingAnalyticsEvent> {
+  const BackendEventResolver();
 
   @override
   Future<void> resolveLogEvent(LogEvent event) async {
-    // map LogEvent into your SDK calls
+    // e.g. POST event.name + event.properties to your backend
   }
 
   @override
   Future<void> resolveCustomLogEvent(
-    CustomLogEvent<ExampleCustomLogEvent> event,
+    CustomLogEvent<OnboardingAnalyticsEvent> event,
   ) async {
-    // handle specific custom events
+    // map onboarding events to your backend schema
   }
 }
 ```
@@ -270,27 +304,27 @@ You only implement the interfaces that your provider needs:
 ```dart
 import 'package:analytics_hub/analytics_hub.dart';
 
-class ExampleAnalyticsProvider
-    extends AnalytycsProvider<ExampleEventResolver> {
-  ExampleAnalyticsProvider({String? name})
-      : super(key: ExampleAnalyticsProviderKey(name: name));
+class BackendAnalyticsProvider
+    extends AnalytycsProvider<BackendEventResolver> {
+  BackendAnalyticsProvider({String? name})
+      : super(key: BackendAnalyticsProviderKey(name: name));
 
   @override
-  ExampleEventResolver get resolver => const ExampleEventResolver();
+  BackendEventResolver get resolver => const BackendEventResolver();
 
   @override
   Future<void> initialize() async {
-    // initialize your SDK (init, enable tracking, etc.)
+    // e.g. create HTTP client, auth headers
   }
 
   @override
   Future<void> setSession(Session? session) async {
-    // e.g. sdk.setUserId(session?.id);
+    // e.g. send session.id to backend for user association
   }
 
   @override
   Future<void> dispose() async {
-    // optional: clean up resources, close streams, etc.
+    // close HTTP client, etc.
   }
 }
 ```
@@ -306,17 +340,22 @@ Important details:
 
 ```dart
 final hub = AnalyticsHub(
-  sessionDelegate: EmptySessionDelegate(),
+  sessionDelegate: yourSessionDelegate,
   providers: [
-    ExampleAnalyticsProvider(),
+    BackendAnalyticsProvider(),
   ],
 );
 
 await hub.initialize();
-await hub.sendEvent(const ExampleLogEvent(exampleProperty: 'value'));
+await hub.sendEvent(
+  ScreenViewEvent(
+    screenName: 'settings',
+    screenClass: SettingsScreen,
+  ),
+);
 ```
 
-Any event that includes `ExampleAnalyticsProviderKey` in `providerKeys`
+Any event that includes `BackendAnalyticsProviderKey` in `providerKeys`
 will be routed to your provider.
 
 ## When to create your own provider
@@ -333,4 +372,7 @@ will be routed to your provider.
   - `analytics_hub_firebase`
   - `analytics_hub_mixpanel`
 
+## Suggestions and improvements
+
+Have an idea to improve Analytics Hub or one of the providers? We’d love to hear it. Please [open an issue](https://github.com/4akLoon/analytics_hub/issues) in the repository with your suggestion or feedback.
 

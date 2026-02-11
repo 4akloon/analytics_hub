@@ -4,8 +4,18 @@ import 'package:mixpanel_flutter/mixpanel_flutter.dart';
 import '../resolver/mixpanel_event_resolver.dart';
 import 'mixpanel_analytics_hub_provider_key.dart';
 
+/// [AnalytycsProvider] that sends [LogEvent]s to Mixpanel via [Mixpanel.track].
+///
+/// On [setSession]: if [Session] is non-null, calls [Mixpanel.identify] with
+/// [Session.id]; if null and [getAnonymousId] is provided, identifies with that
+/// ID; otherwise calls [Mixpanel.reset].
 class MixpanelAnalyticsHubProvider
     extends AnalytycsProvider<MixpanelEventResolver> {
+  /// Creates a provider that uses the given [mixpanel] instance.
+  ///
+  /// [name] is used for the provider key (e.g. for event routing). [getAnonymousId]
+  /// is called when session becomes null to set an anonymous ID instead of
+  /// resetting; if null, [Mixpanel.reset] is used on logout.
   MixpanelAnalyticsHubProvider({
     required Mixpanel mixpanel,
     String? name,

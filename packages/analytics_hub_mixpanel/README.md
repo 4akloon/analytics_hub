@@ -1,9 +1,17 @@
-## analytics_hub_mixpanel
+## Analytics Hub Mixpanel Provider
+
+[![Pub Version](https://img.shields.io/pub/v/analytics_hub_mixpanel.svg)](https://pub.dev/packages/analytics_hub_mixpanel)
+[![Pub Likes](https://img.shields.io/pub/likes/analytics_hub_mixpanel.svg)](https://pub.dev/packages/analytics_hub_mixpanel)
+[![Pub Points](https://img.shields.io/pub/points/analytics_hub_mixpanel.svg)](https://pub.dev/packages/analytics_hub_mixpanel)
+[![Platform](https://img.shields.io/badge/platform-flutter-blue.svg)](https://flutter.dev)
 
 > This documentation is also available in [Ukrainian](README.ua.md).
 
 **analytics_hub_mixpanel** is a provider that connects `analytics_hub`
-to **Mixpanel**.
+to **Mixpanel**: you keep a strongly‑typed event model in core,
+and this package takes care of turning those events into `mixpanel.track` calls.
+
+### Features
 
 It provides:
 
@@ -11,9 +19,16 @@ It provides:
 - `MixpanelAnalyticsHubProviderKey` – provider key used by events;
 - `MixpanelEventResolver` – resolver that maps `LogEvent` to `mixpanel.track`.
 
+### Essence of the solution
+
+In one sentence: **you use the same `LogEvent` classes as for other analytics providers,
+and this package sends them to Mixpanel without your app ever depending on the Mixpanel SDK directly**.
+
+For **general Analytics Hub setup** (creating the hub, session delegate, registering providers), see the [analytics_hub](https://pub.dev/packages/analytics_hub) package README.
+
 ## Installation
 
-In your app `pubspec.yaml`:
+Add this provider and its dependencies to your app `pubspec.yaml`:
 
 ```yaml
 dependencies:
@@ -23,60 +38,28 @@ dependencies:
   analytics_hub_mixpanel: ^0.0.1
 ```
 
-## Quick start
+## Integrating this provider
 
-Example (from `example/analytics_hub_mixpanel_example.dart`):
+1. Create your `AnalyticsHub` as described in the [analytics_hub README](https://pub.dev/packages/analytics_hub).
+2. Initialize Mixpanel (e.g. `await Mixpanel.init('YOUR_TOKEN', trackAutomaticEvents: false)`), then add the Mixpanel provider to the hub’s `providers` list:
 
 ```dart
-import 'package:analytics_hub/analytics_hub.dart';
 import 'package:analytics_hub_mixpanel/analytics_hub_mixpanel.dart';
 import 'package:mixpanel_flutter/mixpanel_flutter.dart';
 
-class EmptySessionDelegate implements HubSessionDelegate {
-  @override
-  Stream<Session?> get sessionStream => Stream.value(null);
+// After Mixpanel.init(...):
+final mixpanel = await Mixpanel.init('YOUR_MIXPANEL_TOKEN', trackAutomaticEvents: false);
 
-  @override
-  Future<Session?> getSession() async => null;
-}
-
-class ExampleLogEvent extends LogEvent {
-  const ExampleLogEvent({required this.exampleProperty})
-      : super('example_log_event');
-
-  final String exampleProperty;
-
-  @override
-  Map<String, Object>? get properties => {'example_property': exampleProperty};
-
-  @override
-  Set<ProviderKey<LogEventResolver>> get providerKeys => {
-        const MixpanelAnalyticsHubProviderKey(),
-      };
-}
-
-Future<void> main() async {
-  final mixpanel = await Mixpanel.init(
-    'YOUR_MIXPANEL_TOKEN',
-    trackAutomaticEvents: false,
-  );
-
-  final hub = AnalyticsHub(
-    sessionDelegate: EmptySessionDelegate(),
-    providers: [
-      MixpanelAnalyticsHubProvider(mixpanel: mixpanel),
-    ],
-  );
-
-  await hub.initialize();
-
-  await hub.sendEvent(
-    const ExampleLogEvent(exampleProperty: 'example_property'),
-  );
-
-  await hub.dispose();
-}
+final hub = AnalyticsHub(
+  sessionDelegate: yourSessionDelegate,
+  providers: [
+    MixpanelAnalyticsHubProvider(mixpanel: mixpanel), // add this
+    // ... other providers
+  ],
+);
 ```
+
+3. In events that should go to Mixpanel, include `MixpanelAnalyticsHubProviderKey` in `providerKeys` (see [Supported event types](#supported-event-types) below).
 
 ## Supported event types
 
@@ -185,4 +168,7 @@ This would:
   (e.g. Firebase) and want to send **the same events**
   to Mixpanel and other systems in parallel.
 
+## Suggestions and improvements
+
+Have an idea to improve this provider or the hub? [Open an issue](https://github.com/4akLoon/analytics_hub/issues) in the repository with your suggestion or feedback.
 
