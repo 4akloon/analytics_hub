@@ -31,4 +31,3 @@ class ViewCartECommerceEventData {
       'items: $items, '
       'parameters: $parameters)';
 }
-

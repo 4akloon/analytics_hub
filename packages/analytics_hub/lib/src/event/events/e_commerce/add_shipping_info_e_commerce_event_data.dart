@@ -42,4 +42,3 @@ class AddShippingInfoECommerceEventData {
       'items: $items, '
       'parameters: $parameters)';
 }
-

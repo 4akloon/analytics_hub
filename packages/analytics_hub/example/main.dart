@@ -36,7 +36,7 @@ class ExampleLogEvent extends LogEvent {
   @override
   Set<ProviderKey<LogEventResolver>> get providerKeys => {
         const ExampleAnalyticsProviderKey(),
-        const ExampleAnalyticsProviderKey(name: 'example_value'),
+        const ExampleAnalyticsProviderKey(name: 'Another Provider'),
       };
 }
 

@@ -1,3 +1,10 @@
+## 0.1.0 - 2026-02-11
+
+### Added
+- Implemented all GA4 e-commerce events in `FirebaseAnalyticsECommerceEventResolver`: `AddToCart`, `AddToWishlist`, `ViewCart`, `AddPaymentInfo`, `AddShippingInfo`, `BeginCheckout`, `Purchase`, `RemoveFromCart`, `SelectItem`, `ViewItem`, `ViewItemList`, `ViewPromotion`, `Refund` (in addition to existing `SelectPromotion`).
+- Public API documentation for provider, key, and resolvers.
+- Dependency on `analytics_hub: ">=0.1.0 <0.2.0"`.
+
 ## 0.0.1 - 2026-02-10
 
 ### Added

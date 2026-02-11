@@ -1,6 +1,9 @@
 name: analytics_hub_firebase
-description: Firebase analytics provider for analytics_hub.
-version: 0.0.1
+description: >
+  Firebase Analytics provider for analytics_hub.
+  Sends LogEvent and all GA4 e-commerce events (add_to_cart, purchase,
+  view_item, etc.) to Firebase via the official SDK.
+version: 0.1.0
 homepage: https://github.com/4akLoon/analytics_hub
 repository: https://github.com/4akLoon/analytics_hub
 
@@ -8,7 +11,7 @@ environment:
   sdk: ">=3.5.0 <4.0.0"
 
 dependencies:
-  analytics_hub: ^0.0.1
+  analytics_hub: ">=0.1.0 <0.2.0"
   firebase_core: ">=2.0.0 <5.0.0"
   firebase_analytics: ">=10.0.0 <13.0.0"
 

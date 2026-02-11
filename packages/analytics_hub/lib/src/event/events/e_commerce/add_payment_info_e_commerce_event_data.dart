@@ -42,4 +42,3 @@ class AddPaymentInfoECommerceEventData {
       'items: $items, '
       'parameters: $parameters)';
 }
-

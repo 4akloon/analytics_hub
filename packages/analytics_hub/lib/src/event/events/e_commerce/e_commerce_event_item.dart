@@ -130,4 +130,3 @@ class ECommerceEventItem {
       'quantity: $quantity, '
       'parameters: $parameters)';
 }
-
