@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:logging/logging.dart';
 
-import 'event/event.dart';
+import 'event/events/events.dart';
 import 'provider/analytics_provider.dart';
 import 'provider/provider_key.dart';
 import 'session/hub_session_delegate.dart';

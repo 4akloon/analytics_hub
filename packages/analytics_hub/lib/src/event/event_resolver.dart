@@ -1,4 +1,4 @@
-import 'event.dart';
+import 'events/events.dart';
 
 /// Base interface for resolving (handling) analytics events in a provider.
 ///
