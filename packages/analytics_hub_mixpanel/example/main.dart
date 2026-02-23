@@ -20,9 +20,9 @@ class ExampleLogEvent extends LogEvent {
   Map<String, Object>? get properties => {'example_property': exampleProperty};
 
   @override
-  Set<ProviderKey<LogEventResolver>> get providerKeys => {
-        const MixpanelAnalyticsHubProviderKey(),
-      };
+  List<EventProvider<LogEventResolver, LogEventOptions>> get providers => [
+        const EventProvider(MixpanelAnalyticsHubProviderKey()),
+      ];
 }
 
 Future<void> main() async {

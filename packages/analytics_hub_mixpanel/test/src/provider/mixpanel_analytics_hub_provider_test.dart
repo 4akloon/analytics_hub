@@ -22,7 +22,7 @@ void main() {
   group('MixpanelAnalyticsHubProvider', () {
     test('creates with mixpanel and null name', () {
       final provider = MixpanelAnalyticsHubProvider(mixpanel: mockMixpanel);
-      expect(provider.key.name, isNull);
+      expect(provider.identifier.name, isNull);
     });
 
     test('creates with mixpanel and custom name', () {
@@ -30,7 +30,7 @@ void main() {
         mixpanel: mockMixpanel,
         name: 'custom',
       );
-      expect(provider.key.name, equals('custom'));
+      expect(provider.identifier.name, equals('custom'));
     });
 
     test('setSession with session calls identify', () async {
@@ -88,6 +88,7 @@ class _TestLogEvent extends LogEvent {
   Map<String, Object>? get properties => props;
 
   @override
-  Set<ProviderKey<LogEventResolver>> get providerKeys =>
-      {const MixpanelAnalyticsHubProviderKey(name: 'test')};
+  List<EventProvider<LogEventResolver, LogEventOptions>> get providers => [
+        const EventProvider(MixpanelAnalyticsHubProviderKey(name: 'test')),
+      ];
 }

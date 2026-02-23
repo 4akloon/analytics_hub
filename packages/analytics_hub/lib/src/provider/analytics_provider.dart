@@ -8,17 +8,17 @@ import 'provider_key.dart';
 /// receive events and session updates from [AnalyticsHub].
 ///
 /// [R] is the [EventResolver] type this provider implements. The hub uses
-/// [resolver] to dispatch [Event]s that target [key]. Override [initialize],
+/// [resolver] to dispatch [Event]s that target [identifier]. Override [initialize],
 /// [setSession], and [dispose] as needed.
 abstract class AnalytycsProvider<R extends EventResolver> {
-  /// Creates a provider with the given [key].
+  /// Creates a provider with the given [identifier].
   ///
-  /// The [key] must be unique among providers registered with the same
-  /// [AnalyticsHub]; it is used to route events via [Event.providerKeys].
-  AnalytycsProvider({required this.key});
+  /// The [identifier] must be unique among providers registered with the same
+  /// [AnalyticsHub]; it is used to route events via [Event.providers].
+  AnalytycsProvider({required this.identifier});
 
-  /// Unique key identifying this provider for event routing.
-  final ProviderKey<R> key;
+  /// Unique identifier identifying this provider for event routing.
+  final ProviderIdentifier<R> identifier;
 
   /// The resolver used by [AnalyticsHub] to send events to this provider.
   R get resolver;

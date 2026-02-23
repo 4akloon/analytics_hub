@@ -1,3 +1,27 @@
+## 0.2.0 - 2026-02-23
+
+### Added
+- New provider-targeting model via `EventProvider<R, O>` and `EventOptions`.
+- Per-provider overrides for `LogEvent` via `LogEventOptions` and `LogEventOverrides`.
+- Typed per-provider payload overrides for `CustomLogEvent<T>` and `ECommerceEvent<T>` through `CustomLogEventOptions<T>` and `ECommerceEventOptions<T>`.
+
+### Changed
+- Renamed provider identity API from `ProviderKey` to `ProviderIdentifier`.
+- `AnalyticsHub` now routes events via `Event.providers` and `EventProvider.identifier`.
+- Extended public API documentation to cover new options and routing abstractions.
+
+### Breaking Changes
+- `Event.providerKeys` was removed. Implement `Event.providers` instead:
+  `List<EventProvider<R, O>> get providers`.
+- `ProviderKey<R>` was renamed to `ProviderIdentifier<R>`.
+- `AnalytycsProvider` constructor parameter and field were renamed from `key` to `identifier`.
+- `Event<R>` now requires options type parameter: `Event<R, O extends EventOptions>`.
+- `LogEvent` now extends `Event<LogEventResolver, LogEventOptions>`.
+- `CustomLogEvent<T>` moved to `custom_log_event.dart` and now extends
+  `Event<CustomLogEventResolver<T>, CustomLogEventOptions<T>>`.
+- `ECommerceEvent` now requires a payload type:
+  `ECommerceEvent<T> extends Event<ECommerceEventResolver, ECommerceEventOptions<T>>`.
+
 ## 0.1.0 - 2026-02-11
 
 ### Added

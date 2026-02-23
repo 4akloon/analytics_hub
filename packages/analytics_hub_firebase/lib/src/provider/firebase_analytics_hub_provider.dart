@@ -17,7 +17,9 @@ class FirebaseAnalyticsHubProvider
   /// The provider key name is set to [FirebaseAnalytics.app]'s name.
   FirebaseAnalyticsHubProvider({required FirebaseAnalytics analytics})
       : _analytics = analytics,
-        super(key: FirebaseAnalyticsHubProviderKey(name: analytics.app.name));
+        super(
+          identifier: FirebaseAnalyticsHubProviderKey(name: analytics.app.name),
+        );
 
   /// Creates a provider using [FirebaseAnalytics.instance] (default app).
   FirebaseAnalyticsHubProvider.fromInstance()

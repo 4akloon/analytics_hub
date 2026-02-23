@@ -29,7 +29,7 @@ void main() {
   group('FirebaseAnalyticsHubProvider', () {
     test('creates with analytics and uses app name as key', () {
       final provider = FirebaseAnalyticsHubProvider(analytics: mockAnalytics);
-      expect(provider.key.name, equals('test_app'));
+      expect(provider.identifier.name, equals('test_app'));
     });
 
     test('initialize calls setAnalyticsCollectionEnabled', () async {
@@ -86,10 +86,7 @@ class _TestLogEvent extends LogEvent {
   Map<String, Object>? get properties => props;
 
   @override
-  Set<ProviderKey<LogEventResolver>> get providerKeys =>
-      {const _TestProviderKey(name: 'test')};
-}
-
-class _TestProviderKey extends ProviderKey<LogEventResolver> {
-  const _TestProviderKey({super.name});
+  List<EventProvider<LogEventResolver, LogEventOptions>> get providers => [
+        const EventProvider(FirebaseAnalyticsHubProviderKey(name: 'test')),
+      ];
 }

@@ -34,10 +34,20 @@ class ExampleLogEvent extends LogEvent {
   Map<String, Object>? get properties => {'example_property': exampleProperty};
 
   @override
-  Set<ProviderKey<LogEventResolver>> get providerKeys => {
-        const ExampleAnalyticsProviderKey(),
-        const ExampleAnalyticsProviderKey(name: 'Another Provider'),
-      };
+  List<EventProvider<LogEventResolver, LogEventOptions>> get providers => [
+        const EventProvider(ExampleAnalyticsProviderKey()),
+        EventProvider(
+          const ExampleAnalyticsProviderKey(name: 'Another Provider'),
+          options: LogEventOptions(
+            overrides: LogEventOverrides(
+              name: 'example_log_event_overridden',
+              properties: {
+                'example_property_overridden': exampleProperty,
+              },
+            ),
+          ),
+        ),
+      ];
 }
 
 sealed class ExampleCustomLogEvent
@@ -56,13 +66,16 @@ abstract class FirstExampleCustomLogEventImpl
   const FirstExampleCustomLogEventImpl({required super.exampleProperty});
 
   @override
-  Set<ProviderKey<CustomLogEventResolver<ExampleCustomLogEvent>>>
-      get providerKeys => {const ExampleAnalyticsProviderKey()};
+  List<
+      EventProvider<CustomLogEventResolver<ExampleCustomLogEvent>,
+          CustomLogEventOptions<ExampleCustomLogEvent>>> get providers => [
+        const EventProvider(ExampleAnalyticsProviderKey()),
+      ];
 }
 
 class ExampleAnalyticsProvider extends AnalytycsProvider<ExampleEventResolver> {
   ExampleAnalyticsProvider({String? name})
-      : super(key: ExampleAnalyticsProviderKey(name: name));
+      : super(identifier: ExampleAnalyticsProviderKey(name: name));
 
   @override
   ExampleEventResolver get resolver => const ExampleEventResolver();
@@ -78,7 +91,8 @@ class ExampleAnalyticsProvider extends AnalytycsProvider<ExampleEventResolver> {
   }
 }
 
-class ExampleAnalyticsProviderKey extends ProviderKey<ExampleEventResolver> {
+class ExampleAnalyticsProviderKey
+    extends ProviderIdentifier<ExampleEventResolver> {
   const ExampleAnalyticsProviderKey({super.name});
 }
 

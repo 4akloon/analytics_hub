@@ -2,7 +2,7 @@ import 'package:analytics_hub/analytics_hub.dart';
 import 'package:test/test.dart';
 
 // Concrete implementation for testing ProviderKey
-class TestProviderKey extends ProviderKey<LogEventResolver> {
+class TestProviderKey extends ProviderIdentifier<LogEventResolver> {
   const TestProviderKey({super.name});
 }
 

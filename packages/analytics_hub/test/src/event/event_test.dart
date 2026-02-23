@@ -2,7 +2,7 @@ import 'package:analytics_hub/analytics_hub.dart';
 import 'package:test/test.dart';
 
 // Concrete LogEvent implementation for testing
-class TestProviderKey extends ProviderKey<LogEventResolver> {
+class TestProviderKey extends ProviderIdentifier<LogEventResolver> {
   const TestProviderKey({super.name});
 }
 
@@ -15,8 +15,17 @@ class TestLogEvent extends LogEvent {
   Map<String, Object>? get properties => props;
 
   @override
-  Set<ProviderKey<LogEventResolver>> get providerKeys =>
-      {const TestProviderKey(name: 'test')};
+  List<EventProvider<LogEventResolver, LogEventOptions>> get providers => [
+        const EventProvider(TestProviderKey(name: 'test')),
+        const EventProvider(
+          TestProviderKey(name: 'test'),
+          options: LogEventOptions(
+            overrides: LogEventOverrides(
+              name: 'test_overridden',
+            ),
+          ),
+        ),
+      ];
 }
 
 void main() {

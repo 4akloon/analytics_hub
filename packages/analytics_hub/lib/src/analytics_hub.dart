@@ -20,12 +20,14 @@ import 'session/session.dart';
 class AnalyticsHub {
   /// Creates an [AnalyticsHub] with the given [providers] and [sessionDelegate].
   ///
-  /// Each provider must have a unique [AnalytycsProvider.key]. Duplicate keys
+  /// Each provider must have a unique [AnalytycsProvider.identifier]. Duplicate keys
   /// will overwrite earlier providers in the list.
   AnalyticsHub({
     required List<AnalytycsProvider> providers,
     required HubSessionDelegate sessionDelegate,
-  })  : _providers = {for (final provider in providers) provider.key: provider},
+  })  : _providers = {
+          for (final provider in providers) provider.identifier: provider,
+        },
         _logger = Logger('AnalyticsHub'),
         _sessionDelegate = sessionDelegate {
     _sessionSubscription = _sessionDelegate.sessionStream.listen(
@@ -33,7 +35,7 @@ class AnalyticsHub {
     );
   }
 
-  final Map<ProviderKey, AnalytycsProvider> _providers;
+  final Map<ProviderIdentifier, AnalytycsProvider> _providers;
   final HubSessionDelegate _sessionDelegate;
   final Logger _logger;
 
@@ -65,10 +67,10 @@ class AnalyticsHub {
   Future<void> sendEvent(Event event) {
     _logger.info('Sending event: $event');
     return Future.wait(
-      event.providerKeys.map((key) {
-        final provider = _providers[key];
+      event.providers.map((eventProvider) {
+        final provider = _providers[eventProvider.identifier];
         if (provider == null) {
-          throw AnalyticsProviderNotFoundException(key);
+          throw AnalyticsProviderNotFoundException(eventProvider.identifier);
         }
 
         return event.resolve(provider.resolver);
@@ -97,13 +99,13 @@ class AnalyticsHub {
 }
 
 /// Thrown when [AnalyticsHub.sendEvent] is called with an event that targets
-/// a [ProviderKey] not registered with the hub.
+/// a [ProviderIdentifier] not registered with the hub.
 class AnalyticsProviderNotFoundException implements Exception {
   /// Creates an exception for the missing [key].
   const AnalyticsProviderNotFoundException(this.key);
 
   /// The provider key that was requested but not found.
-  final ProviderKey key;
+  final ProviderIdentifier key;
 
   @override
   String toString() => 'AnalyticsProviderNotFoundException(key: $key)';

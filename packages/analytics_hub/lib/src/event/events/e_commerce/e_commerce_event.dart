@@ -4,7 +4,8 @@ part of '../events.dart';
 ///
 /// Resolved by [ECommerceEventResolver]. Subclasses define specific e-commerce
 /// payloads (e.g. [SelectPromotionECommerceEvent]).
-sealed class ECommerceEvent extends Event<ECommerceEventResolver> {
+sealed class ECommerceEvent<T>
+    extends Event<ECommerceEventResolver, ECommerceEventOptions<T>> {
   const ECommerceEvent();
 
   @override
@@ -12,10 +13,33 @@ sealed class ECommerceEvent extends Event<ECommerceEventResolver> {
       resolver.resolveECommerceEvent(this);
 }
 
+/// Per-provider options for an [ECommerceEvent].
+///
+/// [overrides] contains provider-specific e-commerce payload data.
+class ECommerceEventOptions<T> implements EventOptions {
+  /// Creates e-commerce event options.
+  const ECommerceEventOptions({this.overrides});
+
+  /// Optional provider-specific payload override.
+  final T? overrides;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ECommerceEventOptions<T> && other.overrides == overrides;
+
+  @override
+  int get hashCode => overrides.hashCode;
+
+  @override
+  String toString() => 'ECommerceEventOptions(overrides: $overrides)';
+}
+
 /// E-commerce event for when a user selects a promotion.
 ///
 /// Carries [data] with promotion details. Resolved by [ECommerceEventResolver].
-abstract class SelectPromotionECommerceEvent extends ECommerceEvent {
+abstract class SelectPromotionECommerceEvent
+    extends ECommerceEvent<SelectPromotionECommerceEventData> {
   /// Creates a select-promotion e-commerce event.
   const SelectPromotionECommerceEvent();
 
@@ -26,7 +50,8 @@ abstract class SelectPromotionECommerceEvent extends ECommerceEvent {
 /// E-commerce event for when a user adds item(s) to the cart.
 ///
 /// Carries [data] with cart add details. Resolved by [ECommerceEventResolver].
-abstract class AddToCartECommerceEvent extends ECommerceEvent {
+abstract class AddToCartECommerceEvent
+    extends ECommerceEvent<AddToCartECommerceEventData> {
   /// Creates an add-to-cart e-commerce event.
   const AddToCartECommerceEvent();
 
@@ -37,7 +62,8 @@ abstract class AddToCartECommerceEvent extends ECommerceEvent {
 /// E-commerce event for when a user adds item(s) to a wishlist.
 ///
 /// Carries [data] with wishlist add details. Resolved by [ECommerceEventResolver].
-abstract class AddToWishlistECommerceEvent extends ECommerceEvent {
+abstract class AddToWishlistECommerceEvent
+    extends ECommerceEvent<AddToWishlistECommerceEventData> {
   /// Creates an add-to-wishlist e-commerce event.
   const AddToWishlistECommerceEvent();
 
@@ -48,7 +74,8 @@ abstract class AddToWishlistECommerceEvent extends ECommerceEvent {
 /// E-commerce event for when a user views their cart.
 ///
 /// Carries [data] with cart details. Resolved by [ECommerceEventResolver].
-abstract class ViewCartECommerceEvent extends ECommerceEvent {
+abstract class ViewCartECommerceEvent
+    extends ECommerceEvent<ViewCartECommerceEventData> {
   /// Creates a view-cart e-commerce event.
   const ViewCartECommerceEvent();
 
@@ -59,7 +86,8 @@ abstract class ViewCartECommerceEvent extends ECommerceEvent {
 /// E-commerce event for when a user adds payment info.
 ///
 /// Carries [data] with payment info details. Resolved by [ECommerceEventResolver].
-abstract class AddPaymentInfoECommerceEvent extends ECommerceEvent {
+abstract class AddPaymentInfoECommerceEvent
+    extends ECommerceEvent<AddPaymentInfoECommerceEventData> {
   /// Creates a add-payment-info e-commerce event.
   const AddPaymentInfoECommerceEvent();
 
@@ -70,7 +98,8 @@ abstract class AddPaymentInfoECommerceEvent extends ECommerceEvent {
 /// E-commerce event for when a user submits shipping information.
 ///
 /// Carries [data] with shipping details. Resolved by [ECommerceEventResolver].
-abstract class AddShippingInfoECommerceEvent extends ECommerceEvent {
+abstract class AddShippingInfoECommerceEvent
+    extends ECommerceEvent<AddShippingInfoECommerceEventData> {
   /// Creates an add-shipping-info e-commerce event.
   const AddShippingInfoECommerceEvent();
 
@@ -81,7 +110,8 @@ abstract class AddShippingInfoECommerceEvent extends ECommerceEvent {
 /// E-commerce event for when a user begins checkout.
 ///
 /// Carries [data] with checkout details. Resolved by [ECommerceEventResolver].
-abstract class BeginCheckoutECommerceEvent extends ECommerceEvent {
+abstract class BeginCheckoutECommerceEvent
+    extends ECommerceEvent<BeginCheckoutECommerceEventData> {
   /// Creates a begin-checkout e-commerce event.
   const BeginCheckoutECommerceEvent();
 
@@ -92,7 +122,8 @@ abstract class BeginCheckoutECommerceEvent extends ECommerceEvent {
 /// E-commerce event for when a user completes a purchase.
 ///
 /// Carries [data] with purchase details. Resolved by [ECommerceEventResolver].
-abstract class PurchaseECommerceEvent extends ECommerceEvent {
+abstract class PurchaseECommerceEvent
+    extends ECommerceEvent<PurchaseECommerceEventData> {
   /// Creates a purchase e-commerce event.
   const PurchaseECommerceEvent();
 
@@ -103,7 +134,8 @@ abstract class PurchaseECommerceEvent extends ECommerceEvent {
 /// E-commerce event for when a user removes item(s) from the cart.
 ///
 /// Carries [data] with removed items. Resolved by [ECommerceEventResolver].
-abstract class RemoveFromCartECommerceEvent extends ECommerceEvent {
+abstract class RemoveFromCartECommerceEvent
+    extends ECommerceEvent<RemoveFromCartECommerceEventData> {
   /// Creates a remove-from-cart e-commerce event.
   const RemoveFromCartECommerceEvent();
 
@@ -114,7 +146,8 @@ abstract class RemoveFromCartECommerceEvent extends ECommerceEvent {
 /// E-commerce event for when a user selects an item from a list.
 ///
 /// Carries [data] with list and item details. Resolved by [ECommerceEventResolver].
-abstract class SelectItemECommerceEvent extends ECommerceEvent {
+abstract class SelectItemECommerceEvent
+    extends ECommerceEvent<SelectItemECommerceEventData> {
   /// Creates a select-item e-commerce event.
   const SelectItemECommerceEvent();
 
@@ -125,7 +158,8 @@ abstract class SelectItemECommerceEvent extends ECommerceEvent {
 /// E-commerce event for when a user views an item (product/content).
 ///
 /// Carries [data] with item details. Resolved by [ECommerceEventResolver].
-abstract class ViewItemECommerceEvent extends ECommerceEvent {
+abstract class ViewItemECommerceEvent
+    extends ECommerceEvent<ViewItemECommerceEventData> {
   /// Creates a view-item e-commerce event.
   const ViewItemECommerceEvent();
 
@@ -136,7 +170,9 @@ abstract class ViewItemECommerceEvent extends ECommerceEvent {
 /// E-commerce event for when a user is presented with a list of items.
 ///
 /// Carries [data] with list and items. Resolved by [ECommerceEventResolver].
-abstract class ViewItemListECommerceEvent extends ECommerceEvent {
+abstract class ViewItemListECommerceEvent
+    extends ECommerceEvent<ViewItemListECommerceEventData>
+    implements EventOptions {
   /// Creates a view-item-list e-commerce event.
   const ViewItemListECommerceEvent();
 
@@ -147,7 +183,8 @@ abstract class ViewItemListECommerceEvent extends ECommerceEvent {
 /// E-commerce event for when a promotion is shown to a user.
 ///
 /// Carries [data] with promotion details. Resolved by [ECommerceEventResolver].
-abstract class ViewPromotionECommerceEvent extends ECommerceEvent {
+abstract class ViewPromotionECommerceEvent
+    extends ECommerceEvent<ViewPromotionECommerceEventData> {
   /// Creates a view-promotion e-commerce event.
   const ViewPromotionECommerceEvent();
 
@@ -158,7 +195,8 @@ abstract class ViewPromotionECommerceEvent extends ECommerceEvent {
 /// E-commerce event for when a refund is issued.
 ///
 /// Carries [data] with refund details. Resolved by [ECommerceEventResolver].
-abstract class RefundECommerceEvent extends ECommerceEvent {
+abstract class RefundECommerceEvent
+    extends ECommerceEvent<RefundECommerceEventData> {
   /// Creates a refund e-commerce event.
   const RefundECommerceEvent();
 

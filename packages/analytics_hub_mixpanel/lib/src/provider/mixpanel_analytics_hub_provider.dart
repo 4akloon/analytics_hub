@@ -22,7 +22,7 @@ class MixpanelAnalyticsHubProvider
     String Function()? getAnonymousId,
   })  : _mixpanel = mixpanel,
         _getAnonymousId = getAnonymousId,
-        super(key: MixpanelAnalyticsHubProviderKey(name: name));
+        super(identifier: MixpanelAnalyticsHubProviderKey(name: name));
 
   final Mixpanel _mixpanel;
   final String Function()? _getAnonymousId;

@@ -21,26 +21,32 @@ void main() {
 
   group('MixpanelEventResolver', () {
     test('resolveLogEvent calls track with name and properties', () async {
-      when(() => mockMixpanel.track(
-            any(),
-            properties: any(named: 'properties'),
-          ),).thenAnswer((_) async {});
+      when(
+        () => mockMixpanel.track(
+          any(),
+          properties: any(named: 'properties'),
+        ),
+      ).thenAnswer((_) async {});
 
       final provider = MixpanelAnalyticsHubProvider(mixpanel: mockMixpanel);
       const event = _TestLogEvent('test_event', {'key': 'value'});
       await provider.resolver.resolveLogEvent(event);
 
-      verify(() => mockMixpanel.track(
-            'test_event',
-            properties: {'key': 'value'},
-          ),).called(1);
+      verify(
+        () => mockMixpanel.track(
+          'test_event',
+          properties: {'key': 'value'},
+        ),
+      ).called(1);
     });
 
     test('resolveLogEvent with null properties', () async {
-      when(() => mockMixpanel.track(
-            any(),
-            properties: any(named: 'properties'),
-          ),).thenAnswer((_) async {});
+      when(
+        () => mockMixpanel.track(
+          any(),
+          properties: any(named: 'properties'),
+        ),
+      ).thenAnswer((_) async {});
 
       final provider = MixpanelAnalyticsHubProvider(mixpanel: mockMixpanel);
       const event = _TestLogEvent('test_event', null);
@@ -61,6 +67,7 @@ class _TestLogEvent extends LogEvent {
   Map<String, Object>? get properties => props;
 
   @override
-  Set<ProviderKey<LogEventResolver>> get providerKeys =>
-      {const MixpanelAnalyticsHubProviderKey(name: 'test')};
+  List<EventProvider<LogEventResolver, LogEventOptions>> get providers => [
+        const EventProvider(MixpanelAnalyticsHubProviderKey(name: 'test')),
+      ];
 }

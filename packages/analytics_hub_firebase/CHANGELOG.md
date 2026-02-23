@@ -1,3 +1,15 @@
+## 0.2.0 - 2026-02-23
+
+### Changed
+- Migrated provider identity usage from `ProviderKey` to `ProviderIdentifier`.
+- Updated examples and tests to the new `Event.providers` API with `EventProvider`.
+- Updated dependency constraint to `analytics_hub: ">=0.2.0 <0.3.0"`.
+
+### Breaking Changes
+- `FirebaseAnalyticsHubProvider` now uses `identifier` instead of `key`.
+- `FirebaseAnalyticsHubProviderKey` now extends `ProviderIdentifier<FirebaseAnalyticsEventResolver>`.
+- Events targeting Firebase must define `providers` (`List<EventProvider<...>>`) instead of `providerKeys`.
+
 ## 0.1.0 - 2026-02-11
 
 ### Added

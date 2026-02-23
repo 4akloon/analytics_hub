@@ -4,7 +4,7 @@ part of 'events.dart';
 ///
 /// Use for generic analytics events (e.g. screen view, button click). Resolved
 /// by [LogEventResolver]. Override [properties] in subclasses to attach data.
-abstract class LogEvent extends Event<LogEventResolver> {
+abstract class LogEvent extends Event<LogEventResolver, LogEventOptions> {
   /// Creates a log event with the given [name].
   const LogEvent(this.name);
 
@@ -22,15 +22,52 @@ abstract class LogEvent extends Event<LogEventResolver> {
   String toString() => 'LogEvent(name: $name, properties: $properties)';
 }
 
-/// An event with a custom payload type [T], resolved by [CustomLogEventResolver].
+/// Per-provider options for a [LogEvent].
 ///
-/// Use when a provider needs a strongly-typed payload (e.g. a Mixpanel or Amplitude
-/// event model) instead of a generic [LogEvent].
-abstract class CustomLogEvent<T> extends Event<CustomLogEventResolver<T>> {
-  /// Creates a custom log event.
-  const CustomLogEvent();
+/// [overrides] lets a provider override event [LogEvent.name] and/or properties.
+class LogEventOptions implements EventOptions {
+  /// Creates log event options.
+  const LogEventOptions({this.overrides});
+
+  /// Optional provider-specific overrides for this event.
+  final LogEventOverrides? overrides;
 
   @override
-  Future<void> resolve(CustomLogEventResolver<T> resolver) =>
-      resolver.resolveCustomLogEvent(this);
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is LogEventOptions && other.overrides == overrides;
+
+  @override
+  int get hashCode => overrides.hashCode;
+
+  @override
+  String toString() => 'LogEventOptions(overrides: $overrides)';
+}
+
+/// Provider-specific overrides for a [LogEvent].
+class LogEventOverrides {
+  /// Creates log event override values.
+  const LogEventOverrides({
+    this.name,
+    this.properties,
+  });
+
+  /// Override for event name.
+  final String? name;
+  /// Override for event properties.
+  final Map<String, Object>? properties;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is LogEventOverrides &&
+          other.name == name &&
+          other.properties == properties;
+
+  @override
+  int get hashCode => name.hashCode ^ properties.hashCode;
+
+  @override
+  String toString() =>
+      'LogEventOverrides(name: $name, properties: $properties)';
 }

@@ -4,7 +4,7 @@ import 'package:analytics_hub/analytics_hub.dart';
 import 'package:test/test.dart';
 
 // Test provider and resolver
-class TestProviderKey extends ProviderKey<LogEventResolver> {
+class TestProviderKey extends ProviderIdentifier<LogEventResolver> {
   const TestProviderKey({super.name});
 }
 
@@ -20,7 +20,7 @@ class TestEventResolver implements LogEventResolver {
 }
 
 class TestProvider extends AnalytycsProvider<LogEventResolver> {
-  TestProvider({required super.key, List<LogEvent>? recorder})
+  TestProvider({required super.identifier, List<LogEvent>? recorder})
       : _resolver = TestEventResolver(recorder ?? []);
 
   final TestEventResolver _resolver;
@@ -61,9 +61,9 @@ class TestLogEvent extends LogEvent {
   Map<String, Object>? get properties => props;
 
   @override
-  Set<ProviderKey<LogEventResolver>> get providerKeys => {
-        const TestProviderKey(name: 'test'),
-      };
+  List<EventProvider<LogEventResolver, LogEventOptions>> get providers => [
+        const EventProvider(TestProviderKey(name: 'test')),
+      ];
 }
 
 void main() {
@@ -90,7 +90,7 @@ void main() {
     test('initialize calls providers initialize and setSession', () async {
       final recorder = <LogEvent>[];
       final provider = TestProvider(
-        key: const TestProviderKey(name: 'test'),
+        identifier: const TestProviderKey(name: 'test'),
         recorder: recorder,
       );
       const session = Session(id: 'user-123');
@@ -109,7 +109,7 @@ void main() {
     test('sendEvent resolves event with correct provider', () async {
       final recorder = <LogEvent>[];
       final provider = TestProvider(
-        key: const TestProviderKey(name: 'test'),
+        identifier: const TestProviderKey(name: 'test'),
         recorder: recorder,
       );
       final hub = AnalyticsHub(
@@ -133,7 +133,7 @@ void main() {
       final hub = AnalyticsHub(
         sessionDelegate: createSessionDelegate(),
         providers: [
-          TestProvider(key: const TestProviderKey(name: 'test')),
+          TestProvider(identifier: const TestProviderKey(name: 'test')),
         ],
       );
       await hub.initialize();
@@ -144,15 +144,18 @@ void main() {
       );
       expect(
         () => hub.sendEvent(event),
-        throwsA(predicate<AnalyticsProviderNotFoundException>(
-          (e) => e.key.name == 'other',
-        ),),
+        throwsA(
+          predicate<AnalyticsProviderNotFoundException>(
+            (e) => e.key.name == 'other',
+          ),
+        ),
       );
       await hub.dispose();
     });
 
     test('dispose cancels subscription and disposes providers', () async {
-      final provider = TestProvider(key: const TestProviderKey(name: 'test'));
+      final provider =
+          TestProvider(identifier: const TestProviderKey(name: 'test'));
       final hub = AnalyticsHub(
         sessionDelegate: createSessionDelegate(),
         providers: [provider],
@@ -165,7 +168,8 @@ void main() {
     });
 
     test('session stream changes trigger setSession on providers', () async {
-      final provider = TestProvider(key: const TestProviderKey(name: 'test'));
+      final provider =
+          TestProvider(identifier: const TestProviderKey(name: 'test'));
       final hub = AnalyticsHub(
         sessionDelegate: createSessionDelegate(),
         providers: [provider],
@@ -210,5 +214,7 @@ class _UnknownProviderLogEvent extends LogEvent {
   final TestProviderKey key;
 
   @override
-  Set<ProviderKey<LogEventResolver>> get providerKeys => {key};
+  List<EventProvider<LogEventResolver, LogEventOptions>> get providers => [
+        EventProvider(key),
+      ];
 }

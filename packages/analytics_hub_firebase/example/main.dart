@@ -22,9 +22,12 @@ class ExampleSelectPromotionECommerceEvent
       );
 
   @override
-  Set<ProviderKey<ECommerceEventResolver>> get providerKeys => {
-        const FirebaseAnalyticsHubProviderKey(),
-      };
+  List<
+          EventProvider<ECommerceEventResolver,
+              ECommerceEventOptions<SelectPromotionECommerceEventData>>>
+      get providers => [
+            const EventProvider(FirebaseAnalyticsHubProviderKey()),
+          ];
 }
 
 Future<void> main() async {
