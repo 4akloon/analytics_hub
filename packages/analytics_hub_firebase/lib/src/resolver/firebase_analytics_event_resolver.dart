@@ -19,10 +19,21 @@ class FirebaseAnalyticsEventResolver
   final FirebaseAnalyticsECommerceEventResolver _eCommerceEventResolver;
 
   @override
-  Future<void> resolveLogEvent(LogEvent event) => _analytics.logEvent(
-        name: event.name,
-        parameters: event.properties,
-      );
+  Future<void> resolveLogEvent(LogEvent event) {
+    final parameters = switch (event.properties) {
+      null => null,
+      final properties => Map<String, Object>.fromEntries(
+          properties.entries
+              .where((entry) => entry.value != null)
+              .map((entry) => MapEntry(entry.key, entry.value as Object)),
+        ),
+    };
+
+    return _analytics.logEvent(
+      name: event.name,
+      parameters: parameters,
+    );
+  }
 
   @override
   Future<void> resolveECommerceEvent(ECommerceEvent event) =>

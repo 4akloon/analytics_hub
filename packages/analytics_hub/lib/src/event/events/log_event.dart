@@ -12,7 +12,7 @@ abstract class LogEvent extends Event<LogEventResolver, LogEventOptions> {
   final String name;
 
   /// Optional key-value properties sent with the event. Defaults to null.
-  Map<String, Object>? get properties => null;
+  Map<String, Object?>? get properties => null;
 
   @override
   Future<void> resolve(LogEventResolver resolver) =>
@@ -55,7 +55,7 @@ class LogEventOverrides {
   /// Override for event name.
   final String? name;
   /// Override for event properties.
-  final Map<String, Object>? properties;
+  final Map<String, Object?>? properties;
 
   @override
   bool operator ==(Object other) =>

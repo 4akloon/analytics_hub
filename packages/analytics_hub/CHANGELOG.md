@@ -1,3 +1,11 @@
+## 0.2.2 - 2026-02-23
+
+### Changed
+- Added nullable property value support in `LogEvent.properties`:
+  `Map<String, Object?>?`.
+- Added nullable property value support in `LogEventOverrides.properties`:
+  `Map<String, Object?>?`.
+
 ## 0.2.1 - 2026-02-23
 
 ### Changed

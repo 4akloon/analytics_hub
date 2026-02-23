@@ -1,3 +1,11 @@
+## 0.2.2 - 2026-02-23
+
+### Changed
+- Updated `FirebaseAnalyticsEventResolver` to support nullable values in
+  `LogEvent.properties` by filtering out `null` entries before calling
+  `FirebaseAnalytics.logEvent`.
+- Updated dependency constraint to `analytics_hub: ">=0.2.2 <0.3.0"`.
+
 ## 0.2.1 - 2026-02-23
 
 ### Changed
