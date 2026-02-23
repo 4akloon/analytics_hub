@@ -66,12 +66,12 @@ void main() {
 
   group('FirebaseAnalyticsHubProviderKey', () {
     test('creates with default name', () {
-      const key = FirebaseAnalyticsHubProviderKey();
+      const key = FirebaseAnalyticsHubProviderIdentifier();
       expect(key.name, equals('[DEFAULT]'));
     });
 
     test('creates with custom name', () {
-      const key = FirebaseAnalyticsHubProviderKey(name: 'custom');
+      const key = FirebaseAnalyticsHubProviderIdentifier(name: 'custom');
       expect(key.name, equals('custom'));
     });
   });
@@ -87,6 +87,8 @@ class _TestLogEvent extends LogEvent {
 
   @override
   List<EventProvider<LogEventResolver, LogEventOptions>> get providers => [
-        const EventProvider(FirebaseAnalyticsHubProviderKey(name: 'test')),
+        const EventProvider(
+          FirebaseAnalyticsHubProviderIdentifier(name: 'test'),
+        ),
       ];
 }

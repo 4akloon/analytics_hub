@@ -40,10 +40,10 @@ In your app `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  analytics_hub: ^0.0.1
+  analytics_hub: ^0.2.1
   # and then any concrete providers you need, e.g.:
-  # analytics_hub_firebase: ^0.0.1
-  # analytics_hub_mixpanel: ^0.0.1
+  # analytics_hub_firebase: ^0.2.1
+  # analytics_hub_mixpanel: ^0.2.1
 ```
 
 ## Core concepts
@@ -52,11 +52,11 @@ dependencies:
 - **`Event`** – base sealed class for all events.
 - **`LogEvent`** – simple `name + properties` event.
 - **`CustomLogEvent<T>`** – strongly typed custom events for a specific resolver.
-- **`ECommerceEvent`** – e‑commerce events (currently `SelectPromotionECommerceEvent`).
+- **`ECommerceEvent<T>`** – typed e‑commerce events and provider-specific overrides.
 - **`AnalytycsProvider<R extends EventResolver>`** – abstraction of an analytics provider.
 - **`EventResolver` / `LogEventResolver` / `CustomLogEventResolver<T>` / `ECommerceEventResolver`** –
   interfaces used to map events into concrete SDK calls.
-- **`ProviderKey<R>`** – identifies a provider; events list keys of the providers they should go to.
+- **`ProviderIdentifier<R>`** – identifies a provider; events list target providers via `EventProvider`.
 - **`Session` / `HubSessionDelegate`** – session model plus a delegate that supplies the current
   session and a stream of session changes.
 
@@ -79,34 +79,31 @@ types it actually supports.
 - Used together with `CustomLogEventResolver<T>`.
 - See `example/analytics_core_example.dart` for a complete example.
 
-### E‑commerce events (`ECommerceEvent`)
+### E‑commerce events (`ECommerceEvent<T>`)
 
-Base sealed class for e‑commerce events. Currently core provides:
+Base sealed class for e‑commerce events. Core provides:
 
-- **`SelectPromotionECommerceEvent`**
-  - wraps `SelectPromotionECommerceEventData` with:
-    - `creativeName`
-    - `creativeSlot`
-    - `locationId`
-    - `promotionId`
-    - `promotionName`
-    - `parameters` (`Map<String, Object>?`)
+- `SelectPromotionECommerceEvent`
+- `AddToCartECommerceEvent`
+- `AddToWishlistECommerceEvent`
+- `ViewCartECommerceEvent`
+- `AddPaymentInfoECommerceEvent`
+- `AddShippingInfoECommerceEvent`
+- `BeginCheckoutECommerceEvent`
+- `PurchaseECommerceEvent`
+- `RemoveFromCartECommerceEvent`
+- `SelectItemECommerceEvent`
+- `ViewItemECommerceEvent`
+- `ViewItemListECommerceEvent`
+- `ViewPromotionECommerceEvent`
+- `RefundECommerceEvent`
 
 Provider support:
 
 - **Firebase** (`analytics_hub_firebase`):
-  - `SelectPromotionECommerceEvent` → `FirebaseAnalytics.logSelectPromotion`.
+  - supports all listed e‑commerce event types (mapped to GA4 methods).
 - **Mixpanel** (`analytics_hub_mixpanel`):
   - currently **does not support** `ECommerceEvent`, only `LogEvent`.
-
-**Planned e‑commerce extension:**
-
-- New `ECommerceEvent` subtypes for common GA4 scenarios:
-  - `view_item`, `view_item_list`, `select_item`,
-  - `add_to_cart`, `add_to_wishlist`,
-  - `begin_checkout`, `add_payment_info`, `add_shipping_info`,
-  - `purchase`, `refund`, etc.
-- Matching mappings in Firebase / Mixpanel providers.
 
 ## Quick start
 
@@ -175,10 +172,10 @@ class ScreenViewEvent extends LogEvent {
       };
 
   @override
-  Set<ProviderKey<LogEventResolver>> get providerKeys => {
-        const BackendAnalyticsProviderKey(),
-        // or FirebaseAnalyticsHubProviderKey(), MixpanelAnalyticsHubProviderKey(), etc.
-      };
+  List<EventProvider<LogEventResolver, LogEventOptions>> get providers => [
+        const EventProvider(BackendAnalyticsProviderIdentifier()),
+        // or FirebaseAnalyticsHubProviderIdentifier(), MixpanelAnalyticsHubProviderIdentifier(), etc.
+      ];
 }
 ```
 
@@ -186,7 +183,7 @@ Key points:
 
 - **`name`** – technical event name (e.g. for dashboards).
 - **`properties`** – payload that will be passed to providers.
-- **`providerKeys`** – which providers should receive this event.
+- **`providers`** – which providers should receive this event and optional per-provider options.
 
 ### Custom log events (`CustomLogEvent<T>`)
 
@@ -206,8 +203,11 @@ class OnboardingStepCompletedEvent extends OnboardingAnalyticsEvent {
   final int? durationMs;
 
   @override
-  Set<ProviderKey<CustomLogEventResolver<OnboardingAnalyticsEvent>>>
-      get providerKeys => {const BackendAnalyticsProviderKey()};
+  List<
+      EventProvider<CustomLogEventResolver<OnboardingAnalyticsEvent>,
+          CustomLogEventOptions<OnboardingAnalyticsEvent>>> get providers => [
+        const EventProvider(BackendAnalyticsProviderIdentifier()),
+      ];
 }
 ```
 
@@ -239,9 +239,13 @@ class PromoBannerClickEvent extends SelectPromotionECommerceEvent {
       );
 
   @override
-  Set<ProviderKey<ECommerceEventResolver>> get providerKeys => {
-        const FirebaseAnalyticsHubProviderKey(), // from analytics_hub_firebase
-      };
+  List<
+      EventProvider<ECommerceEventResolver,
+          ECommerceEventOptions<SelectPromotionECommerceEventData>>> get providers => [
+        const EventProvider(
+          FirebaseAnalyticsHubProviderIdentifier(), // from analytics_hub_firebase
+        ),
+      ];
 }
 ```
 
@@ -249,21 +253,22 @@ class PromoBannerClickEvent extends SelectPromotionECommerceEvent {
 
 A custom provider (e.g. sending events to your backend) consists of:
 
-1. **Provider key** (`ProviderKey<R>`).
+1. **Provider identifier** (`ProviderIdentifier<R>`).
 2. **Event resolver(s)** (`EventResolver` + required interfaces).
 3. **Provider class** (`AnalytycsProvider<R>`) registered in `AnalyticsHub`.
 
-### 1. Provider key (`ProviderKey`)
+### 1. Provider identifier (`ProviderIdentifier`)
 
 ```dart
 import 'package:analytics_hub/analytics_hub.dart';
 
-class BackendAnalyticsProviderKey extends ProviderKey<BackendEventResolver> {
-  const BackendAnalyticsProviderKey({super.name});
+class BackendAnalyticsProviderIdentifier
+    extends ProviderIdentifier<BackendEventResolver> {
+  const BackendAnalyticsProviderIdentifier({super.name});
 }
 ```
 
-- `R` in `ProviderKey<R>` is the type of your main resolver.
+- `R` in `ProviderIdentifier<R>` is the type of your main resolver.
 - `name` can be used to distinguish multiple instances
   (e.g. multiple Firebase projects or Mixpanel workspaces).
 
@@ -307,7 +312,7 @@ import 'package:analytics_hub/analytics_hub.dart';
 class BackendAnalyticsProvider
     extends AnalytycsProvider<BackendEventResolver> {
   BackendAnalyticsProvider({String? name})
-      : super(key: BackendAnalyticsProviderKey(name: name));
+      : super(identifier: BackendAnalyticsProviderIdentifier(name: name));
 
   @override
   BackendEventResolver get resolver => const BackendEventResolver();
@@ -331,7 +336,7 @@ class BackendAnalyticsProvider
 
 Important details:
 
-- `key` must uniquely identify this provider instance (type + name).
+- `identifier` must uniquely identify this provider instance (type + name).
 - `resolver` can be cached or created on demand.
 - `setSession` is called whenever the session changes (`HubSessionDelegate.sessionStream`).
 - `initialize` / `dispose` help you manage the SDK lifecycle.
@@ -355,7 +360,7 @@ await hub.sendEvent(
 );
 ```
 
-Any event that includes `BackendAnalyticsProviderKey` in `providerKeys`
+Any event that includes `BackendAnalyticsProviderIdentifier` in `providers`
 will be routed to your provider.
 
 ## When to create your own provider

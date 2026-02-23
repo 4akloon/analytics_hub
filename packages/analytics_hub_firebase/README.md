@@ -14,7 +14,7 @@ and this package maps those events to Firebase Analytics (including e‑commerce
 ### Features
 
 - `FirebaseAnalyticsHubProvider` – `AnalytycsProvider` implementation backed by `FirebaseAnalytics`;
-- `FirebaseAnalyticsHubProviderKey` – provider key used by events;
+- `FirebaseAnalyticsHubProviderIdentifier` – provider identifier used by events;
 - `FirebaseAnalyticsEventResolver` / `FirebaseAnalyticsECommerceEventResolver` –
   resolvers that map `LogEvent` and `ECommerceEvent` into Firebase SDK calls.
 
@@ -34,8 +34,8 @@ dependencies:
   firebase_core: ^2.0.0
   firebase_analytics: ^10.0.0
 
-  analytics_hub: ^0.0.1
-  analytics_hub_firebase: ^0.0.1
+  analytics_hub: ^0.2.1
+  analytics_hub_firebase: ^0.2.1
 ```
 
 Call `Firebase.initializeApp()` in `main()` before using the hub (see [Firebase docs](https://firebase.google.com/docs/flutter/setup)).
@@ -58,7 +58,7 @@ final hub = AnalyticsHub(
 );
 ```
 
-3. In events that should go to Firebase, include `FirebaseAnalyticsHubProviderKey` in `providerKeys` (see [Supported event types](#supported-event-types) below).
+3. In events that should go to Firebase, include `FirebaseAnalyticsHubProviderIdentifier` in `providers` (see [Supported event types](#supported-event-types) below).
 
 ## Supported event types
 
@@ -71,8 +71,8 @@ and internally delegates to `FirebaseAnalytics` and `FirebaseAnalyticsECommerceE
 
 ### 1. Log events (`LogEvent`)
 
-Any `LogEvent` that includes `FirebaseAnalyticsHubProviderKey`
-in its `providerKeys` set will be sent to Firebase using `logEvent`:
+Any `LogEvent` that includes `FirebaseAnalyticsHubProviderIdentifier`
+in its `providers` list will be sent to Firebase using `logEvent`:
 
 ```dart
 class ExampleLogEvent extends LogEvent {
@@ -84,9 +84,9 @@ class ExampleLogEvent extends LogEvent {
   Map<String, Object>? get properties => {'value': value};
 
   @override
-  Set<ProviderKey<LogEventResolver>> get providerKeys => {
-        const FirebaseAnalyticsHubProviderKey(),
-      };
+  List<EventProvider<LogEventResolver, LogEventOptions>> get providers => [
+        const EventProvider(FirebaseAnalyticsHubProviderIdentifier()),
+      ];
 }
 ```
 
@@ -106,10 +106,22 @@ So:
 
 ### 2. E‑commerce events (`ECommerceEvent`)
 
-Currently supported:
+Currently supported (all mapped by `FirebaseAnalyticsECommerceEventResolver`):
 
-- **`SelectPromotionECommerceEvent`**
-  - handled via `FirebaseAnalyticsECommerceEventResolver`.
+- `SelectPromotionECommerceEvent`
+- `AddToCartECommerceEvent`
+- `AddToWishlistECommerceEvent`
+- `ViewCartECommerceEvent`
+- `AddPaymentInfoECommerceEvent`
+- `AddShippingInfoECommerceEvent`
+- `BeginCheckoutECommerceEvent`
+- `PurchaseECommerceEvent`
+- `RemoveFromCartECommerceEvent`
+- `SelectItemECommerceEvent`
+- `ViewItemECommerceEvent`
+- `ViewItemListECommerceEvent`
+- `ViewPromotionECommerceEvent`
+- `RefundECommerceEvent`
 
 Mapping in Firebase:
 
@@ -147,9 +159,11 @@ class PromoClickEvent extends SelectPromotionECommerceEvent {
       );
 
   @override
-  Set<ProviderKey<ECommerceEventResolver>> get providerKeys => {
-        const FirebaseAnalyticsHubProviderKey(),
-      };
+  List<
+      EventProvider<ECommerceEventResolver,
+          ECommerceEventOptions<SelectPromotionECommerceEventData>>> get providers => [
+        const EventProvider(FirebaseAnalyticsHubProviderIdentifier()),
+      ];
 }
 ```
 
@@ -170,21 +184,13 @@ Future<void> setSession(Session? session) async {
 This lets you manage the session centrally via `HubSessionDelegate`
 instead of calling Firebase APIs directly throughout your app.
 
-## Roadmap: planned events
+## Event routing with provider options
 
-On the Firebase provider level, the next logical steps are:
+The core `analytics_hub` API lets each event define `providers` via
+`EventProvider<Resolver, Options>`. This allows:
 
-- Additional e‑commerce events:
-  - `view_item`, `view_item_list`, `select_item`,
-  - `add_to_cart`, `add_to_wishlist`,
-  - `begin_checkout`, `add_payment_info`, `add_shipping_info`,
-  - `purchase`, `refund`, and other standard GA4 events.
-- Matching `ECommerceEvent` subtypes in the core package and mappings
-  in `FirebaseAnalyticsECommerceEventResolver`.
-
-The idea is that all common GA4 e‑commerce flows can be expressed as
-strongly typed events in `analytics_hub` and automatically mapped
-to Firebase through this provider.
+- explicit provider targeting by `ProviderIdentifier`;
+- provider-specific options/overrides for the same logical event.
 
 ## When to use analytics_hub_firebase
 

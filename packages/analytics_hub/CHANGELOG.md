@@ -1,3 +1,10 @@
+## 0.2.1 - 2026-02-23
+
+### Changed
+- Updated README examples to the `Event.providers` / `EventProvider` API.
+- Replaced legacy `ProviderKey`/`providerKeys` naming in docs with `ProviderIdentifier`/`providers`.
+- Updated installation snippets to current package versions.
+
 ## 0.2.0 - 2026-02-23
 
 ### Added

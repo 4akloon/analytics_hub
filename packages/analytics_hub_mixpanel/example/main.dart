@@ -21,7 +21,7 @@ class ExampleLogEvent extends LogEvent {
 
   @override
   List<EventProvider<LogEventResolver, LogEventOptions>> get providers => [
-        const EventProvider(MixpanelAnalyticsHubProviderKey()),
+        const EventProvider(MixpanelAnalyticsHubProviderIdentifier()),
       ];
 }
 

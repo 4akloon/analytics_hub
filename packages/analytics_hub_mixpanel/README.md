@@ -16,7 +16,7 @@ and this package takes care of turning those events into `mixpanel.track` calls.
 It provides:
 
 - `MixpanelAnalyticsHubProvider` – `AnalytycsProvider` implementation backed by `Mixpanel`;
-- `MixpanelAnalyticsHubProviderKey` – provider key used by events;
+- `MixpanelAnalyticsHubProviderIdentifier` – provider identifier used by events;
 - `MixpanelEventResolver` – resolver that maps `LogEvent` to `mixpanel.track`.
 
 ### Essence of the solution
@@ -34,8 +34,8 @@ Add this provider and its dependencies to your app `pubspec.yaml`:
 dependencies:
   mixpanel_flutter: ^2.0.0
 
-  analytics_hub: ^0.0.1
-  analytics_hub_mixpanel: ^0.0.1
+  analytics_hub: ^0.2.1
+  analytics_hub_mixpanel: ^0.2.1
 ```
 
 ## Integrating this provider
@@ -59,7 +59,7 @@ final hub = AnalyticsHub(
 );
 ```
 
-3. In events that should go to Mixpanel, include `MixpanelAnalyticsHubProviderKey` in `providerKeys` (see [Supported event types](#supported-event-types) below).
+3. In events that should go to Mixpanel, include `MixpanelAnalyticsHubProviderIdentifier` in `providers` (see [Supported event types](#supported-event-types) below).
 
 ## Supported event types
 
@@ -73,7 +73,7 @@ and maps log events to `Mixpanel.track`.
 ### 1. Log events (`LogEvent`)
 
 Any event that extends `LogEvent` and includes
-`MixpanelAnalyticsHubProviderKey` in `providerKeys`
+`MixpanelAnalyticsHubProviderIdentifier` in `providers`
 will be sent to Mixpanel:
 
 ```dart
@@ -87,9 +87,9 @@ class ExampleLogEvent extends LogEvent {
   Map<String, Object>? get properties => {'example_property': exampleProperty};
 
   @override
-  Set<ProviderKey<LogEventResolver>> get providerKeys => {
-        const MixpanelAnalyticsHubProviderKey(),
-      };
+  List<EventProvider<LogEventResolver, LogEventOptions>> get providers => [
+        const EventProvider(MixpanelAnalyticsHubProviderIdentifier()),
+      ];
 }
 ```
 
@@ -144,19 +144,13 @@ This allows you to model:
 - authenticated users → tracked by `Session.id`;
 - anonymous users → tracked by a controlled anonymous ID.
 
-## Roadmap: planned events
+## Event routing with provider options
 
-Next steps for the Mixpanel provider:
+The core `analytics_hub` API lets each event define `providers` via
+`EventProvider<Resolver, Options>`. This allows:
 
-- support **strongly typed custom events** via `CustomLogEvent<T>` and an
-  extended resolver interface;
-- possible support for e‑commerce events (`ECommerceEvent`) mapped into
-  Mixpanel event properties / profiles.
-
-This would:
-
-- align the e‑commerce model with the Firebase provider;
-- keep everything strongly typed and avoid “magic strings”.
+- explicit provider targeting by `ProviderIdentifier`;
+- provider-specific options/overrides for the same logical event.
 
 ## When to use analytics_hub_mixpanel
 

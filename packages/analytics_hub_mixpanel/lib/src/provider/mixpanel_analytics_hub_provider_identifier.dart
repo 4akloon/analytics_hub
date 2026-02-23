@@ -3,10 +3,10 @@ import '../resolver/mixpanel_event_resolver.dart';
 
 /// [ProviderIdentifier] for the Mixpanel analytics provider.
 ///
-/// Use this key in [Event.providerKeys] to route events to
+/// Use this identifier in [Event.providers] to route events to
 /// [MixpanelAnalyticsHubProvider].
-class MixpanelAnalyticsHubProviderKey
+class MixpanelAnalyticsHubProviderIdentifier
     extends ProviderIdentifier<MixpanelEventResolver> {
-  /// Creates a key with optional [name] for debugging and equality.
-  const MixpanelAnalyticsHubProviderKey({super.name});
+  /// Creates an identifier with optional [name] for debugging and equality.
+  const MixpanelAnalyticsHubProviderIdentifier({super.name});
 }

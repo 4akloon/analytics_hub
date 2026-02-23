@@ -1,3 +1,12 @@
+## 0.2.1 - 2026-02-23
+
+### Changed
+- Updated README to use `providers` and `FirebaseAnalyticsHubProviderIdentifier`.
+- Refreshed supported-events docs to match current Firebase e-commerce coverage.
+
+### Breaking Changes
+- `FirebaseAnalyticsHubProviderKey` was renamed to `FirebaseAnalyticsHubProviderIdentifier`.
+
 ## 0.2.0 - 2026-02-23
 
 ### Changed

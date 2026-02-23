@@ -30,14 +30,15 @@ Per‑package documentation:
     - `AnalyticsHub`, `Event`, `LogEvent`, `CustomLogEvent<T>`,
       `ECommerceEvent`, `Session`, `HubSessionDelegate`.
     - `AnalytycsProvider<R extends EventResolver>`,
-      `ProviderKey<R>`, resolver interfaces.
+      `ProviderIdentifier<R>`, resolver interfaces.
   - No direct SDK dependencies – pure Dart.
 
 - **`analytics_hub_firebase`**
   - Binds `analytics_hub` to `firebase_analytics`.
   - Supports:
     - `LogEvent` → `FirebaseAnalytics.logEvent`.
-    - `SelectPromotionECommerceEvent` → `FirebaseAnalytics.logSelectPromotion`.
+    - all `ECommerceEvent` subtypes (`SelectPromotion`, `AddToCart`, `Purchase`, etc.)
+      mapped to GA4 methods.
 
 - **`analytics_hub_mixpanel`**
   - Binds `analytics_hub` to `mixpanel_flutter`.
@@ -50,9 +51,9 @@ Add dependencies in your app:
 
 ```yaml
 dependencies:
-  analytics_hub: ^0.0.1
-  analytics_hub_firebase: ^0.0.1
-  analytics_hub_mixpanel: ^0.0.1
+  analytics_hub: ^0.2.1
+  analytics_hub_firebase: ^0.2.1
+  analytics_hub_mixpanel: ^0.2.1
 
   firebase_core: ^2.0.0
   firebase_analytics: ^10.0.0
@@ -90,10 +91,10 @@ class ExampleLogEvent extends LogEvent {
   Map<String, Object>? get properties => {'value': value};
 
   @override
-  Set<ProviderKey<LogEventResolver>> get providerKeys => {
-        const FirebaseAnalyticsHubProviderKey(),
-        const MixpanelAnalyticsHubProviderKey(),
-      };
+  List<EventProvider<LogEventResolver, LogEventOptions>> get providers => [
+        const EventProvider(FirebaseAnalyticsHubProviderIdentifier()),
+        const EventProvider(MixpanelAnalyticsHubProviderIdentifier()),
+      ];
 }
 
 Future<AnalyticsHub> createAnalyticsHub(
@@ -132,7 +133,7 @@ This will fan‑out the same typed event to both Firebase and Mixpanel.
 
 If you want to add another analytics backend (or internal pipeline):
 
-- implement a `ProviderKey<R>` for your resolver type;
+- implement a `ProviderIdentifier<R>` for your resolver type;
 - implement a resolver (`EventResolver` + the interfaces you need:
   `LogEventResolver`, `CustomLogEventResolver<T>`, `ECommerceEventResolver`);
 - implement an `AnalytycsProvider<R>` that:

@@ -3,7 +3,7 @@ description: >
   A unified analytics abstraction for Dart/Flutter.
   Send events to multiple backends (Firebase, Mixpanel, etc.)
   through one API with typed e-commerce events and session support.
-version: 0.2.0
+version: 0.2.1
 homepage: https://github.com/4akLoon/analytics_hub
 repository: https://github.com/4akLoon/analytics_hub
 

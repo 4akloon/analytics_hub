@@ -2,7 +2,7 @@ import 'package:analytics_hub/analytics_hub.dart';
 import 'package:mixpanel_flutter/mixpanel_flutter.dart';
 
 import '../resolver/mixpanel_event_resolver.dart';
-import 'mixpanel_analytics_hub_provider_key.dart';
+import 'mixpanel_analytics_hub_provider_identifier.dart';
 
 /// [AnalytycsProvider] that sends [LogEvent]s to Mixpanel via [Mixpanel.track].
 ///
@@ -22,7 +22,7 @@ class MixpanelAnalyticsHubProvider
     String Function()? getAnonymousId,
   })  : _mixpanel = mixpanel,
         _getAnonymousId = getAnonymousId,
-        super(identifier: MixpanelAnalyticsHubProviderKey(name: name));
+        super(identifier: MixpanelAnalyticsHubProviderIdentifier(name: name));
 
   final Mixpanel _mixpanel;
   final String Function()? _getAnonymousId;

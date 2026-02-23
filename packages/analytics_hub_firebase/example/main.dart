@@ -26,7 +26,7 @@ class ExampleSelectPromotionECommerceEvent
           EventProvider<ECommerceEventResolver,
               ECommerceEventOptions<SelectPromotionECommerceEventData>>>
       get providers => [
-            const EventProvider(FirebaseAnalyticsHubProviderKey()),
+            const EventProvider(FirebaseAnalyticsHubProviderIdentifier()),
           ];
 }
 

@@ -3,7 +3,7 @@ description: >
   Firebase Analytics provider for analytics_hub.
   Sends LogEvent and all GA4 e-commerce events (add_to_cart, purchase,
   view_item, etc.) to Firebase via the official SDK.
-version: 0.2.0
+version: 0.2.1
 homepage: https://github.com/4akLoon/analytics_hub
 repository: https://github.com/4akLoon/analytics_hub
 

@@ -68,6 +68,8 @@ class _TestLogEvent extends LogEvent {
 
   @override
   List<EventProvider<LogEventResolver, LogEventOptions>> get providers => [
-        const EventProvider(MixpanelAnalyticsHubProviderKey(name: 'test')),
+        const EventProvider(
+          MixpanelAnalyticsHubProviderIdentifier(name: 'test'),
+        ),
       ];
 }

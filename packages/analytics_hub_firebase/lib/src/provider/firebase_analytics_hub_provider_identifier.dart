@@ -5,10 +5,12 @@ import '../resolver/firebase_analytics_event_resolver.dart';
 
 /// [ProviderIdentifier] for the Firebase Analytics provider.
 ///
-/// Use this key in [Event.providerKeys] to route events to
+/// Use this identifier in [Event.providers] to route events to
 /// [FirebaseAnalyticsHubProvider]. [name] defaults to [defaultFirebaseAppName].
-class FirebaseAnalyticsHubProviderKey
+class FirebaseAnalyticsHubProviderIdentifier
     extends ProviderIdentifier<FirebaseAnalyticsEventResolver> {
-  /// Creates a key with optional [name]; defaults to [defaultFirebaseAppName].
-  const FirebaseAnalyticsHubProviderKey({super.name = defaultFirebaseAppName});
+  /// Creates an identifier with optional [name]; defaults to [defaultFirebaseAppName].
+  const FirebaseAnalyticsHubProviderIdentifier({
+    super.name = defaultFirebaseAppName,
+  });
 }

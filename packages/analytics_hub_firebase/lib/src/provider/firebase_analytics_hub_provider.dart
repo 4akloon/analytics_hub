@@ -2,7 +2,7 @@ import 'package:analytics_hub/analytics_hub.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 
 import '../resolver/firebase_analytics_event_resolver.dart';
-import 'firebase_analytics_hub_provider_key.dart';
+import 'firebase_analytics_hub_provider_identifier.dart';
 
 /// [AnalytycsProvider] that sends [LogEvent] and [ECommerceEvent] to Firebase
 /// Analytics via [FirebaseAnalytics].
@@ -18,7 +18,8 @@ class FirebaseAnalyticsHubProvider
   FirebaseAnalyticsHubProvider({required FirebaseAnalytics analytics})
       : _analytics = analytics,
         super(
-          identifier: FirebaseAnalyticsHubProviderKey(name: analytics.app.name),
+          identifier:
+              FirebaseAnalyticsHubProviderIdentifier(name: analytics.app.name),
         );
 
   /// Creates a provider using [FirebaseAnalytics.instance] (default app).

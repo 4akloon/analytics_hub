@@ -68,12 +68,12 @@ void main() {
 
   group('MixpanelAnalyticsHubProviderKey', () {
     test('creates with null name', () {
-      const key = MixpanelAnalyticsHubProviderKey();
+      const key = MixpanelAnalyticsHubProviderIdentifier();
       expect(key.name, isNull);
     });
 
     test('creates with custom name', () {
-      const key = MixpanelAnalyticsHubProviderKey(name: 'custom');
+      const key = MixpanelAnalyticsHubProviderIdentifier(name: 'custom');
       expect(key.name, equals('custom'));
     });
   });
@@ -89,6 +89,8 @@ class _TestLogEvent extends LogEvent {
 
   @override
   List<EventProvider<LogEventResolver, LogEventOptions>> get providers => [
-        const EventProvider(MixpanelAnalyticsHubProviderKey(name: 'test')),
+        const EventProvider(
+          MixpanelAnalyticsHubProviderIdentifier(name: 'test'),
+        ),
       ];
 }

@@ -95,7 +95,9 @@ class _TestSelectPromotionEvent extends SelectPromotionECommerceEvent {
           EventProvider<ECommerceEventResolver,
               ECommerceEventOptions<SelectPromotionECommerceEventData>>>
       get providers => [
-            const EventProvider(FirebaseAnalyticsHubProviderKey(name: 'test')),
+            const EventProvider(
+              FirebaseAnalyticsHubProviderIdentifier(name: 'test'),
+            ),
           ];
 }
 
@@ -109,6 +111,8 @@ class _TestLogEvent extends LogEvent {
 
   @override
   List<EventProvider<LogEventResolver, LogEventOptions>> get providers => [
-        const EventProvider(FirebaseAnalyticsHubProviderKey(name: 'test')),
+        const EventProvider(
+          FirebaseAnalyticsHubProviderIdentifier(name: 'test'),
+        ),
       ];
 }

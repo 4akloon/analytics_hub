@@ -1,3 +1,12 @@
+## 0.2.1 - 2026-02-23
+
+### Changed
+- Updated README to use `providers` and `MixpanelAnalyticsHubProviderIdentifier`.
+- Updated installation/dependency snippets to current versions.
+
+### Breaking Changes
+- `MixpanelAnalyticsHubProviderKey` was renamed to `MixpanelAnalyticsHubProviderIdentifier`.
+
 ## 0.2.0 - 2026-02-23
 
 ### Changed
