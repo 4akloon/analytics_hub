@@ -2,8 +2,11 @@
 
 ### Changed
 - Reverted Firebase provider to a single `LogEvent` flow.
-- Updated dependency constraint to `analytics_hub: ">=0.3.0 <0.4.0"`.
 - Refreshed examples/tests/docs for `List<EventProvider>` and `ProviderIdentifier`.
+- Updated dependency constraint to `analytics_hub: ">=0.4.0 <0.5.0"`.
+- Migrated `FirebaseAnalyticsEventResolver` to new core resolver API based on
+  `ResolvedEvent` and `EventDispatchContext`.
+- Updated tests for the new dispatch contract.
 
 ### Removed
 - `FirebaseAnalyticsECommerceEventResolver`.
@@ -12,6 +15,8 @@
 
 ### Breaking Changes
 - `analytics_hub_firebase` no longer supports e-commerce event types from core.
+- Resolver implementation now must implement
+  `resolve({required ResolvedEvent event, required EventDispatchContext context})`.
 
 ## 0.2.2 - 2026-02-23
 

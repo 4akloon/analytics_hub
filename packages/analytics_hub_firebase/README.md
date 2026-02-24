@@ -5,6 +5,7 @@
 `analytics_hub_firebase` connects `analytics_hub` to Firebase Analytics.
 
 Current scope is log-only: this package maps `LogEvent` to `FirebaseAnalytics.logEvent`.
+It uses the core `EventResolver` contract with `ResolvedEvent` payload.
 
 ## Installation
 
@@ -25,6 +26,9 @@ final hub = AnalyticsHub(
     FirebaseAnalyticsHubProvider.fromInstance(),
   ],
 );
+
+await hub.initialize();
+await hub.sendEvent(const SignupEvent('email'));
 ```
 
 Event example:
@@ -55,3 +59,8 @@ Future<void> setSession(Session? session) async {
   await _analytics.setUserId(id: session?.id);
 }
 ```
+
+## Notes
+
+- `FirebaseAnalyticsEventResolver` filters out `null` values from properties before calling `logEvent`.
+- Provider-specific event renaming/properties overrides are supported through `EventProvider.options`.

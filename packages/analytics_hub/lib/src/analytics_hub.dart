@@ -2,6 +2,11 @@ import 'dart:async';
 
 import 'package:logging/logging.dart';
 
+import 'core/interception/dispatch/context_builder.dart';
+import 'core/interception/dispatch/correlation_id_generator.dart';
+import 'core/interception/dispatch/dispatch_target.dart';
+import 'core/interception/dispatch/event_dispatcher.dart';
+import 'core/interception/interceptor/event_interceptor.dart';
 import 'event/events/events.dart';
 import 'provider/analytics_provider.dart';
 import 'provider/provider_identifier.dart';
@@ -25,9 +30,18 @@ class AnalyticsHub {
   AnalyticsHub({
     required List<AnalytycsProvider> providers,
     required HubSessionDelegate sessionDelegate,
+    List<EventInterceptor> interceptors = const [],
+    Map<String, Object?> interceptorMetadata = const {},
   })  : _providers = {
           for (final provider in providers) provider.identifier: provider,
         },
+        _dispatcher = EventDispatcher(
+          hubInterceptors: interceptors,
+          contextBuilder: EventDispatchContextBuilder(
+            correlationIdGenerator: const TimestampCorrelationIdGenerator(),
+            hubMetadata: interceptorMetadata,
+          ),
+        ),
         _logger = Logger('AnalyticsHub'),
         _sessionDelegate = sessionDelegate {
     _sessionSubscription = _sessionDelegate.sessionStream.listen(
@@ -37,6 +51,7 @@ class AnalyticsHub {
 
   final Map<ProviderIdentifier, AnalytycsProvider> _providers;
   final HubSessionDelegate _sessionDelegate;
+  final EventDispatcher _dispatcher;
   final Logger _logger;
 
   late final StreamSubscription<Session?> _sessionSubscription;
@@ -67,13 +82,25 @@ class AnalyticsHub {
   Future<void> sendEvent(Event event) {
     _logger.info('Sending event: $event');
     return Future.wait(
-      event.providers.map((eventProvider) {
+      event.providers.map((eventProvider) async {
         final provider = _providers[eventProvider.identifier];
         if (provider == null) {
           throw AnalyticsProviderNotFoundException(eventProvider.identifier);
         }
 
-        return event.resolve(provider.resolver);
+        final result = await _dispatcher.dispatch(
+          event: event,
+          target: DispatchTarget(
+            eventProvider: eventProvider,
+            provider: provider,
+          ),
+        );
+
+        if (result.isDropped) {
+          _logger.fine(
+            'Event dropped by interceptors: ${event.name} for ${provider.identifier}',
+          );
+        }
       }),
     );
   }

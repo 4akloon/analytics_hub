@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import '../core/interception/interceptor/event_interceptor.dart';
 import '../event/event_resolver.dart';
 import '../event/events/events.dart';
 import '../session/session.dart';
@@ -22,6 +23,12 @@ abstract class AnalytycsProvider {
 
   /// The resolver used by [AnalyticsHub] to send events to this provider.
   EventResolver get resolver;
+
+  /// Optional provider-level interceptors executed after hub interceptors.
+  List<EventInterceptor> get interceptors => const [];
+
+  /// Additional metadata available in [EventDispatchContext.providerMetadata].
+  Map<String, Object?> get interceptorMetadata => const {};
 
   /// Called once by [AnalyticsHub.initialize]. Override to set up the backend
   /// (e.g. SDK init). Default implementation does nothing.

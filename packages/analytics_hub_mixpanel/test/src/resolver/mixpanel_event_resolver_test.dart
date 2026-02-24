@@ -11,16 +11,12 @@ void main() {
 
   late MockMixpanel mockMixpanel;
 
-  setUpAll(() {
-    registerFallbackValue(const _TestEvent('fallback', null));
-  });
-
   setUp(() {
     mockMixpanel = MockMixpanel();
   });
 
   group('MixpanelEventResolver', () {
-    test('resolveEvent calls track with name and properties', () async {
+    test('resolve calls track with name and properties', () async {
       when(
         () => mockMixpanel.track(
           any(),
@@ -30,7 +26,22 @@ void main() {
 
       final provider = MixpanelAnalyticsHubProvider(mixpanel: mockMixpanel);
       const event = _TestEvent('test_event', {'key': 'value'});
-      await provider.resolver.resolveEvent(event);
+      final context = EventDispatchContext(
+        originalEvent: event,
+        providerIdentifier: provider.identifier,
+        eventProvider: EventProvider(provider.identifier),
+        provider: provider,
+        timestamp: DateTime.now(),
+        correlationId: 'test-correlation-id',
+      );
+      await provider.resolver.resolve(
+        ResolvedEvent(
+          name: event.name,
+          properties: event.properties,
+          context: event.context,
+        ),
+        context: context,
+      );
 
       verify(
         () => mockMixpanel.track(
@@ -40,7 +51,7 @@ void main() {
       ).called(1);
     });
 
-    test('resolveEvent with null properties', () async {
+    test('resolve with null properties', () async {
       when(
         () => mockMixpanel.track(
           any(),
@@ -50,7 +61,22 @@ void main() {
 
       final provider = MixpanelAnalyticsHubProvider(mixpanel: mockMixpanel);
       const event = _TestEvent('test_event', null);
-      await provider.resolver.resolveEvent(event);
+      final context = EventDispatchContext(
+        originalEvent: event,
+        providerIdentifier: provider.identifier,
+        eventProvider: EventProvider(provider.identifier),
+        provider: provider,
+        timestamp: DateTime.now(),
+        correlationId: 'test-correlation-id',
+      );
+      await provider.resolver.resolve(
+        ResolvedEvent(
+          name: event.name,
+          properties: event.properties,
+          context: event.context,
+        ),
+        context: context,
+      );
 
       verify(() => mockMixpanel.track('test_event', properties: null))
           .called(1);

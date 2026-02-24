@@ -12,6 +12,9 @@ class MixpanelEventResolver implements EventResolver {
   final Mixpanel _mixpanel;
 
   @override
-  Future<void> resolveEvent(Event event) =>
+  Future<void> resolve(
+    ResolvedEvent event, {
+    required EventDispatchContext context,
+  }) =>
       _mixpanel.track(event.name, properties: event.properties);
 }

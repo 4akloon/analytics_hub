@@ -1,12 +1,11 @@
 library;
 
-import 'package:analytics_hub/src/event/event_resolver.dart';
+import 'package:analytics_hub/src/core/interception/context/event_context.dart';
 import 'package:analytics_hub/src/provider/provider_identifier.dart';
 
 /// Base type for analytics events that can be sent through [AnalyticsHub].
 ///
-/// [providers] defines which registered providers receive this event. [resolve]
-/// is called by the hub with each provider's resolver to perform the send.
+/// [providers] defines which registered providers receive this event.
 abstract class Event {
   /// Creates an event with the given [name].
   const Event(this.name);
@@ -17,14 +16,17 @@ abstract class Event {
   /// Optional key-value properties sent with the event. Defaults to null.
   Map<String, Object?>? get properties => null;
 
+  /// Typed metadata available to interceptors while this event is dispatched.
+  ///
+  /// Override this getter in custom events to pass additional metadata:
+  /// `EventContext().withEntry(MyEntry(...))`.
+  EventContext get context => const EventContext();
+
   /// The map of providers with their options that should receive this event.
   ///
   /// [AnalyticsHub.sendEvent] sends the event only to providers whose [identifier]
   /// is in this map.
   List<EventProvider> get providers;
-
-  /// Dispatches this event to the given [resolver] (e.g. a provider's resolver).
-  Future<void> resolve(EventResolver resolver) => resolver.resolveEvent(this);
 
   @override
   String toString() => 'Event(name: $name, properties: $properties)';
@@ -104,4 +106,26 @@ class EventOverrides {
 
   @override
   String toString() => 'EventOverrides(name: $name, properties: $properties)';
+}
+
+/// A simple log event with a [name] and optional [properties].
+///
+/// Use for generic analytics events (e.g. screen view, button click).
+class LogEvent extends Event {
+  /// Creates a log event with the given [name], [properties] and [providers].
+  const LogEvent(
+    super.name, {
+    this.properties,
+    this.context = const EventContext(),
+    required this.providers,
+  });
+
+  @override
+  final Map<String, Object?>? properties;
+
+  @override
+  final EventContext context;
+
+  @override
+  final List<EventProvider> providers;
 }

@@ -5,6 +5,7 @@
 `analytics_hub_mixpanel` connects `analytics_hub` to Mixpanel.
 
 Current scope is log-only: this package maps `LogEvent` to `Mixpanel.track`.
+It uses the core `EventResolver` contract with `ResolvedEvent` payload.
 
 ## Installation
 
@@ -29,6 +30,9 @@ final hub = AnalyticsHub(
     MixpanelAnalyticsHubProvider(mixpanel: mixpanel),
   ],
 );
+
+await hub.initialize();
+await hub.sendEvent(const SignupEvent('email'));
 ```
 
 Event example:
@@ -48,3 +52,11 @@ class SignupEvent extends LogEvent {
       ];
 }
 ```
+
+## Session handling
+
+`MixpanelAnalyticsHubProvider` behavior:
+
+- If session is present: calls `identify(session.id)`.
+- If session is null and `getAnonymousId` callback is provided: identifies with that ID.
+- Otherwise: calls `reset()`.

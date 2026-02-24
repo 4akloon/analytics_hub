@@ -12,7 +12,10 @@ class FirebaseAnalyticsEventResolver implements EventResolver {
   final FirebaseAnalytics _analytics;
 
   @override
-  Future<void> resolveEvent(Event event) {
+  Future<void> resolve(
+    ResolvedEvent event, {
+    required EventDispatchContext context,
+  }) {
     final parameters = switch (event.properties) {
       null => null,
       final properties => Map<String, Object>.fromEntries(

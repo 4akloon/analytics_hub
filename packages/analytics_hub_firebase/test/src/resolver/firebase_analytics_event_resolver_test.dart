@@ -15,10 +15,6 @@ void main() {
   late MockFirebaseAnalytics mockAnalytics;
   late MockFirebaseApp mockApp;
 
-  setUpAll(() {
-    registerFallbackValue(const _TestEvent('fallback', null));
-  });
-
   setUp(() {
     mockAnalytics = MockFirebaseAnalytics();
     mockApp = MockFirebaseApp();
@@ -27,7 +23,7 @@ void main() {
   });
 
   group('FirebaseAnalyticsEventResolver', () {
-    test('resolveEvent calls logEvent via provider resolver', () async {
+    test('resolve calls logEvent via provider resolver', () async {
       when(
         () => mockAnalytics.logEvent(
           name: any(named: 'name'),
@@ -37,7 +33,22 @@ void main() {
 
       final provider = FirebaseAnalyticsHubProvider(analytics: mockAnalytics);
       const event = _TestEvent('test_event', {'key': 'value'});
-      await provider.resolver.resolveEvent(event);
+      final context = EventDispatchContext(
+        originalEvent: event,
+        providerIdentifier: provider.identifier,
+        eventProvider: EventProvider(provider.identifier),
+        provider: provider,
+        timestamp: DateTime.now(),
+        correlationId: 'test-correlation-id',
+      );
+      await provider.resolver.resolve(
+        ResolvedEvent(
+          name: event.name,
+          properties: event.properties,
+          context: event.context,
+        ),
+        context: context,
+      );
 
       verify(
         () => mockAnalytics.logEvent(

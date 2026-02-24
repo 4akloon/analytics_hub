@@ -9,24 +9,43 @@ class TestProviderKey extends ProviderIdentifier {
 }
 
 class TestEventResolver implements EventResolver {
-  TestEventResolver(this.recorder);
+  TestEventResolver(this.recorder, this.contextRecorder);
 
-  final List<Event> recorder;
+  final List<ResolvedEvent> recorder;
+  final List<EventDispatchContext> contextRecorder;
 
   @override
-  Future<void> resolveEvent(Event event) async {
+  Future<void> resolve(
+    ResolvedEvent event, {
+    required EventDispatchContext context,
+  }) async {
     recorder.add(event);
+    contextRecorder.add(context);
   }
 }
 
 class TestProvider extends AnalytycsProvider {
-  TestProvider({required super.identifier, List<Event>? recorder})
-      : _resolver = TestEventResolver(recorder ?? []);
+  TestProvider({
+    required super.identifier,
+    List<ResolvedEvent>? recorder,
+    List<EventDispatchContext>? contextRecorder,
+    List<EventInterceptor>? interceptors,
+    this.metadata = const {},
+  })  : _interceptors = interceptors ?? const [],
+        _resolver = TestEventResolver(recorder ?? [], contextRecorder ?? []);
 
+  final List<EventInterceptor> _interceptors;
+  final Map<String, Object?> metadata;
   final TestEventResolver _resolver;
 
   @override
   EventResolver get resolver => _resolver;
+
+  @override
+  List<EventInterceptor> get interceptors => _interceptors;
+
+  @override
+  Map<String, Object?> get interceptorMetadata => metadata;
 
   var _initialized = false;
   Session? _session;
@@ -53,12 +72,20 @@ class TestProvider extends AnalytycsProvider {
 }
 
 class TestLogEvent extends Event {
-  const TestLogEvent(super.name, {this.props});
+  const TestLogEvent(
+    super.name, {
+    this.props,
+    this.ctx = const EventContext(),
+  });
 
-  final Map<String, Object>? props;
+  final Map<String, Object?>? props;
+  final EventContext ctx;
 
   @override
-  Map<String, Object>? get properties => props;
+  Map<String, Object?>? get properties => props;
+
+  @override
+  EventContext get context => ctx;
 
   @override
   List<EventProvider> get providers => [
@@ -88,10 +115,12 @@ void main() {
     }
 
     test('initialize calls providers initialize and setSession', () async {
-      final recorder = <Event>[];
+      final recorder = <ResolvedEvent>[];
+      final contextRecorder = <EventDispatchContext>[];
       final provider = TestProvider(
         identifier: const TestProviderKey(name: 'test'),
         recorder: recorder,
+        contextRecorder: contextRecorder,
       );
       const session = Session(id: 'user-123');
       final hub = AnalyticsHub(
@@ -107,10 +136,12 @@ void main() {
     });
 
     test('sendEvent resolves event with correct provider', () async {
-      final recorder = <Event>[];
+      final recorder = <ResolvedEvent>[];
+      final contextRecorder = <EventDispatchContext>[];
       final provider = TestProvider(
         identifier: const TestProviderKey(name: 'test'),
         recorder: recorder,
+        contextRecorder: contextRecorder,
       );
       final hub = AnalyticsHub(
         sessionDelegate: createSessionDelegate(),
@@ -124,6 +155,149 @@ void main() {
       expect(recorder, hasLength(1));
       expect(recorder.first.name, equals('test_event'));
       expect(recorder.first.properties, equals({'key': 'value'}));
+      expect(contextRecorder, hasLength(1));
+      expect(contextRecorder.first.originalEvent, equals(event));
+      expect(contextRecorder.first.providerIdentifier.name, equals('test'));
+      await hub.dispose();
+    });
+
+    test('sendEvent applies provider overrides before resolver', () async {
+      final recorder = <ResolvedEvent>[];
+      final provider = TestProvider(
+        identifier: const TestProviderKey(name: 'test'),
+        recorder: recorder,
+      );
+      final hub = AnalyticsHub(
+        sessionDelegate: createSessionDelegate(),
+        providers: [provider],
+      );
+      await hub.initialize();
+
+      final event = _OverriddenProviderEvent(
+        'test_event',
+        const TestProviderKey(name: 'test'),
+      );
+      await hub.sendEvent(event);
+
+      expect(recorder, hasLength(1));
+      expect(recorder.first.name, equals('test_event_overridden'));
+      expect(
+        recorder.first.properties,
+        equals({'key_overridden': 'value_overridden'}),
+      );
+      await hub.dispose();
+    });
+
+    test('global and provider interceptors run in order', () async {
+      final order = <String>[];
+      final recorder = <ResolvedEvent>[];
+      final provider = TestProvider(
+        identifier: const TestProviderKey(name: 'test'),
+        recorder: recorder,
+        interceptors: [
+          _SpyInterceptor('provider', order),
+        ],
+      );
+      final hub = AnalyticsHub(
+        sessionDelegate: createSessionDelegate(),
+        providers: [provider],
+        interceptors: [
+          _SpyInterceptor('global', order),
+        ],
+      );
+      await hub.initialize();
+
+      await hub.sendEvent(const TestLogEvent('test_event'));
+
+      expect(
+        order,
+        equals([
+          'global-before',
+          'provider-before',
+          'provider-after',
+          'global-after',
+        ]),
+      );
+      expect(recorder, hasLength(1));
+      await hub.dispose();
+    });
+
+    test('interceptor can mutate event name and read typed context', () async {
+      final recorder = <ResolvedEvent>[];
+      final contextRecorder = <EventDispatchContext>[];
+      final provider = TestProvider(
+        identifier: const TestProviderKey(name: 'test'),
+        recorder: recorder,
+        contextRecorder: contextRecorder,
+      );
+      final hub = AnalyticsHub(
+        sessionDelegate: createSessionDelegate(
+          initialSession: const Session(id: 'user-123'),
+        ),
+        providers: [provider],
+        interceptors: [
+          _RenameWithContextInterceptor(),
+        ],
+      );
+      await hub.initialize();
+
+      await hub.sendEvent(
+        TestLogEvent(
+          'test_event',
+          ctx: const EventContext().withEntry(
+            const _SourceContextEntry('mobile'),
+          ),
+        ),
+      );
+
+      expect(recorder.single.name, equals('test_event_mobile'));
+      expect(contextRecorder.single.correlationId, isNotEmpty);
+      await hub.dispose();
+    });
+
+    test('interceptor can drop event before resolver', () async {
+      final recorder = <ResolvedEvent>[];
+      final provider = TestProvider(
+        identifier: const TestProviderKey(name: 'test'),
+        recorder: recorder,
+      );
+      final hub = AnalyticsHub(
+        sessionDelegate: createSessionDelegate(),
+        providers: [provider],
+        interceptors: [
+          _DropInterceptor(),
+        ],
+      );
+      await hub.initialize();
+
+      await hub.sendEvent(const TestLogEvent('test_event'));
+
+      expect(recorder, isEmpty);
+      await hub.dispose();
+    });
+
+    test('context contains hub and provider metadata', () async {
+      final contextRecorder = <EventDispatchContext>[];
+      final provider = TestProvider(
+        identifier: const TestProviderKey(name: 'test'),
+        contextRecorder: contextRecorder,
+        metadata: const {'providerKey': 'providerValue'},
+      );
+      final hub = AnalyticsHub(
+        sessionDelegate: createSessionDelegate(),
+        providers: [provider],
+        interceptorMetadata: const {'hubKey': 'hubValue'},
+      );
+      await hub.initialize();
+
+      await hub.sendEvent(const TestLogEvent('test_event'));
+
+      final context = contextRecorder.single;
+      expect(context.hubMetadata, equals({'hubKey': 'hubValue'}));
+      expect(
+        context.providerMetadata,
+        equals({'providerKey': 'providerValue'}),
+      );
       await hub.dispose();
     });
 
@@ -217,4 +391,76 @@ class _UnknownProviderLogEvent extends Event {
   List<EventProvider> get providers => [
         EventProvider(key),
       ];
+}
+
+class _OverriddenProviderEvent extends Event {
+  _OverriddenProviderEvent(super.name, this.key);
+
+  final TestProviderKey key;
+
+  @override
+  Map<String, Object?>? get properties => const {'key': 'value'};
+
+  @override
+  List<EventProvider> get providers => [
+        EventProvider(
+          key,
+          options: const EventOptions(
+            overrides: EventOverrides(
+              name: 'test_event_overridden',
+              properties: {'key_overridden': 'value_overridden'},
+            ),
+          ),
+        ),
+      ];
+}
+
+class _SpyInterceptor implements EventInterceptor {
+  _SpyInterceptor(this.name, this.order);
+
+  final String name;
+  final List<String> order;
+
+  @override
+  FutureOr<InterceptorResult> intercept({
+    required ResolvedEvent event,
+    required EventDispatchContext context,
+    required NextEventInterceptor next,
+  }) async {
+    order.add('$name-before');
+    final result = await next(event, context);
+    order.add('$name-after');
+    return result;
+  }
+}
+
+class _DropInterceptor implements EventInterceptor {
+  @override
+  FutureOr<InterceptorResult> intercept({
+    required ResolvedEvent event,
+    required EventDispatchContext context,
+    required NextEventInterceptor next,
+  }) {
+    return InterceptorResult.drop(event, context: context);
+  }
+}
+
+class _RenameWithContextInterceptor implements EventInterceptor {
+  @override
+  FutureOr<InterceptorResult> intercept({
+    required ResolvedEvent event,
+    required EventDispatchContext context,
+    required NextEventInterceptor next,
+  }) {
+    final source = event.context.entry<_SourceContextEntry>()?.source;
+    final renamed =
+        event.copyWith(name: '${event.name}_${source ?? 'unknown'}');
+    return next(renamed, context);
+  }
+}
+
+final class _SourceContextEntry extends EventContextEntry {
+  const _SourceContextEntry(this.source);
+
+  final String source;
 }

@@ -13,6 +13,8 @@ such as Firebase, Mixpanel, and custom providers.
 - One routing entry point via `AnalyticsHub`.
 - Provider targeting through `EventProvider`.
 - Centralized session propagation through `HubSessionDelegate`.
+- Global and provider-level event interceptors.
+- Typed event metadata context (`EventContext` / `EventContextEntry`).
 
 ### When you might want it
 
@@ -44,10 +46,12 @@ dependencies:
 - **`Event`** – base class for events sent by the hub.
 - **`LogEvent`** – simple `name + properties` event.
 - **`AnalytycsProvider`** – abstraction of an analytics provider.
-- **`EventResolver` / `LogEventResolver`** – interfaces for provider event handling.
+- **`EventResolver`** – provider event handling contract.
 - **`ProviderIdentifier`** – identifies a provider; events list targets via `EventProvider`.
 - **`Session` / `HubSessionDelegate`** – session model plus a delegate that supplies the current
   session and a stream of session changes.
+- **`EventInterceptor`** – middleware that can transform or drop event dispatches.
+- **`EventDispatchContext`** – runtime context available inside interceptors and resolvers.
 
 ## Event model
 
@@ -56,6 +60,7 @@ Only `LogEvent` is supported by core.
 - `name` defines the event key.
 - `properties` contains optional payload (`Map<String, Object?>?`).
 - `providers` defines which registered providers should receive the event.
+- `context` contains typed metadata available during interception and resolving.
 
 ## Defining events
 
@@ -64,7 +69,12 @@ class ScreenViewEvent extends LogEvent {
   const ScreenViewEvent({
     required this.screenName,
     required this.screenClass,
-  }) : super('screen_view');
+  }) : super(
+         'screen_view',
+         context: const EventContext().withEntry(
+           const FeatureContextEntry('navigation'),
+         ),
+       );
 
   final String screenName;
   final Type screenClass;
@@ -80,6 +90,12 @@ class ScreenViewEvent extends LogEvent {
         const EventProvider(BackendAnalyticsProviderIdentifier()),
       ];
 }
+
+final class FeatureContextEntry extends EventContextEntry {
+  const FeatureContextEntry(this.feature);
+
+  final String feature;
+}
 ```
 
 ## Implementing your own provider (step‑by‑step)
@@ -87,7 +103,7 @@ class ScreenViewEvent extends LogEvent {
 A custom provider (e.g. sending events to your backend) consists of:
 
 1. **Provider identifier** (`ProviderIdentifier`).
-2. **Event resolver** (`LogEventResolver`).
+2. **Event resolver** (`EventResolver`).
 3. **Provider class** (`AnalytycsProvider`) registered in `AnalyticsHub`.
 
 ### 1. Provider identifier (`ProviderIdentifier`)
@@ -101,20 +117,23 @@ class BackendAnalyticsProviderIdentifier
 }
 ```
 
-### 2. Event resolver (`EventResolver` + interfaces)
+### 2. Event resolver (`EventResolver`)
 
 ```dart
 import 'package:analytics_hub/analytics_hub.dart';
 
 class BackendEventResolver
-    implements EventResolver, LogEventResolver {
+    implements EventResolver {
   const BackendEventResolver();
 
   @override
-  Future<void> resolveLogEvent(LogEvent event) async {
-    // e.g. POST event.name + event.properties to your backend
+  Future<void> resolve(
+    ResolvedEvent event, {
+    required EventDispatchContext context,
+  }) async {
+    // e.g. POST event.name + event.properties to your backend.
+    // context has provider metadata and correlationId for tracing.
   }
-
 }
 ```
 
@@ -183,6 +202,36 @@ will be routed to your provider.
 - You need to support **another 3rd‑party SDK** that doesn’t have a ready‑made package.
 - You want to **wrap a complex SDK** behind a simple resolver,
   so the rest of the app never talks to that SDK directly.
+
+## Interceptors
+
+Use interceptors for cross-cutting behavior (renaming events, redaction, sampling).
+
+```dart
+final class PrefixInterceptor implements EventInterceptor {
+  const PrefixInterceptor(this.prefix);
+
+  final String prefix;
+
+  @override
+  FutureOr<InterceptorResult> intercept({
+    required ResolvedEvent event,
+    required EventDispatchContext context,
+    required NextEventInterceptor next,
+  }) {
+    return next(
+      event.copyWith(name: '${prefix}_${event.name}'),
+      context,
+    );
+  }
+}
+
+final hub = AnalyticsHub(
+  sessionDelegate: yourSessionDelegate,
+  providers: [BackendAnalyticsProvider()],
+  interceptors: [const PrefixInterceptor('prod')],
+);
+```
 
 ## More information
 

@@ -1,9 +1,19 @@
 ## 0.3.0 - 2026-02-24
 
+### Added
+- Universal event interception pipeline with both hub-level and provider-level interceptors.
+- Typed event metadata via `EventContext` / `EventContextEntry` (one entry per type, gql_exec-style).
+- New dispatch models: `ResolvedEvent`, `EventDispatchContext`, and `InterceptorResult`.
+- Hub-level metadata (`interceptorMetadata`) and provider-level metadata (`interceptorMetadata`) in dispatch context.
+
 ### Changed
 - Reverted core event model to a single `LogEvent` approach.
 - Simplified routing and provider abstractions to log-event-only contracts.
 - Updated examples, tests, and documentation to use `List<EventProvider>`.
+- `AnalyticsHub.sendEvent` now applies `EventProvider.options.overrides` before dispatch.
+- `Event` now exposes `context` so metadata is created at event declaration time.
+- Internal interception implementation was decomposed into `src/core/interception/*`
+  components (`EventDispatcher`, context builder, chain executor, overrides applier).
 
 ### Removed
 - `CustomLogEvent`, `CustomLogEventResolver`, and `CustomLogEventOptions`.
@@ -14,6 +24,10 @@
 - `Event` is no longer generic and resolves only via `LogEventResolver`.
 - `AnalytycsProvider` is no longer generic and now exposes `LogEventResolver`.
 - `ProviderIdentifier` is no longer generic.
+- `EventResolver` contract changed from `resolveEvent(Event)` to
+  `resolve({required ResolvedEvent event, required EventDispatchContext context})`.
+- `AnalytycsProvider` now supports optional `interceptors` and `interceptorMetadata`.
+- `AnalyticsHub` constructor now supports global `interceptors` and `interceptorMetadata`.
 
 ## 0.2.2 - 2026-02-23
 

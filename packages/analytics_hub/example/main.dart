@@ -34,6 +34,10 @@ class ExampleEvent extends Event {
   Map<String, Object>? get properties => {'example_property': exampleProperty};
 
   @override
+  EventContext get context => const EventContext()
+      .withEntry(const _ExampleContextEntry('example-source'));
+
+  @override
   List<EventProvider> get providers => [
         const EventProvider(ExampleAnalyticsProviderKey()),
         EventProvider(
@@ -76,7 +80,21 @@ class ExampleEventResolver implements EventResolver {
   const ExampleEventResolver();
 
   @override
-  Future<void> resolveEvent(Event event) async {
-    print('ExampleEventResolver resolved log event: $event');
+  Future<void> resolve(
+    ResolvedEvent event, {
+    required EventDispatchContext context,
+  }) async {
+    final source = event.context.entry<_ExampleContextEntry>()?.source;
+    print(
+      'ExampleEventResolver resolved log event: ${event.name}, '
+      'source: $source, '
+      'correlationId: ${context.correlationId}',
+    );
   }
+}
+
+final class _ExampleContextEntry extends EventContextEntry {
+  const _ExampleContextEntry(this.source);
+
+  final String source;
 }

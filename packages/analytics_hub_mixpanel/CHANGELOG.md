@@ -1,11 +1,16 @@
 ## 0.3.0 - 2026-02-24
 
 ### Changed
-- Updated dependency constraint to `analytics_hub: ">=0.3.0 <0.4.0"`.
 - Updated examples/tests/docs to the log-only core API (`List<EventProvider>`).
+- Updated dependency constraint to `analytics_hub: ">=0.4.0 <0.5.0"`.
+- Migrated `MixpanelEventResolver` to new core resolver API based on
+  `ResolvedEvent` and `EventDispatchContext`.
+- Updated tests for the new dispatch contract.
 
 ### Breaking Changes
 - Version aligned with `analytics_hub` `0.3.x` API changes.
+- Resolver implementation now must implement
+  `resolve({required ResolvedEvent event, required EventDispatchContext context})`.
 
 ## 0.2.1 - 2026-02-23
 
