@@ -6,13 +6,14 @@
 
 Поточний обсяг функціоналу — тільки `LogEvent`:
 події мапляться у `Mixpanel.track`.
+Резолвер використовує core-контракт `EventResolver` з `ResolvedEvent`.
 
 ## Встановлення
 
 ```yaml
 dependencies:
-  analytics_hub: ^0.3.0
-  analytics_hub_mixpanel: ^0.3.0
+  analytics_hub: ^0.3.1
+  analytics_hub_mixpanel: ^0.3.1
   mixpanel_flutter: ^2.0.0
 ```
 
@@ -30,6 +31,9 @@ final hub = AnalyticsHub(
     MixpanelAnalyticsHubProvider(mixpanel: mixpanel),
   ],
 );
+
+await hub.initialize();
+await hub.sendEvent(const SignupEvent('email'));
 ```
 
 Приклад події:
@@ -49,3 +53,11 @@ class SignupEvent extends LogEvent {
       ];
 }
 ```
+
+## Сесія
+
+`MixpanelAnalyticsHubProvider` працює так:
+
+- якщо сесія є — викликає `identify(session.id)`;
+- якщо сесія `null`, але передано `getAnonymousId` — ідентифікує через цей id;
+- інакше викликає `reset()`.

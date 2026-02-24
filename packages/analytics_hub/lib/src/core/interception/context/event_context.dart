@@ -1,14 +1,11 @@
-/// Marker base class for typed metadata entries stored in [EventContext].
-abstract base class EventContextEntry {
-  /// Creates a typed context entry marker.
-  const EventContextEntry();
-}
+import 'context.dart';
+import 'context_entry.dart';
 
 /// Immutable typed metadata container similar to gql_exec `Context`.
 ///
 /// Only one entry is stored per type. Adding another entry of the same type
 /// replaces the previous one.
-class EventContext {
+class EventContext implements Context {
   /// Creates an empty context.
   const EventContext() : _entries = const {};
 
@@ -16,26 +13,34 @@ class EventContext {
   const EventContext._(this._entries);
 
   /// Internal storage keyed by entry runtime type.
-  final Map<Type, EventContextEntry> _entries;
+  final Map<Type, ContextEntry> _entries;
 
-  /// Returns entry by type or null if it is not present.
-  T? entry<T extends EventContextEntry>() => _entries[T] as T?;
+  @override
+  bool get isEmpty => _entries.isEmpty;
 
-  /// Returns a new context containing [entry].
-  ///
-  /// If an entry with the same type already exists, it is replaced.
-  EventContext withEntry<T extends EventContextEntry>(T entry) {
-    final nextEntries = Map<Type, EventContextEntry>.from(_entries);
+  @override
+  bool get isNotEmpty => !isEmpty;
+
+  @override
+  Iterable<ContextEntry> get entries => _entries.values;
+
+  @override
+  Map<Type, ContextEntry> get entriesMap => Map.unmodifiable(_entries);
+
+  @override
+  T? entry<T extends ContextEntry>() => _entries[T] as T?;
+
+  @override
+  EventContext withEntry<T extends ContextEntry>(T entry) {
+    final nextEntries = Map<Type, ContextEntry>.from(_entries);
     nextEntries[T] = entry;
     return EventContext._(
-      Map<Type, EventContextEntry>.unmodifiable(nextEntries),
+      Map<Type, ContextEntry>.unmodifiable(nextEntries),
     );
   }
 
-  /// Returns a new context with updated entry of type [T].
-  ///
-  /// If there is no current entry and [ifAbsent] is null, returns this context.
-  EventContext updateEntry<T extends EventContextEntry>(
+  @override
+  EventContext updateEntry<T extends ContextEntry>(
     T Function(T entry) updater, {
     T Function()? ifAbsent,
   }) {
@@ -49,12 +54,18 @@ class EventContext {
     return withEntry<T>(updater(currentEntry));
   }
 
-  /// Entries currently stored in the context.
-  Iterable<EventContextEntry> get entries => _entries.values;
+  /// Returns merged context where entries from [other] override current ones.
+  EventContext merge(Context other) {
+    var merged = this;
+    for (final entry in other.entries) {
+      merged = merged._withEntryByRuntimeType(entry);
+    }
+    return merged;
+  }
 
-  /// Whether context has no entries.
-  bool get isEmpty => _entries.isEmpty;
-
-  /// Whether context contains at least one entry.
-  bool get isNotEmpty => !isEmpty;
+  EventContext _withEntryByRuntimeType(ContextEntry entry) {
+    final nextEntries = Map<Type, ContextEntry>.from(_entries);
+    nextEntries[entry.runtimeType] = entry;
+    return EventContext._(Map<Type, ContextEntry>.unmodifiable(nextEntries));
+  }
 }

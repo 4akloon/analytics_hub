@@ -1,3 +1,13 @@
+## 0.3.1 - 2026-02-24
+
+### Changed
+- Refined interception context architecture by extracting `ContextEntry` and introducing shared `Context` contract (`Context`, `ContextEntry`, `EventContext`, `EventDispatchContext`).
+- Updated dispatch context to use typed metadata context composition instead of separate hub/provider metadata maps.
+- Removed hub-level interceptor context from `AnalyticsHub`; dispatch context now combines event context and provider interceptor context.
+- Renamed provider metadata contract from `interceptorMetadata` to `interceptorContext`.
+- Extended/updated tests for typed context merge behavior (`event context + provider context`) and removed obsolete hub-context assertions.
+- Updated README docs (EN/UA), examples, and package version snippets for `0.3.1`.
+
 ## 0.3.0 - 2026-02-24
 
 ### Added

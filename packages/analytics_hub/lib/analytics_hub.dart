@@ -19,6 +19,8 @@
 library;
 
 export 'src/analytics_hub.dart';
+export 'src/core/interception/context/context.dart';
+export 'src/core/interception/context/context_entry.dart';
 export 'src/core/interception/context/event_context.dart';
 export 'src/core/interception/context/event_dispatch_context.dart';
 export 'src/core/interception/context/resolved_event.dart';

@@ -93,7 +93,7 @@ class ExampleEventResolver implements EventResolver {
   }
 }
 
-final class _ExampleContextEntry extends EventContextEntry {
+final class _ExampleContextEntry extends ContextEntry {
   const _ExampleContextEntry(this.source);
 
   final String source;

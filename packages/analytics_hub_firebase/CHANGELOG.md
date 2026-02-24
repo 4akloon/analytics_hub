@@ -1,9 +1,16 @@
+## 0.3.1 - 2026-02-24
+
+### Changed
+- Updated dependency constraint to `analytics_hub: ">=0.3.1 <0.4.0"`.
+- Synced resolver/tests with the refined typed context API used by core (`Context`/`ContextEntry`-based dispatch context).
+- Updated README docs (EN/UA) and version snippets to `0.3.1`.
+
 ## 0.3.0 - 2026-02-24
 
 ### Changed
 - Reverted Firebase provider to a single `LogEvent` flow.
 - Refreshed examples/tests/docs for `List<EventProvider>` and `ProviderIdentifier`.
-- Updated dependency constraint to `analytics_hub: ">=0.4.0 <0.5.0"`.
+- Updated dependency constraint to `analytics_hub: ">=0.3.0 <0.4.0"`.
 - Migrated `FirebaseAnalyticsEventResolver` to new core resolver API based on
   `ResolvedEvent` and `EventDispatchContext`.
 - Updated tests for the new dispatch contract.

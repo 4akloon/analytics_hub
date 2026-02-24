@@ -14,7 +14,7 @@ such as Firebase, Mixpanel, and custom providers.
 - Provider targeting through `EventProvider`.
 - Centralized session propagation through `HubSessionDelegate`.
 - Global and provider-level event interceptors.
-- Typed event metadata context (`EventContext` / `EventContextEntry`).
+- Typed event metadata context (`EventContext` / `ContextEntry`).
 
 ### When you might want it
 
@@ -34,10 +34,10 @@ In your app `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  analytics_hub: ^0.3.0
+  analytics_hub: ^0.3.1
   # and then any concrete providers you need, e.g.:
-  # analytics_hub_firebase: ^0.3.0
-  # analytics_hub_mixpanel: ^0.3.0
+  # analytics_hub_firebase: ^0.3.1
+  # analytics_hub_mixpanel: ^0.3.1
 ```
 
 ## Core concepts
@@ -91,7 +91,7 @@ class ScreenViewEvent extends LogEvent {
       ];
 }
 
-final class FeatureContextEntry extends EventContextEntry {
+final class FeatureContextEntry extends ContextEntry {
   const FeatureContextEntry(this.feature);
 
   final String feature;

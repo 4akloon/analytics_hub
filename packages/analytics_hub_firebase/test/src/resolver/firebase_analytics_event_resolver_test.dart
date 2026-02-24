@@ -35,7 +35,6 @@ void main() {
       const event = _TestEvent('test_event', {'key': 'value'});
       final context = EventDispatchContext(
         originalEvent: event,
-        providerIdentifier: provider.identifier,
         eventProvider: EventProvider(provider.identifier),
         provider: provider,
         timestamp: DateTime.now(),

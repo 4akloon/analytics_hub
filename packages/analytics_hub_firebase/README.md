@@ -11,8 +11,8 @@ It uses the core `EventResolver` contract with `ResolvedEvent` payload.
 
 ```yaml
 dependencies:
-  analytics_hub: ^0.3.0
-  analytics_hub_firebase: ^0.3.0
+  analytics_hub: ^0.3.1
+  analytics_hub_firebase: ^0.3.1
   firebase_core: ^2.0.0
   firebase_analytics: ^10.0.0
 ```

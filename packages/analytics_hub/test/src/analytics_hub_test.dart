@@ -30,12 +30,12 @@ class TestProvider extends AnalytycsProvider {
     List<ResolvedEvent>? recorder,
     List<EventDispatchContext>? contextRecorder,
     List<EventInterceptor>? interceptors,
-    this.metadata = const {},
+    this.metadata = const EventContext(),
   })  : _interceptors = interceptors ?? const [],
         _resolver = TestEventResolver(recorder ?? [], contextRecorder ?? []);
 
   final List<EventInterceptor> _interceptors;
-  final Map<String, Object?> metadata;
+  final Context metadata;
   final TestEventResolver _resolver;
 
   @override
@@ -45,7 +45,7 @@ class TestProvider extends AnalytycsProvider {
   List<EventInterceptor> get interceptors => _interceptors;
 
   @override
-  Map<String, Object?> get interceptorMetadata => metadata;
+  Context get interceptorContext => metadata;
 
   var _initialized = false;
   Session? _session;
@@ -132,6 +132,19 @@ void main() {
 
       expect(provider.initialized, isTrue);
       expect(provider.session, equals(session));
+      await hub.dispose();
+    });
+
+    test('initialize works without sessionDelegate', () async {
+      final provider = TestProvider(identifier: const TestProviderKey(name: 'test'));
+      final hub = AnalyticsHub(
+        providers: [provider],
+      );
+
+      await hub.initialize();
+
+      expect(provider.initialized, isTrue);
+      expect(provider.session, isNull);
       await hub.dispose();
     });
 
@@ -276,27 +289,60 @@ void main() {
       await hub.dispose();
     });
 
-    test('context contains hub and provider metadata', () async {
+    test('context contains provider metadata', () async {
       final contextRecorder = <EventDispatchContext>[];
       final provider = TestProvider(
         identifier: const TestProviderKey(name: 'test'),
         contextRecorder: contextRecorder,
-        metadata: const {'providerKey': 'providerValue'},
+        metadata: const EventContext().withEntry(
+          const _ProviderMetadataEntry('providerValue'),
+        ),
       );
       final hub = AnalyticsHub(
         sessionDelegate: createSessionDelegate(),
         providers: [provider],
-        interceptorMetadata: const {'hubKey': 'hubValue'},
       );
       await hub.initialize();
 
       await hub.sendEvent(const TestLogEvent('test_event'));
 
       final context = contextRecorder.single;
-      expect(context.hubMetadata, equals({'hubKey': 'hubValue'}));
       expect(
-        context.providerMetadata,
-        equals({'providerKey': 'providerValue'}),
+        context.entry<_ProviderMetadataEntry>()?.value,
+        equals('providerValue'),
+      );
+      await hub.dispose();
+    });
+
+    test('context merges event and provider entries', () async {
+      final contextRecorder = <EventDispatchContext>[];
+      final provider = TestProvider(
+        identifier: const TestProviderKey(name: 'test'),
+        contextRecorder: contextRecorder,
+        metadata: const EventContext().withEntry(
+          const _ProviderMetadataEntry('providerValue'),
+        ),
+      );
+      final hub = AnalyticsHub(
+        sessionDelegate: createSessionDelegate(),
+        providers: [provider],
+      );
+      await hub.initialize();
+
+      await hub.sendEvent(
+        TestLogEvent(
+          'test_event',
+          ctx: const EventContext().withEntry(
+            const _SourceContextEntry('mobile'),
+          ),
+        ),
+      );
+
+      final context = contextRecorder.single;
+      expect(context.entry<_SourceContextEntry>()?.source, equals('mobile'));
+      expect(
+        context.entry<_ProviderMetadataEntry>()?.value,
+        equals('providerValue'),
       );
       await hub.dispose();
     });
@@ -459,8 +505,14 @@ class _RenameWithContextInterceptor implements EventInterceptor {
   }
 }
 
-final class _SourceContextEntry extends EventContextEntry {
+final class _SourceContextEntry extends ContextEntry {
   const _SourceContextEntry(this.source);
 
   final String source;
+}
+
+final class _ProviderMetadataEntry extends ContextEntry {
+  const _ProviderMetadataEntry(this.value);
+
+  final String value;
 }
