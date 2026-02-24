@@ -27,33 +27,25 @@ class TestEventResolver implements EventResolver {
 class TestProvider extends AnalytycsProvider {
   TestProvider({
     required super.identifier,
+    super.interceptors = const [],
     List<ResolvedEvent>? recorder,
     List<EventDispatchContext>? contextRecorder,
-    List<EventInterceptor>? interceptors,
-    this.metadata = const EventContext(),
-  })  : _interceptors = interceptors ?? const [],
-        _resolver = TestEventResolver(recorder ?? [], contextRecorder ?? []);
+  }) : _resolver = TestEventResolver(recorder ?? [], contextRecorder ?? []);
 
-  final List<EventInterceptor> _interceptors;
-  final Context metadata;
   final TestEventResolver _resolver;
 
   @override
   EventResolver get resolver => _resolver;
 
-  @override
-  List<EventInterceptor> get interceptors => _interceptors;
-
-  @override
-  Context get interceptorContext => metadata;
-
   var _initialized = false;
   Session? _session;
   var _disposed = false;
+  var _flushed = false;
 
   bool get initialized => _initialized;
   Session? get session => _session;
   bool get disposed => _disposed;
+  bool get flushed => _flushed;
 
   @override
   Future<void> initialize() async {
@@ -68,6 +60,11 @@ class TestProvider extends AnalytycsProvider {
   @override
   Future<void> dispose() async {
     _disposed = true;
+  }
+
+  @override
+  Future<void> flush() async {
+    _flushed = true;
   }
 }
 
@@ -136,7 +133,8 @@ void main() {
     });
 
     test('initialize works without sessionDelegate', () async {
-      final provider = TestProvider(identifier: const TestProviderKey(name: 'test'));
+      final provider =
+          TestProvider(identifier: const TestProviderKey(name: 'test'));
       final hub = AnalyticsHub(
         providers: [provider],
       );
@@ -289,14 +287,11 @@ void main() {
       await hub.dispose();
     });
 
-    test('context contains provider metadata', () async {
+    test('context contains event metadata', () async {
       final contextRecorder = <EventDispatchContext>[];
       final provider = TestProvider(
         identifier: const TestProviderKey(name: 'test'),
         contextRecorder: contextRecorder,
-        metadata: const EventContext().withEntry(
-          const _ProviderMetadataEntry('providerValue'),
-        ),
       );
       final hub = AnalyticsHub(
         sessionDelegate: createSessionDelegate(),
@@ -304,24 +299,28 @@ void main() {
       );
       await hub.initialize();
 
-      await hub.sendEvent(const TestLogEvent('test_event'));
+      await hub.sendEvent(
+        TestLogEvent(
+          'test_event',
+          ctx: const EventContext().withEntry(
+            const _SourceContextEntry('mobile'),
+          ),
+        ),
+      );
 
       final context = contextRecorder.single;
       expect(
-        context.entry<_ProviderMetadataEntry>()?.value,
-        equals('providerValue'),
+        context.entry<_SourceContextEntry>()?.source,
+        equals('mobile'),
       );
       await hub.dispose();
     });
 
-    test('context merges event and provider entries', () async {
+    test('context does not include provider metadata entries', () async {
       final contextRecorder = <EventDispatchContext>[];
       final provider = TestProvider(
         identifier: const TestProviderKey(name: 'test'),
         contextRecorder: contextRecorder,
-        metadata: const EventContext().withEntry(
-          const _ProviderMetadataEntry('providerValue'),
-        ),
       );
       final hub = AnalyticsHub(
         sessionDelegate: createSessionDelegate(),
@@ -340,10 +339,23 @@ void main() {
 
       final context = contextRecorder.single;
       expect(context.entry<_SourceContextEntry>()?.source, equals('mobile'));
-      expect(
-        context.entry<_ProviderMetadataEntry>()?.value,
-        equals('providerValue'),
+      expect(context.entries, hasLength(1));
+      await hub.dispose();
+    });
+
+    test('flush calls provider flush', () async {
+      final provider = TestProvider(
+        identifier: const TestProviderKey(name: 'test'),
       );
+      final hub = AnalyticsHub(
+        sessionDelegate: createSessionDelegate(),
+        providers: [provider],
+      );
+      await hub.initialize();
+
+      await hub.flush();
+
+      expect(provider.flushed, isTrue);
       await hub.dispose();
     });
 
@@ -509,10 +521,4 @@ final class _SourceContextEntry extends ContextEntry {
   const _SourceContextEntry(this.source);
 
   final String source;
-}
-
-final class _ProviderMetadataEntry extends ContextEntry {
-  const _ProviderMetadataEntry(this.value);
-
-  final String value;
 }

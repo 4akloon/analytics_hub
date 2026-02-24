@@ -1,3 +1,12 @@
+## 0.3.3 - 2026-02-24
+
+### Changed
+- Updated dependency constraint to `analytics_hub: ">=0.3.3 <0.4.0"`.
+- Added `logging` dependency and provider-level logging for lifecycle behavior.
+- Updated `FirebaseAnalyticsHubProvider` constructor call to the new core provider contract (explicit `interceptors`).
+- Implemented provider `flush()` override (no-op with informational log; Firebase SDK has no explicit flush API).
+- Added tests for the provider flush behavior.
+
 ## 0.3.1 - 2026-02-24
 
 ### Changed

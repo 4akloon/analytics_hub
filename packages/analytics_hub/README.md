@@ -34,10 +34,10 @@ In your app `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  analytics_hub: ^0.3.2
+  analytics_hub: ^0.3.3
   # and then any concrete providers you need, e.g.:
-  # analytics_hub_firebase: ^0.3.1
-  # analytics_hub_mixpanel: ^0.3.1
+  # analytics_hub_firebase: ^0.3.3
+  # analytics_hub_mixpanel: ^0.3.3
 ```
 
 ## Core concepts
@@ -132,7 +132,7 @@ class BackendEventResolver
     required EventDispatchContext context,
   }) async {
     // e.g. POST event.name + event.properties to your backend.
-    // context has provider metadata and correlationId for tracing.
+    // context has event metadata and correlationId for tracing.
   }
 }
 ```
@@ -145,7 +145,10 @@ import 'package:analytics_hub/analytics_hub.dart';
 class BackendAnalyticsProvider
     extends AnalytycsProvider {
   BackendAnalyticsProvider({String? name})
-      : super(identifier: BackendAnalyticsProviderIdentifier(name: name));
+      : super(
+          identifier: BackendAnalyticsProviderIdentifier(name: name),
+          interceptors: const [],
+        );
 
   @override
   BackendEventResolver get resolver => const BackendEventResolver();
@@ -172,7 +175,7 @@ Important details:
 - `identifier` must uniquely identify this provider instance (type + name).
 - `resolver` can be cached or created on demand.
 - `setSession` is called whenever the session changes (`HubSessionDelegate.sessionStream`).
-- `initialize` / `dispose` help you manage the SDK lifecycle.
+- `initialize` / `flush` / `dispose` help you manage provider lifecycle.
 
 ### 4. Registering the provider in `AnalyticsHub`
 
@@ -191,6 +194,7 @@ await hub.sendEvent(
     screenClass: SettingsScreen,
   ),
 );
+await hub.flush();
 ```
 
 Any event that includes `BackendAnalyticsProviderIdentifier` in `providers`

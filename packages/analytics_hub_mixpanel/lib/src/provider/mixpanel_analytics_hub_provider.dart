@@ -1,4 +1,5 @@
 import 'package:analytics_hub/analytics_hub.dart';
+import 'package:logging/logging.dart';
 import 'package:mixpanel_flutter/mixpanel_flutter.dart';
 
 import '../resolver/mixpanel_event_resolver.dart';
@@ -21,10 +22,15 @@ class MixpanelAnalyticsHubProvider extends AnalytycsProvider {
     String Function()? getAnonymousId,
   })  : _mixpanel = mixpanel,
         _getAnonymousId = getAnonymousId,
-        super(identifier: MixpanelAnalyticsHubProviderIdentifier(name: name));
+        super(
+          identifier: MixpanelAnalyticsHubProviderIdentifier(name: name),
+          interceptors: const [],
+        );
 
   final Mixpanel _mixpanel;
   final String Function()? _getAnonymousId;
+
+  static final _logger = Logger('MixpanelAnalyticsHubProvider');
 
   @override
   MixpanelEventResolver get resolver => MixpanelEventResolver(_mixpanel);
@@ -34,9 +40,14 @@ class MixpanelAnalyticsHubProvider extends AnalytycsProvider {
     if (session != null) {
       await _mixpanel.identify(session.id);
     } else if (_getAnonymousId case final callback?) {
-      await _mixpanel.identify(callback());
+      final anonymousId = callback();
+      _logger.fine('Identifying with anonymous ID: $anonymousId');
+      await _mixpanel.identify(anonymousId);
     } else {
       await _mixpanel.reset();
     }
   }
+
+  @override
+  Future<void> flush() => _mixpanel.flush();
 }

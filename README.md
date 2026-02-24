@@ -20,9 +20,9 @@ Per-package docs:
 
 ```yaml
 dependencies:
-  analytics_hub: ^0.3.1
-  analytics_hub_firebase: ^0.3.1
-  analytics_hub_mixpanel: ^0.3.1
+  analytics_hub: ^0.3.3
+  analytics_hub_firebase: ^0.3.3
+  analytics_hub_mixpanel: ^0.3.3
 ```
 
 ```dart

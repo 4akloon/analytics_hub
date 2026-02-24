@@ -64,6 +64,15 @@ void main() {
 
       verify(() => mockMixpanel.reset()).called(1);
     });
+
+    test('flush delegates to mixpanel', () async {
+      when(() => mockMixpanel.flush()).thenAnswer((_) async {});
+
+      final provider = MixpanelAnalyticsHubProvider(mixpanel: mockMixpanel);
+      await provider.flush();
+
+      verify(() => mockMixpanel.flush()).called(1);
+    });
   });
 
   group('MixpanelAnalyticsHubProviderIdentifier', () {

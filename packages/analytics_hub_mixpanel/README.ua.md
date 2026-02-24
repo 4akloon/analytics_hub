@@ -12,8 +12,8 @@
 
 ```yaml
 dependencies:
-  analytics_hub: ^0.3.1
-  analytics_hub_mixpanel: ^0.3.1
+  analytics_hub: ^0.3.3
+  analytics_hub_mixpanel: ^0.3.3
   mixpanel_flutter: ^2.0.0
 ```
 
@@ -61,3 +61,4 @@ class SignupEvent extends LogEvent {
 - якщо сесія є — викликає `identify(session.id)`;
 - якщо сесія `null`, але передано `getAnonymousId` — ідентифікує через цей id;
 - інакше викликає `reset()`.
+- `flush()` підтримується та делегується в `Mixpanel.flush()`.

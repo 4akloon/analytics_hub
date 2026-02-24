@@ -56,7 +56,10 @@ class ExampleEvent extends Event {
 
 class ExampleAnalyticsProvider extends AnalytycsProvider {
   ExampleAnalyticsProvider({String? name})
-      : super(identifier: ExampleAnalyticsProviderKey(name: name));
+      : super(
+          identifier: ExampleAnalyticsProviderKey(name: name),
+          interceptors: const [],
+        );
 
   @override
   ExampleEventResolver get resolver => const ExampleEventResolver();

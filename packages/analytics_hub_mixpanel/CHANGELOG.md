@@ -1,3 +1,12 @@
+## 0.3.3 - 2026-02-24
+
+### Changed
+- Updated dependency constraint to `analytics_hub: ">=0.3.3 <0.4.0"`.
+- Added `logging` dependency and provider-level logging for session handling.
+- Updated `MixpanelAnalyticsHubProvider` constructor call to the new core provider contract (explicit `interceptors`).
+- Implemented provider `flush()` override delegated to `Mixpanel.flush()`.
+- Added tests for provider flush delegation.
+
 ## 0.3.1 - 2026-02-24
 
 ### Changed

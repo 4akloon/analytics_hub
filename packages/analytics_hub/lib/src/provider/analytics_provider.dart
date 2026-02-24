@@ -1,7 +1,5 @@
 import 'dart:async';
 
-import '../core/interception/context/context.dart';
-import '../core/interception/context/event_context.dart';
 import '../core/interception/interceptor/event_interceptor.dart';
 import '../event/event_resolver.dart';
 import '../event/events/events.dart';
@@ -18,19 +16,19 @@ abstract class AnalytycsProvider {
   ///
   /// The [identifier] must be unique among providers registered with the same
   /// [AnalyticsHub]; it is used to route events via [Event.providers].
-  AnalytycsProvider({required this.identifier});
+  const AnalytycsProvider({
+    required this.identifier,
+    required this.interceptors,
+  });
 
   /// Unique identifier identifying this provider for event routing.
   final ProviderIdentifier identifier;
 
+  /// Optional provider-level interceptors executed after hub interceptors.
+  final List<EventInterceptor> interceptors;
+
   /// The resolver used by [AnalyticsHub] to send events to this provider.
   EventResolver get resolver;
-
-  /// Optional provider-level interceptors executed after hub interceptors.
-  List<EventInterceptor> get interceptors => const [];
-
-  /// Additional typed context available in [EventDispatchContext.metadata].
-  Context get interceptorContext => const EventContext();
 
   /// Called once by [AnalyticsHub.initialize]. Override to set up the backend
   /// (e.g. SDK init). Default implementation does nothing.
@@ -41,6 +39,10 @@ abstract class AnalytycsProvider {
   /// [AnalyticsHub] calls this on every provider when [HubSessionDelegate.sessionStream]
   /// emits a new [Session?]. Use it to identify the user in your backend.
   Future<void> setSession(Session? session);
+
+  /// Called by [AnalyticsHub.flush]. Override to flush any pending events.
+  /// Default implementation does nothing.
+  FutureOr<void> flush() {}
 
   /// Called by [AnalyticsHub.dispose]. Override to clean up (e.g. close SDK).
   /// Default implementation does nothing.

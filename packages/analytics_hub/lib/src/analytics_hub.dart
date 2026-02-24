@@ -37,11 +37,10 @@ class AnalyticsHub {
         },
         _dispatcher = EventDispatcher(
           hubInterceptors: interceptors,
-          contextBuilder: EventDispatchContextBuilder(
-            correlationIdGenerator: const TimestampCorrelationIdGenerator(),
+          contextBuilder: const EventDispatchContextBuilder(
+            correlationIdGenerator: TimestampCorrelationIdGenerator(),
           ),
         ),
-        _logger = Logger('AnalyticsHub'),
         _sessionDelegate = sessionDelegate {
     _sessionSubscription = _sessionDelegate?.sessionStream.listen(
       _onSessionChanged,
@@ -51,7 +50,8 @@ class AnalyticsHub {
   final Map<ProviderIdentifier, AnalytycsProvider> _providers;
   final HubSessionDelegate? _sessionDelegate;
   final EventDispatcher _dispatcher;
-  final Logger _logger;
+
+  static final _logger = Logger('AnalyticsHub');
 
   StreamSubscription<Session?>? _sessionSubscription;
 
@@ -104,6 +104,15 @@ class AnalyticsHub {
         }
       }),
     );
+  }
+
+  /// Flushes all providers.
+  ///
+  /// This is useful to ensure that all events are sent to the providers before the app is closed.
+  Future<void> flush() async {
+    for (final provider in _providers.values) {
+      await provider.flush();
+    }
   }
 
   /// Cancels the session stream subscription and disposes all providers.

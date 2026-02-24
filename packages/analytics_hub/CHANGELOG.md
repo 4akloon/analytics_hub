@@ -1,3 +1,15 @@
+## 0.3.3 - 2026-02-24
+
+### Changed
+- Added `AnalyticsHub.flush()` to allow explicit provider flush before app shutdown.
+- Updated `AnalytycsProvider` contract:
+  - provider interceptors are now constructor-injected (`final List<EventInterceptor> interceptors`);
+  - added overridable `flush()` lifecycle method.
+- Simplified dispatch context building by removing provider context merge from `EventDispatchContextBuilder`.
+- Improved observability with additional logging in dispatch pipeline (`AnalyticsHub`, dispatcher, chain executor, overrides applier).
+- Updated tests to match context behavior without provider metadata merge and added `flush` coverage.
+- Updated examples/docs for provider constructor usage with explicit `interceptors`.
+
 ## 0.3.2 - 2026-02-24
 
 ### Changed

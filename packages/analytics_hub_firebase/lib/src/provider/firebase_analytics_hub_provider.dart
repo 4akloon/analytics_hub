@@ -1,5 +1,6 @@
 import 'package:analytics_hub/analytics_hub.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:logging/logging.dart';
 
 import '../resolver/firebase_analytics_event_resolver.dart';
 import 'firebase_analytics_hub_provider_identifier.dart';
@@ -17,13 +18,17 @@ class FirebaseAnalyticsHubProvider extends AnalytycsProvider {
   FirebaseAnalyticsHubProvider({required FirebaseAnalytics analytics})
       : _analytics = analytics,
         super(
-          identifier:
-              FirebaseAnalyticsHubProviderIdentifier(name: analytics.app.name),
+          identifier: FirebaseAnalyticsHubProviderIdentifier(
+            name: analytics.app.name,
+          ),
+          interceptors: const [],
         );
 
   /// Creates a provider using [FirebaseAnalytics.instance] (default app).
   FirebaseAnalyticsHubProvider.fromInstance()
       : this(analytics: FirebaseAnalytics.instance);
+
+  static final _logger = Logger('FirebaseAnalyticsHubProvider');
 
   final FirebaseAnalytics _analytics;
 
@@ -32,12 +37,14 @@ class FirebaseAnalyticsHubProvider extends AnalytycsProvider {
       FirebaseAnalyticsEventResolver(_analytics);
 
   @override
-  Future<void> initialize() async {
-    await _analytics.setAnalyticsCollectionEnabled(true);
-  }
+  Future<void> initialize() => _analytics.setAnalyticsCollectionEnabled(true);
 
   @override
-  Future<void> setSession(Session? session) async {
-    await _analytics.setUserId(id: session?.id);
+  Future<void> setSession(Session? session) =>
+      _analytics.setUserId(id: session?.id);
+
+  @override
+  void flush() {
+    _logger.info('Flush is not supported for Firebase Analytics');
   }
 }

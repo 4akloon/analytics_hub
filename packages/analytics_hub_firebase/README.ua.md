@@ -12,8 +12,8 @@
 
 ```yaml
 dependencies:
-  analytics_hub: ^0.3.1
-  analytics_hub_firebase: ^0.3.1
+  analytics_hub: ^0.3.3
+  analytics_hub_firebase: ^0.3.3
   firebase_core: ^2.0.0
   firebase_analytics: ^10.0.0
 ```
@@ -65,3 +65,4 @@ Future<void> setSession(Session? session) async {
 
 - `FirebaseAnalyticsEventResolver` відфільтровує `null`-значення з `properties` перед `logEvent`.
 - Перезапис `name/properties` під конкретний провайдер працює через `EventProvider.options`.
+- `flush()` для Firebase реалізований як no-op (SDK не має явного API для flush).

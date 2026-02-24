@@ -6,8 +6,8 @@ import 'dispatch_target.dart';
 
 /// Builds [EventDispatchContext] for each provider dispatch.
 class EventDispatchContextBuilder {
-  /// Creates a builder with correlation strategy and hub metadata.
-  EventDispatchContextBuilder({
+  /// Creates a builder with correlation id strategy.
+  const EventDispatchContextBuilder({
     required CorrelationIdGenerator correlationIdGenerator,
   }) : _correlationIdGenerator = correlationIdGenerator;
 
@@ -24,5 +24,5 @@ class EventDispatchContextBuilder {
         provider: target.provider,
         timestamp: DateTime.now(),
         correlationId: _correlationIdGenerator.nextCorrelationId(),
-      ).merge(target.provider.interceptorContext);
+      );
 }

@@ -62,6 +62,12 @@ void main() {
 
       verify(() => mockAnalytics.setUserId(id: null)).called(1);
     });
+
+    test('flush is a no-op for firebase analytics', () {
+      final provider = FirebaseAnalyticsHubProvider(analytics: mockAnalytics);
+
+      expect(() => provider.flush(), returnsNormally);
+    });
   });
 
   group('FirebaseAnalyticsHubProviderIdentifier', () {

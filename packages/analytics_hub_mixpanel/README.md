@@ -11,8 +11,8 @@ It uses the core `EventResolver` contract with `ResolvedEvent` payload.
 
 ```yaml
 dependencies:
-  analytics_hub: ^0.3.1
-  analytics_hub_mixpanel: ^0.3.1
+  analytics_hub: ^0.3.3
+  analytics_hub_mixpanel: ^0.3.3
   mixpanel_flutter: ^2.0.0
 ```
 
@@ -60,3 +60,4 @@ class SignupEvent extends LogEvent {
 - If session is present: calls `identify(session.id)`.
 - If session is null and `getAnonymousId` callback is provided: identifies with that ID.
 - Otherwise: calls `reset()`.
+- `flush()` is supported and delegates to `Mixpanel.flush()`.

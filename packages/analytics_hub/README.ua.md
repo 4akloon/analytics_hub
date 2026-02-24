@@ -22,7 +22,7 @@
 
 ```yaml
 dependencies:
-  analytics_hub: ^0.3.2
+  analytics_hub: ^0.3.3
 ```
 
 ## Приклад події
@@ -73,7 +73,10 @@ class BackendEventResolver implements EventResolver {
 
 class BackendAnalyticsProvider extends AnalytycsProvider {
   BackendAnalyticsProvider({String? name})
-      : super(identifier: BackendAnalyticsProviderIdentifier(name: name));
+      : super(
+          identifier: BackendAnalyticsProviderIdentifier(name: name),
+          interceptors: const [],
+        );
 
   @override
   BackendEventResolver get resolver => const BackendEventResolver();
@@ -86,7 +89,5 @@ class BackendAnalyticsProvider extends AnalytycsProvider {
 ## Контекст і інтерсептори
 
 - `LogEvent.context` дозволяє прикріпити типізовані metadata через `ContextEntry`.
-- Під час dispatch `EventDispatchContext` обʼєднує:
-  - контекст із події (`event.context`)
-  - контекст провайдера (`provider.interceptorContext`)
+- Під час dispatch `EventDispatchContext` містить типізований контекст із події (`event.context`).
 - Доступ у резолверах/інтерсепторах: `context.entry<MyEntry>()`.
