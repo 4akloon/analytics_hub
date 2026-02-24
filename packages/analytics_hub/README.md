@@ -34,7 +34,7 @@ In your app `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  analytics_hub: ^0.3.1
+  analytics_hub: ^0.3.2
   # and then any concrete providers you need, e.g.:
   # analytics_hub_firebase: ^0.3.1
   # analytics_hub_mixpanel: ^0.3.1

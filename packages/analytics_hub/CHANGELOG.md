@@ -1,3 +1,8 @@
+## 0.3.2 - 2026-02-24
+
+### Changed
+- Relaxed `ContextEntry` inheritance restriction by changing it from `abstract base class` to `abstract class`.
+
 ## 0.3.1 - 2026-02-24
 
 ### Changed

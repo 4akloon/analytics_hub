@@ -22,7 +22,7 @@
 
 ```yaml
 dependencies:
-  analytics_hub: ^0.3.1
+  analytics_hub: ^0.3.2
 ```
 
 ## Приклад події
