@@ -12,7 +12,7 @@ void main() {
   late MockMixpanel mockMixpanel;
 
   setUpAll(() {
-    registerFallbackValue(const _TestLogEvent('fallback', null));
+    registerFallbackValue(const _TestEvent('fallback', null));
   });
 
   setUp(() {
@@ -20,7 +20,7 @@ void main() {
   });
 
   group('MixpanelEventResolver', () {
-    test('resolveLogEvent calls track with name and properties', () async {
+    test('resolveEvent calls track with name and properties', () async {
       when(
         () => mockMixpanel.track(
           any(),
@@ -29,8 +29,8 @@ void main() {
       ).thenAnswer((_) async {});
 
       final provider = MixpanelAnalyticsHubProvider(mixpanel: mockMixpanel);
-      const event = _TestLogEvent('test_event', {'key': 'value'});
-      await provider.resolver.resolveLogEvent(event);
+      const event = _TestEvent('test_event', {'key': 'value'});
+      await provider.resolver.resolveEvent(event);
 
       verify(
         () => mockMixpanel.track(
@@ -40,7 +40,7 @@ void main() {
       ).called(1);
     });
 
-    test('resolveLogEvent with null properties', () async {
+    test('resolveEvent with null properties', () async {
       when(
         () => mockMixpanel.track(
           any(),
@@ -49,8 +49,8 @@ void main() {
       ).thenAnswer((_) async {});
 
       final provider = MixpanelAnalyticsHubProvider(mixpanel: mockMixpanel);
-      const event = _TestLogEvent('test_event', null);
-      await provider.resolver.resolveLogEvent(event);
+      const event = _TestEvent('test_event', null);
+      await provider.resolver.resolveEvent(event);
 
       verify(() => mockMixpanel.track('test_event', properties: null))
           .called(1);
@@ -58,8 +58,8 @@ void main() {
   });
 }
 
-class _TestLogEvent extends LogEvent {
-  const _TestLogEvent(super.name, this.props);
+class _TestEvent extends Event {
+  const _TestEvent(super.name, this.props);
 
   final Map<String, Object>? props;
 
@@ -67,7 +67,7 @@ class _TestLogEvent extends LogEvent {
   Map<String, Object>? get properties => props;
 
   @override
-  List<EventProvider<LogEventResolver, LogEventOptions>> get providers => [
+  List<EventProvider> get providers => [
         const EventProvider(
           MixpanelAnalyticsHubProviderIdentifier(name: 'test'),
         ),

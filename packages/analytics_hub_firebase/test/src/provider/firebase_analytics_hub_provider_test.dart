@@ -16,7 +16,7 @@ void main() {
   late MockFirebaseApp mockApp;
 
   setUpAll(() {
-    registerFallbackValue(const _TestLogEvent('fallback', null));
+    registerFallbackValue(const _TestEvent('fallback', null));
   });
 
   setUp(() {
@@ -64,7 +64,7 @@ void main() {
     });
   });
 
-  group('FirebaseAnalyticsHubProviderKey', () {
+  group('FirebaseAnalyticsHubProviderIdentifier', () {
     test('creates with default name', () {
       const key = FirebaseAnalyticsHubProviderIdentifier();
       expect(key.name, equals('[DEFAULT]'));
@@ -77,8 +77,8 @@ void main() {
   });
 }
 
-class _TestLogEvent extends LogEvent {
-  const _TestLogEvent(super.name, this.props);
+class _TestEvent extends Event {
+  const _TestEvent(super.name, this.props);
 
   final Map<String, Object>? props;
 
@@ -86,7 +86,7 @@ class _TestLogEvent extends LogEvent {
   Map<String, Object>? get properties => props;
 
   @override
-  List<EventProvider<LogEventResolver, LogEventOptions>> get providers => [
+  List<EventProvider> get providers => [
         const EventProvider(
           FirebaseAnalyticsHubProviderIdentifier(name: 'test'),
         ),

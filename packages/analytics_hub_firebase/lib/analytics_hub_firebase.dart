@@ -1,9 +1,8 @@
 /// Firebase Analytics implementation for [AnalyticsHub].
 ///
 /// This library provides [FirebaseAnalyticsHubProvider] and
-/// [FirebaseAnalyticsHubProviderKey] to send [Event]s from [AnalyticsHub]
-/// to Firebase Analytics. Supports [LogEvent] and [ECommerceEvent] (e.g.
-/// [SelectPromotionECommerceEvent]).
+/// [FirebaseAnalyticsHubProviderIdentifier] to send [Event]s from [AnalyticsHub]
+/// to Firebase Analytics.
 ///
 /// Example:
 /// ```dart

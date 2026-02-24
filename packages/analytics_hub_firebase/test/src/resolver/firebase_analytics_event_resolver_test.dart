@@ -16,7 +16,7 @@ void main() {
   late MockFirebaseApp mockApp;
 
   setUpAll(() {
-    registerFallbackValue(const _TestLogEvent('fallback', null));
+    registerFallbackValue(const _TestEvent('fallback', null));
   });
 
   setUp(() {
@@ -27,7 +27,7 @@ void main() {
   });
 
   group('FirebaseAnalyticsEventResolver', () {
-    test('resolveLogEvent calls logEvent via provider resolver', () async {
+    test('resolveEvent calls logEvent via provider resolver', () async {
       when(
         () => mockAnalytics.logEvent(
           name: any(named: 'name'),
@@ -36,8 +36,8 @@ void main() {
       ).thenAnswer((_) async {});
 
       final provider = FirebaseAnalyticsHubProvider(analytics: mockAnalytics);
-      const event = _TestLogEvent('test_event', {'key': 'value'});
-      await provider.resolver.resolveLogEvent(event);
+      const event = _TestEvent('test_event', {'key': 'value'});
+      await provider.resolver.resolveEvent(event);
 
       verify(
         () => mockAnalytics.logEvent(
@@ -46,63 +46,11 @@ void main() {
         ),
       ).called(1);
     });
-
-    test('resolveECommerceEvent SelectPromotion calls logSelectPromotion',
-        () async {
-      when(
-        () => mockAnalytics.logSelectPromotion(
-          creativeName: any(named: 'creativeName'),
-          creativeSlot: any(named: 'creativeSlot'),
-          locationId: any(named: 'locationId'),
-          promotionId: any(named: 'promotionId'),
-          promotionName: any(named: 'promotionName'),
-          parameters: any(named: 'parameters'),
-        ),
-      ).thenAnswer((_) async {});
-
-      final provider = FirebaseAnalyticsHubProvider(analytics: mockAnalytics);
-      const event = _TestSelectPromotionEvent(
-        SelectPromotionECommerceEventData(
-          creativeName: 'name',
-          creativeSlot: 'slot',
-          promotionId: 'promo',
-        ),
-      );
-      await provider.resolver.resolveECommerceEvent(event);
-
-      verify(
-        () => mockAnalytics.logSelectPromotion(
-          creativeName: 'name',
-          creativeSlot: 'slot',
-          locationId: null,
-          promotionId: 'promo',
-          promotionName: null,
-          parameters: null,
-        ),
-      ).called(1);
-    });
   });
 }
 
-class _TestSelectPromotionEvent extends SelectPromotionECommerceEvent {
-  const _TestSelectPromotionEvent(this.data);
-
-  @override
-  final SelectPromotionECommerceEventData data;
-
-  @override
-  List<
-          EventProvider<ECommerceEventResolver,
-              ECommerceEventOptions<SelectPromotionECommerceEventData>>>
-      get providers => [
-            const EventProvider(
-              FirebaseAnalyticsHubProviderIdentifier(name: 'test'),
-            ),
-          ];
-}
-
-class _TestLogEvent extends LogEvent {
-  const _TestLogEvent(super.name, this.props);
+class _TestEvent extends Event {
+  const _TestEvent(super.name, this.props);
 
   final Map<String, Object>? props;
 
@@ -110,7 +58,7 @@ class _TestLogEvent extends LogEvent {
   Map<String, Object>? get properties => props;
 
   @override
-  List<EventProvider<LogEventResolver, LogEventOptions>> get providers => [
+  List<EventProvider> get providers => [
         const EventProvider(
           FirebaseAnalyticsHubProviderIdentifier(name: 'test'),
         ),

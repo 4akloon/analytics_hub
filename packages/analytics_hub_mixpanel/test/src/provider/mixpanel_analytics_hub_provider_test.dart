@@ -12,7 +12,7 @@ void main() {
   late MockMixpanel mockMixpanel;
 
   setUpAll(() {
-    registerFallbackValue(const _TestLogEvent('fallback', null));
+    registerFallbackValue(const _TestEvent('fallback', null));
   });
 
   setUp(() {
@@ -66,7 +66,7 @@ void main() {
     });
   });
 
-  group('MixpanelAnalyticsHubProviderKey', () {
+  group('MixpanelAnalyticsHubProviderIdentifier', () {
     test('creates with null name', () {
       const key = MixpanelAnalyticsHubProviderIdentifier();
       expect(key.name, isNull);
@@ -79,8 +79,8 @@ void main() {
   });
 }
 
-class _TestLogEvent extends LogEvent {
-  const _TestLogEvent(super.name, this.props);
+class _TestEvent extends Event {
+  const _TestEvent(super.name, this.props);
 
   final Map<String, Object>? props;
 
@@ -88,7 +88,7 @@ class _TestLogEvent extends LogEvent {
   Map<String, Object>? get properties => props;
 
   @override
-  List<EventProvider<LogEventResolver, LogEventOptions>> get providers => [
+  List<EventProvider> get providers => [
         const EventProvider(
           MixpanelAnalyticsHubProviderIdentifier(name: 'test'),
         ),

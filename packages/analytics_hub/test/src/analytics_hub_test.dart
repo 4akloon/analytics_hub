@@ -4,29 +4,29 @@ import 'package:analytics_hub/analytics_hub.dart';
 import 'package:test/test.dart';
 
 // Test provider and resolver
-class TestProviderKey extends ProviderIdentifier<LogEventResolver> {
+class TestProviderKey extends ProviderIdentifier {
   const TestProviderKey({super.name});
 }
 
-class TestEventResolver implements LogEventResolver {
+class TestEventResolver implements EventResolver {
   TestEventResolver(this.recorder);
 
-  final List<LogEvent> recorder;
+  final List<Event> recorder;
 
   @override
-  Future<void> resolveLogEvent(LogEvent event) async {
+  Future<void> resolveEvent(Event event) async {
     recorder.add(event);
   }
 }
 
-class TestProvider extends AnalytycsProvider<LogEventResolver> {
-  TestProvider({required super.identifier, List<LogEvent>? recorder})
+class TestProvider extends AnalytycsProvider {
+  TestProvider({required super.identifier, List<Event>? recorder})
       : _resolver = TestEventResolver(recorder ?? []);
 
   final TestEventResolver _resolver;
 
   @override
-  LogEventResolver get resolver => _resolver;
+  EventResolver get resolver => _resolver;
 
   var _initialized = false;
   Session? _session;
@@ -52,7 +52,7 @@ class TestProvider extends AnalytycsProvider<LogEventResolver> {
   }
 }
 
-class TestLogEvent extends LogEvent {
+class TestLogEvent extends Event {
   const TestLogEvent(super.name, {this.props});
 
   final Map<String, Object>? props;
@@ -61,7 +61,7 @@ class TestLogEvent extends LogEvent {
   Map<String, Object>? get properties => props;
 
   @override
-  List<EventProvider<LogEventResolver, LogEventOptions>> get providers => [
+  List<EventProvider> get providers => [
         const EventProvider(TestProviderKey(name: 'test')),
       ];
 }
@@ -88,7 +88,7 @@ void main() {
     }
 
     test('initialize calls providers initialize and setSession', () async {
-      final recorder = <LogEvent>[];
+      final recorder = <Event>[];
       final provider = TestProvider(
         identifier: const TestProviderKey(name: 'test'),
         recorder: recorder,
@@ -107,7 +107,7 @@ void main() {
     });
 
     test('sendEvent resolves event with correct provider', () async {
-      final recorder = <LogEvent>[];
+      final recorder = <Event>[];
       final provider = TestProvider(
         identifier: const TestProviderKey(name: 'test'),
         recorder: recorder,
@@ -208,13 +208,13 @@ class _TestSessionDelegate implements HubSessionDelegate {
   Stream<Session?> get sessionStream => _stream;
 }
 
-class _UnknownProviderLogEvent extends LogEvent {
+class _UnknownProviderLogEvent extends Event {
   _UnknownProviderLogEvent(super.name, this.key);
 
   final TestProviderKey key;
 
   @override
-  List<EventProvider<LogEventResolver, LogEventOptions>> get providers => [
+  List<EventProvider> get providers => [
         EventProvider(key),
       ];
 }

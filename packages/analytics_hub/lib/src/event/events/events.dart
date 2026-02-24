@@ -1,60 +1,50 @@
 library;
 
 import 'package:analytics_hub/src/event/event_resolver.dart';
-import 'package:analytics_hub/src/provider/provider_key.dart';
-
-part 'e_commerce/e_commerce_event.dart';
-part 'e_commerce/select_promotion_e_commerce_event_data.dart';
-part 'e_commerce/add_to_cart_e_commerce_event_data.dart';
-part 'e_commerce/add_to_wishlist_e_commerce_event_data.dart';
-part 'e_commerce/view_cart_e_commerce_event_data.dart';
-part 'e_commerce/add_payment_info_e_commerce_event_data.dart';
-part 'e_commerce/add_shipping_info_e_commerce_event_data.dart';
-part 'e_commerce/begin_checkout_e_commerce_event_data.dart';
-part 'e_commerce/purchase_e_commerce_event_data.dart';
-part 'e_commerce/remove_from_cart_e_commerce_event_data.dart';
-part 'e_commerce/select_item_e_commerce_event_data.dart';
-part 'e_commerce/view_item_e_commerce_event_data.dart';
-part 'e_commerce/view_item_list_e_commerce_event_data.dart';
-part 'e_commerce/view_promotion_e_commerce_event_data.dart';
-part 'e_commerce/refund_e_commerce_event_data.dart';
-part 'e_commerce/e_commerce_event_item.dart';
-part 'log_event.dart';
-part 'custom_log_event.dart';
+import 'package:analytics_hub/src/provider/provider_identifier.dart';
 
 /// Base type for analytics events that can be sent through [AnalyticsHub].
 ///
-/// [R] is the [EventResolver] type that knows how to handle this event in each
-/// provider. [providers] defines which registered providers receive this event.
-/// [resolve] is called by the hub with each provider's resolver to perform the send.
-/// [O] is the type of the options for the providers.
-sealed class Event<R extends EventResolver, O extends EventOptions> {
-  const Event();
+/// [providers] defines which registered providers receive this event. [resolve]
+/// is called by the hub with each provider's resolver to perform the send.
+abstract class Event {
+  /// Creates an event with the given [name].
+  const Event(this.name);
+
+  /// Event name (e.g. 'screen_view', 'button_clicked').
+  final String name;
+
+  /// Optional key-value properties sent with the event. Defaults to null.
+  Map<String, Object?>? get properties => null;
 
   /// The map of providers with their options that should receive this event.
   ///
   /// [AnalyticsHub.sendEvent] sends the event only to providers whose [identifier]
   /// is in this map.
-  List<EventProvider<R, O>> get providers;
+  List<EventProvider> get providers;
 
   /// Dispatches this event to the given [resolver] (e.g. a provider's resolver).
-  Future<void> resolve(R resolver);
+  Future<void> resolve(EventResolver resolver) => resolver.resolveEvent(this);
+
+  @override
+  String toString() => 'Event(name: $name, properties: $properties)';
 }
 
 /// Declares a target provider and optional provider-specific event [options].
-class EventProvider<R extends EventResolver, O extends EventOptions> {
+class EventProvider {
   /// Creates an event target for [identifier] with optional [options].
   const EventProvider(this.identifier, {this.options});
 
   /// The provider that should receive the event.
-  final ProviderIdentifier<R> identifier;
+  final ProviderIdentifier identifier;
+
   /// Optional provider-specific options for this event.
-  final O? options;
+  final EventOptions? options;
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is EventProvider<R, O> &&
+      other is EventProvider &&
           other.identifier == identifier &&
           other.options == options;
 
@@ -66,5 +56,52 @@ class EventProvider<R extends EventResolver, O extends EventOptions> {
       'EventProvider(identifier: $identifier, options: $options)';
 }
 
-/// Marker interface for provider-specific event options.
-abstract interface class EventOptions {}
+/// Per-provider options for an [Event].
+///
+/// [overrides] lets a provider override event [Event.name] and/or properties.
+class EventOptions {
+  /// Creates event options.
+  const EventOptions({this.overrides});
+
+  /// Optional provider-specific overrides for this event.
+  final EventOverrides? overrides;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is EventOptions && other.overrides == overrides;
+
+  @override
+  int get hashCode => overrides.hashCode;
+
+  @override
+  String toString() => 'EventOptions(overrides: $overrides)';
+}
+
+/// Provider-specific overrides for an [Event].
+class EventOverrides {
+  /// Creates event override values.
+  const EventOverrides({
+    this.name,
+    this.properties,
+  });
+
+  /// Override for event name.
+  final String? name;
+
+  /// Override for event properties.
+  final Map<String, Object?>? properties;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is EventOverrides &&
+          other.name == name &&
+          other.properties == properties;
+
+  @override
+  int get hashCode => name.hashCode ^ properties.hashCode;
+
+  @override
+  String toString() => 'EventOverrides(name: $name, properties: $properties)';
+}

@@ -10,8 +10,8 @@ class EmptySessionDelegate implements HubSessionDelegate {
   Future<Session?> getSession() async => null;
 }
 
-class ExampleLogEvent extends LogEvent {
-  const ExampleLogEvent({required this.exampleProperty})
+class ExampleEvent extends Event {
+  const ExampleEvent({required this.exampleProperty})
       : super('example_log_event');
 
   final String exampleProperty;
@@ -20,7 +20,7 @@ class ExampleLogEvent extends LogEvent {
   Map<String, Object>? get properties => {'example_property': exampleProperty};
 
   @override
-  List<EventProvider<LogEventResolver, LogEventOptions>> get providers => [
+  List<EventProvider> get providers => [
         const EventProvider(MixpanelAnalyticsHubProviderIdentifier()),
       ];
 }
@@ -41,7 +41,7 @@ Future<void> main() async {
   await hub.initialize();
 
   await hub.sendEvent(
-    const ExampleLogEvent(exampleProperty: 'example_property'),
+    const ExampleEvent(exampleProperty: 'example_property'),
   );
 
   await hub.dispose();

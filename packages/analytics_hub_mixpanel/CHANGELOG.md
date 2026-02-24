@@ -1,3 +1,12 @@
+## 0.3.0 - 2026-02-24
+
+### Changed
+- Updated dependency constraint to `analytics_hub: ">=0.3.0 <0.4.0"`.
+- Updated examples/tests/docs to the log-only core API (`List<EventProvider>`).
+
+### Breaking Changes
+- Version aligned with `analytics_hub` `0.3.x` API changes.
+
 ## 0.2.1 - 2026-02-23
 
 ### Changed

@@ -4,7 +4,7 @@ import 'package:logging/logging.dart';
 
 import 'event/events/events.dart';
 import 'provider/analytics_provider.dart';
-import 'provider/provider_key.dart';
+import 'provider/provider_identifier.dart';
 import 'session/hub_session_delegate.dart';
 import 'session/session.dart';
 
@@ -12,7 +12,7 @@ import 'session/session.dart';
 ///
 /// Create an [AnalyticsHub] with a list of [providers] and a [sessionDelegate].
 /// After [initialize], use [sendEvent] to send events to the providers specified
-/// by each event's [Event.providerKeys]. Session updates from [sessionDelegate]
+/// by each event's [Event.providers]. Session updates from [sessionDelegate]
 /// are propagated to all providers automatically.
 ///
 /// When done, call [dispose] to cancel session subscriptions and dispose
@@ -59,7 +59,7 @@ class AnalyticsHub {
     _logger.info('Initialized!');
   }
 
-  /// Sends [event] to every provider whose key is in [Event.providerKeys].
+  /// Sends [event] to every provider whose key is in [Event.providers].
   ///
   /// Throws [AnalyticsProviderNotFoundException] if the event references a
   /// provider key that was not registered with this hub. Returns a [Future]

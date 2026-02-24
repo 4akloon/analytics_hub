@@ -9,25 +9,18 @@ class EmptySessionDelegate implements HubSessionDelegate {
   Future<Session?> getSession() async => null;
 }
 
-class ExampleSelectPromotionECommerceEvent
-    extends SelectPromotionECommerceEvent {
-  const ExampleSelectPromotionECommerceEvent({required this.creativeName});
+class ExampleEvent extends Event {
+  const ExampleEvent({required this.creativeName}) : super('select_promotion');
 
   final String creativeName;
 
   @override
-  SelectPromotionECommerceEventData get data =>
-      SelectPromotionECommerceEventData(
-        creativeName: creativeName,
-      );
+  Map<String, Object?> get properties => {'creative_name': creativeName};
 
   @override
-  List<
-          EventProvider<ECommerceEventResolver,
-              ECommerceEventOptions<SelectPromotionECommerceEventData>>>
-      get providers => [
-            const EventProvider(FirebaseAnalyticsHubProviderIdentifier()),
-          ];
+  List<EventProvider> get providers => [
+        const EventProvider(FirebaseAnalyticsHubProviderIdentifier()),
+      ];
 }
 
 Future<void> main() async {
@@ -41,7 +34,7 @@ Future<void> main() async {
   await hub.initialize();
 
   await hub.sendEvent(
-    const ExampleSelectPromotionECommerceEvent(creativeName: 'creative_name'),
+    const ExampleEvent(creativeName: 'creative_name'),
   );
 
   await hub.dispose();

@@ -1,147 +1,43 @@
 ## Analytics Hub
 
-This repository contains the **analytics_hub** family of packages – a small,
-strongly‑typed abstraction over multiple analytics SDKs (Firebase, Mixpanel, and
-custom providers).
+Monorepo with `analytics_hub` packages for unified analytics routing across providers.
 
-- **Single event model** – describe events once in Dart and send them to
-  multiple analytics backends.
-- **Provider abstraction** – plug in/out specific SDKs without touching
-  business logic.
-- **Centralized session handling** – manage a `Session` once, propagate it
-  to all providers.
+Current model is intentionally **single-event**: only `LogEvent` is supported by core and official providers.
 
-Per‑package documentation:
+## Packages
 
-- `packages/analytics_hub` – core types and hub:
-  - [English](packages/analytics_hub/README.md)
-  - [Українська](packages/analytics_hub/README.ua.md)
-- `packages/analytics_hub_firebase` – Firebase Analytics provider:
-  - [English](packages/analytics_hub_firebase/README.md)
-  - [Українська](packages/analytics_hub_firebase/README.ua.md)
-- `packages/analytics_hub_mixpanel` – Mixpanel provider:
-  - [English](packages/analytics_hub_mixpanel/README.md)
-  - [Українська](packages/analytics_hub_mixpanel/README.ua.md)
+- `packages/analytics_hub` – core hub abstractions.
+- `packages/analytics_hub_firebase` – Firebase provider (`LogEvent` -> `FirebaseAnalytics.logEvent`).
+- `packages/analytics_hub_mixpanel` – Mixpanel provider (`LogEvent` -> `Mixpanel.track`).
 
-## Packages overview
+Per-package docs:
 
-- **`analytics_hub`**
-  - Core abstractions:
-    - `AnalyticsHub`, `Event`, `LogEvent`, `CustomLogEvent<T>`,
-      `ECommerceEvent`, `Session`, `HubSessionDelegate`.
-    - `AnalytycsProvider<R extends EventResolver>`,
-      `ProviderIdentifier<R>`, resolver interfaces.
-  - No direct SDK dependencies – pure Dart.
+- Core: [English](packages/analytics_hub/README.md), [Українська](packages/analytics_hub/README.ua.md)
+- Firebase: [English](packages/analytics_hub_firebase/README.md), [Українська](packages/analytics_hub_firebase/README.ua.md)
+- Mixpanel: [English](packages/analytics_hub_mixpanel/README.md), [Українська](packages/analytics_hub_mixpanel/README.ua.md)
 
-- **`analytics_hub_firebase`**
-  - Binds `analytics_hub` to `firebase_analytics`.
-  - Supports:
-    - `LogEvent` → `FirebaseAnalytics.logEvent`.
-    - all `ECommerceEvent` subtypes (`SelectPromotion`, `AddToCart`, `Purchase`, etc.)
-      mapped to GA4 methods.
-
-- **`analytics_hub_mixpanel`**
-  - Binds `analytics_hub` to `mixpanel_flutter`.
-  - Supports:
-    - `LogEvent` → `Mixpanel.track`.
-
-## Quick start (app level)
-
-Add dependencies in your app:
+## Quick start
 
 ```yaml
 dependencies:
-  analytics_hub: ^0.2.1
-  analytics_hub_firebase: ^0.2.1
-  analytics_hub_mixpanel: ^0.2.1
-
-  firebase_core: ^2.0.0
-  firebase_analytics: ^10.0.0
-  mixpanel_flutter: ^2.0.0
+  analytics_hub: ^0.3.0
+  analytics_hub_firebase: ^0.3.0
+  analytics_hub_mixpanel: ^0.3.0
 ```
 
-Basic setup with Firebase + Mixpanel:
-
 ```dart
-import 'package:analytics_hub/analytics_hub.dart';
-import 'package:analytics_hub_firebase/analytics_hub_firebase.dart';
-import 'package:analytics_hub_mixpanel/analytics_hub_mixpanel.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
-import 'package:mixpanel_flutter/mixpanel_flutter.dart';
-
-class AppSessionDelegate implements HubSessionDelegate {
-  AppSessionDelegate(this._sessionStream);
-
-  final Stream<Session?> _sessionStream;
-
-  @override
-  Stream<Session?> get sessionStream => _sessionStream;
-
-  @override
-  Future<Session?> getSession() async => _sessionStream.first;
-}
-
 class ExampleLogEvent extends LogEvent {
-  const ExampleLogEvent({required this.value}) : super('example_log_event');
+  const ExampleLogEvent(this.value) : super('example_log_event');
 
   final String value;
 
   @override
-  Map<String, Object>? get properties => {'value': value};
+  Map<String, Object?> get properties => {'value': value};
 
   @override
-  List<EventProvider<LogEventResolver, LogEventOptions>> get providers => [
-        const EventProvider(FirebaseAnalyticsHubProviderIdentifier()),
-        const EventProvider(MixpanelAnalyticsHubProviderIdentifier()),
+  List<EventProvider> get providers => const [
+        EventProvider(FirebaseAnalyticsHubProviderIdentifier()),
+        EventProvider(MixpanelAnalyticsHubProviderIdentifier()),
       ];
 }
-
-Future<AnalyticsHub> createAnalyticsHub(
-  Stream<Session?> sessionStream,
-) async {
-  await Firebase.initializeApp();
-
-  final mixpanel = await Mixpanel.init(
-    'YOUR_MIXPANEL_TOKEN',
-    trackAutomaticEvents: false,
-  );
-
-  final hub = AnalyticsHub(
-    sessionDelegate: AppSessionDelegate(sessionStream),
-    providers: [
-      FirebaseAnalyticsHubProvider.fromInstance(),
-      MixpanelAnalyticsHubProvider(mixpanel: mixpanel),
-    ],
-  );
-
-  await hub.initialize();
-  return hub;
-}
 ```
-
-Sending an event:
-
-```dart
-final hub = await createAnalyticsHub(sessionStream);
-await hub.sendEvent(const ExampleLogEvent(value: 'clicked_button'));
-```
-
-This will fan‑out the same typed event to both Firebase and Mixpanel.
-
-## Implementing your own provider
-
-If you want to add another analytics backend (or internal pipeline):
-
-- implement a `ProviderIdentifier<R>` for your resolver type;
-- implement a resolver (`EventResolver` + the interfaces you need:
-  `LogEventResolver`, `CustomLogEventResolver<T>`, `ECommerceEventResolver`);
-- implement an `AnalytycsProvider<R>` that:
-  - exposes the resolver,
-  - wires session handling (`setSession`),
-  - initializes / disposes the underlying SDK.
-
-See the core package docs for a full step‑by‑step guide:
-
-- [`packages/analytics_hub/README.md`](/packages/analytics_hub/README.md
-)

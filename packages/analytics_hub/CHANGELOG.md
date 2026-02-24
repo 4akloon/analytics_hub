@@ -1,3 +1,20 @@
+## 0.3.0 - 2026-02-24
+
+### Changed
+- Reverted core event model to a single `LogEvent` approach.
+- Simplified routing and provider abstractions to log-event-only contracts.
+- Updated examples, tests, and documentation to use `List<EventProvider>`.
+
+### Removed
+- `CustomLogEvent`, `CustomLogEventResolver`, and `CustomLogEventOptions`.
+- `ECommerceEvent`, all e-commerce event/data types, and `ECommerceEventResolver`.
+- Generic resolver typing from `ProviderIdentifier`, `AnalytycsProvider`, and `EventProvider`.
+
+### Breaking Changes
+- `Event` is no longer generic and resolves only via `LogEventResolver`.
+- `AnalytycsProvider` is no longer generic and now exposes `LogEventResolver`.
+- `ProviderIdentifier` is no longer generic.
+
 ## 0.2.2 - 2026-02-23
 
 ### Changed

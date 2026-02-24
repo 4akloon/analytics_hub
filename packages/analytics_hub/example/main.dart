@@ -21,11 +21,11 @@ void main() async {
 
   await hub.initialize();
 
-  await hub.sendEvent(const ExampleLogEvent(exampleProperty: 'example_value'));
+  await hub.sendEvent(const ExampleEvent(exampleProperty: 'example_value'));
 }
 
-class ExampleLogEvent extends LogEvent {
-  const ExampleLogEvent({required this.exampleProperty})
+class ExampleEvent extends Event {
+  const ExampleEvent({required this.exampleProperty})
       : super('example_log_event');
 
   final String exampleProperty;
@@ -34,12 +34,12 @@ class ExampleLogEvent extends LogEvent {
   Map<String, Object>? get properties => {'example_property': exampleProperty};
 
   @override
-  List<EventProvider<LogEventResolver, LogEventOptions>> get providers => [
+  List<EventProvider> get providers => [
         const EventProvider(ExampleAnalyticsProviderKey()),
         EventProvider(
           const ExampleAnalyticsProviderKey(name: 'Another Provider'),
-          options: LogEventOptions(
-            overrides: LogEventOverrides(
+          options: EventOptions(
+            overrides: EventOverrides(
               name: 'example_log_event_overridden',
               properties: {
                 'example_property_overridden': exampleProperty,
@@ -50,30 +50,7 @@ class ExampleLogEvent extends LogEvent {
       ];
 }
 
-sealed class ExampleCustomLogEvent
-    extends CustomLogEvent<ExampleCustomLogEvent> {
-  const ExampleCustomLogEvent();
-}
-
-abstract class FirstExampleCustomLogEvent extends ExampleCustomLogEvent {
-  const FirstExampleCustomLogEvent({required this.exampleProperty});
-
-  final String exampleProperty;
-}
-
-abstract class FirstExampleCustomLogEventImpl
-    extends FirstExampleCustomLogEvent {
-  const FirstExampleCustomLogEventImpl({required super.exampleProperty});
-
-  @override
-  List<
-      EventProvider<CustomLogEventResolver<ExampleCustomLogEvent>,
-          CustomLogEventOptions<ExampleCustomLogEvent>>> get providers => [
-        const EventProvider(ExampleAnalyticsProviderKey()),
-      ];
-}
-
-class ExampleAnalyticsProvider extends AnalytycsProvider<ExampleEventResolver> {
+class ExampleAnalyticsProvider extends AnalytycsProvider {
   ExampleAnalyticsProvider({String? name})
       : super(identifier: ExampleAnalyticsProviderKey(name: name));
 
@@ -91,27 +68,15 @@ class ExampleAnalyticsProvider extends AnalytycsProvider<ExampleEventResolver> {
   }
 }
 
-class ExampleAnalyticsProviderKey
-    extends ProviderIdentifier<ExampleEventResolver> {
+class ExampleAnalyticsProviderKey extends ProviderIdentifier {
   const ExampleAnalyticsProviderKey({super.name});
 }
 
-class ExampleEventResolver
-    implements
-        EventResolver,
-        LogEventResolver,
-        CustomLogEventResolver<ExampleCustomLogEvent> {
+class ExampleEventResolver implements EventResolver {
   const ExampleEventResolver();
 
   @override
-  Future<void> resolveLogEvent(LogEvent event) async {
+  Future<void> resolveEvent(Event event) async {
     print('ExampleEventResolver resolved log event: $event');
-  }
-
-  @override
-  Future<void> resolveCustomLogEvent(
-    CustomLogEvent<ExampleCustomLogEvent> event,
-  ) async {
-    print('ExampleEventResolver resolved custom log event: $event');
   }
 }

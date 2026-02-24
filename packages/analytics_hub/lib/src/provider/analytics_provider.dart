@@ -1,16 +1,16 @@
 import 'dart:async';
 
 import '../event/event_resolver.dart';
+import '../event/events/events.dart';
 import '../session/session.dart';
-import 'provider_key.dart';
+import 'provider_identifier.dart';
 
 /// Base class for an analytics backend (e.g. Firebase, Mixpanel) that can
 /// receive events and session updates from [AnalyticsHub].
 ///
-/// [R] is the [EventResolver] type this provider implements. The hub uses
-/// [resolver] to dispatch [Event]s that target [identifier]. Override [initialize],
-/// [setSession], and [dispose] as needed.
-abstract class AnalytycsProvider<R extends EventResolver> {
+/// The hub uses [resolver] to dispatch [Event]s that target [identifier].
+/// Override [initialize], [setSession], and [dispose] as needed.
+abstract class AnalytycsProvider {
   /// Creates a provider with the given [identifier].
   ///
   /// The [identifier] must be unique among providers registered with the same
@@ -18,10 +18,10 @@ abstract class AnalytycsProvider<R extends EventResolver> {
   AnalytycsProvider({required this.identifier});
 
   /// Unique identifier identifying this provider for event routing.
-  final ProviderIdentifier<R> identifier;
+  final ProviderIdentifier identifier;
 
   /// The resolver used by [AnalyticsHub] to send events to this provider.
-  R get resolver;
+  EventResolver get resolver;
 
   /// Called once by [AnalyticsHub.initialize]. Override to set up the backend
   /// (e.g. SDK init). Default implementation does nothing.

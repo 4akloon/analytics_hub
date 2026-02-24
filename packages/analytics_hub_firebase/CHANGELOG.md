@@ -1,3 +1,18 @@
+## 0.3.0 - 2026-02-24
+
+### Changed
+- Reverted Firebase provider to a single `LogEvent` flow.
+- Updated dependency constraint to `analytics_hub: ">=0.3.0 <0.4.0"`.
+- Refreshed examples/tests/docs for `List<EventProvider>` and `ProviderIdentifier`.
+
+### Removed
+- `FirebaseAnalyticsECommerceEventResolver`.
+- `ECommerceEventResolver` implementation from `FirebaseAnalyticsEventResolver`.
+- All README references to GA4 e-commerce event classes in this package.
+
+### Breaking Changes
+- `analytics_hub_firebase` no longer supports e-commerce event types from core.
+
 ## 0.2.2 - 2026-02-23
 
 ### Changed
