@@ -18,7 +18,7 @@ class FirebaseAnalyticsHubProvider extends AnalytycsProvider {
   FirebaseAnalyticsHubProvider({required FirebaseAnalytics analytics})
       : _analytics = analytics,
         super(
-          identifier: FirebaseAnalyticsHubProviderIdentifier(
+          identifier: FirebaseAnalyticsHubIdentifier(
             name: analytics.app.name,
           ),
           interceptors: const [],

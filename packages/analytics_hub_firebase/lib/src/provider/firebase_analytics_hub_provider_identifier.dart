@@ -5,9 +5,9 @@ import 'package:firebase_core/firebase_core.dart';
 ///
 /// Use this identifier in [Event.providers] to route events to
 /// [FirebaseAnalyticsHubProvider]. [name] defaults to [defaultFirebaseAppName].
-class FirebaseAnalyticsHubProviderIdentifier extends ProviderIdentifier {
+class FirebaseAnalyticsHubIdentifier extends ProviderIdentifier {
   /// Creates an identifier with optional [name]; defaults to [defaultFirebaseAppName].
-  const FirebaseAnalyticsHubProviderIdentifier({
+  const FirebaseAnalyticsHubIdentifier({
     super.name = defaultFirebaseAppName,
   });
 }

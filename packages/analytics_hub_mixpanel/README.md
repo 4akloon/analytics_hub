@@ -11,8 +11,8 @@ It uses the core `EventResolver` contract with `ResolvedEvent` payload.
 
 ```yaml
 dependencies:
-  analytics_hub: ^0.3.3
-  analytics_hub_mixpanel: ^0.3.3
+  analytics_hub: ^0.4.0
+  analytics_hub_mixpanel: ^0.4.0
   mixpanel_flutter: ^2.0.0
 ```
 
@@ -48,7 +48,7 @@ class SignupEvent extends LogEvent {
 
   @override
   List<EventProvider> get providers => const [
-        EventProvider(MixpanelAnalyticsHubProviderIdentifier()),
+        EventProvider(MixpanelAnalyticsHubIdentifier()),
       ];
 }
 ```

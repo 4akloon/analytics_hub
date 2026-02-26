@@ -13,3 +13,4 @@ workspace:
   - packages/analytics_hub
   - packages/analytics_hub_firebase
   - packages/analytics_hub_mixpanel
+  - packages/analytics_hub_appsflyer

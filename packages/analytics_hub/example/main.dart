@@ -42,13 +42,11 @@ class ExampleEvent extends Event {
         const EventProvider(ExampleAnalyticsProviderKey()),
         EventProvider(
           const ExampleAnalyticsProviderKey(name: 'Another Provider'),
-          options: EventOptions(
-            overrides: EventOverrides(
-              name: 'example_log_event_overridden',
-              properties: {
-                'example_property_overridden': exampleProperty,
-              },
-            ),
+          overrides: EventOverrides(
+            name: 'example_log_event_overridden',
+            properties: {
+              'example_property_overridden': exampleProperty,
+            },
           ),
         ),
       ];

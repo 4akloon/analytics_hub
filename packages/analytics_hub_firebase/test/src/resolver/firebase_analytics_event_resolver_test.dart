@@ -70,7 +70,7 @@ class _TestEvent extends Event {
   @override
   List<EventProvider> get providers => [
         const EventProvider(
-          FirebaseAnalyticsHubProviderIdentifier(name: 'test'),
+          FirebaseAnalyticsHubIdentifier(name: 'test'),
         ),
       ];
 }

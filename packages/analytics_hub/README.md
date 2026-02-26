@@ -27,6 +27,7 @@ Current providers (each has its own README with integration steps):
 
 - **Firebase:** [analytics_hub_firebase](https://pub.dev/packages/analytics_hub_firebase) — log events
 - **Mixpanel:** [analytics_hub_mixpanel](https://pub.dev/packages/analytics_hub_mixpanel) — log events
+- **Appsflyer:** `analytics_hub_appsflyer` — log events via `AppsflyerSdk.logEvent`
 
 ## Installation
 
@@ -34,10 +35,11 @@ In your app `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  analytics_hub: ^0.3.3
+  analytics_hub: ^0.4.0
   # and then any concrete providers you need, e.g.:
-  # analytics_hub_firebase: ^0.3.3
-  # analytics_hub_mixpanel: ^0.3.3
+  # analytics_hub_firebase: ^0.4.0
+  # analytics_hub_mixpanel: ^0.4.0
+  # analytics_hub_appsflyer: ^0.4.0
 ```
 
 ## Core concepts

@@ -75,14 +75,14 @@ void main() {
     });
   });
 
-  group('MixpanelAnalyticsHubProviderIdentifier', () {
+  group('MixpanelAnalyticsHubIdentifier', () {
     test('creates with null name', () {
-      const key = MixpanelAnalyticsHubProviderIdentifier();
+      const key = MixpanelAnalyticsHubIdentifier();
       expect(key.name, isNull);
     });
 
     test('creates with custom name', () {
-      const key = MixpanelAnalyticsHubProviderIdentifier(name: 'custom');
+      const key = MixpanelAnalyticsHubIdentifier(name: 'custom');
       expect(key.name, equals('custom'));
     });
   });
@@ -99,7 +99,7 @@ class _TestEvent extends Event {
   @override
   List<EventProvider> get providers => [
         const EventProvider(
-          MixpanelAnalyticsHubProviderIdentifier(name: 'test'),
+          MixpanelAnalyticsHubIdentifier(name: 'test'),
         ),
       ];
 }

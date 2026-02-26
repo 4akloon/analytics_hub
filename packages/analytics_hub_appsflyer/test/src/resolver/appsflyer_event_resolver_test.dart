@@ -1,31 +1,32 @@
 import 'package:analytics_hub/analytics_hub.dart';
-import 'package:analytics_hub_mixpanel/analytics_hub_mixpanel.dart';
+import 'package:analytics_hub_appsflyer/analytics_hub_appsflyer.dart';
+import 'package:appsflyer_sdk/appsflyer_sdk.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mixpanel_flutter/mixpanel_flutter.dart';
 import 'package:mocktail/mocktail.dart';
 
-class MockMixpanel extends Mock implements Mixpanel {}
+class _MockAppsflyerSdk extends Mock implements AppsflyerSdk {}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  late MockMixpanel mockMixpanel;
+  late _MockAppsflyerSdk mockSdk;
 
   setUp(() {
-    mockMixpanel = MockMixpanel();
+    mockSdk = _MockAppsflyerSdk();
   });
 
-  group('MixpanelEventResolver', () {
-    test('resolve calls track with name and properties', () async {
-      when(
-        () => mockMixpanel.track(
-          any(),
-          properties: any(named: 'properties'),
-        ),
-      ).thenAnswer((_) async {});
+  group('AppsflyerEventResolver', () {
+    test('resolve calls logEvent with name and properties', () async {
+      when(() => mockSdk.logEvent(any(), any())).thenAnswer(
+        (_) async => true,
+      );
 
-      final provider = MixpanelAnalyticsHubProvider(mixpanel: mockMixpanel);
-      const event = _TestEvent('test_event', {'key': 'value'});
+      final provider = AppsflyerAnalyticsHubProvider(
+        appsFlyerSdk: mockSdk,
+        getAnonymousId: () => 'anon-id',
+      );
+      const event = _TestEvent('test_event', {'key': 'value', 'nullKey': null});
+
       final context = EventDispatchContext(
         originalEvent: event,
         eventProvider: EventProvider(provider.identifier),
@@ -33,6 +34,7 @@ void main() {
         timestamp: DateTime.now(),
         correlationId: 'test-correlation-id',
       );
+
       await provider.resolver.resolve(
         ResolvedEvent(
           name: event.name,
@@ -43,23 +45,24 @@ void main() {
       );
 
       verify(
-        () => mockMixpanel.track(
+        () => mockSdk.logEvent(
           'test_event',
-          properties: {'key': 'value'},
+          {'key': 'value'},
         ),
       ).called(1);
     });
 
-    test('resolve with null properties', () async {
-      when(
-        () => mockMixpanel.track(
-          any(),
-          properties: any(named: 'properties'),
-        ),
-      ).thenAnswer((_) async {});
+    test('resolve with null properties passes null to logEvent', () async {
+      when(() => mockSdk.logEvent(any(), any())).thenAnswer(
+        (_) async => true,
+      );
 
-      final provider = MixpanelAnalyticsHubProvider(mixpanel: mockMixpanel);
+      final provider = AppsflyerAnalyticsHubProvider(
+        appsFlyerSdk: mockSdk,
+        getAnonymousId: () => 'anon-id',
+      );
       const event = _TestEvent('test_event', null);
+
       final context = EventDispatchContext(
         originalEvent: event,
         eventProvider: EventProvider(provider.identifier),
@@ -67,6 +70,7 @@ void main() {
         timestamp: DateTime.now(),
         correlationId: 'test-correlation-id',
       );
+
       await provider.resolver.resolve(
         ResolvedEvent(
           name: event.name,
@@ -76,8 +80,12 @@ void main() {
         context: context,
       );
 
-      verify(() => mockMixpanel.track('test_event', properties: null))
-          .called(1);
+      verify(
+        () => mockSdk.logEvent(
+          'test_event',
+          null,
+        ),
+      ).called(1);
     });
   });
 }
@@ -85,15 +93,15 @@ void main() {
 class _TestEvent extends Event {
   const _TestEvent(super.name, this.props);
 
-  final Map<String, Object>? props;
+  final Map<String, Object?>? props;
 
   @override
-  Map<String, Object>? get properties => props;
+  Map<String, Object?>? get properties => props;
 
   @override
   List<EventProvider> get providers => [
         const EventProvider(
-          MixpanelAnalyticsHubIdentifier(name: 'test'),
+          AppsflyerAnalyticsHubIdentifier(name: 'test'),
         ),
       ];
 }

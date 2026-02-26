@@ -1,7 +1,7 @@
 /// Firebase Analytics implementation for [AnalyticsHub].
 ///
 /// This library provides [FirebaseAnalyticsHubProvider] and
-/// [FirebaseAnalyticsHubProviderIdentifier] to send [Event]s from [AnalyticsHub]
+/// [FirebaseAnalyticsHubIdentifier] to send [Event]s from [AnalyticsHub]
 /// to Firebase Analytics.
 ///
 /// Example:

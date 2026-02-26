@@ -12,8 +12,8 @@
 
 ```yaml
 dependencies:
-  analytics_hub: ^0.3.3
-  analytics_hub_firebase: ^0.3.3
+  analytics_hub: ^0.4.0
+  analytics_hub_firebase: ^0.4.0
   firebase_core: ^2.0.0
   firebase_analytics: ^10.0.0
 ```
@@ -45,7 +45,7 @@ class SignupEvent extends LogEvent {
 
   @override
   List<EventProvider> get providers => const [
-        EventProvider(FirebaseAnalyticsHubProviderIdentifier()),
+        EventProvider(FirebaseAnalyticsHubIdentifier()),
       ];
 }
 ```
@@ -64,5 +64,5 @@ Future<void> setSession(Session? session) async {
 ## Нотатки
 
 - `FirebaseAnalyticsEventResolver` відфільтровує `null`-значення з `properties` перед `logEvent`.
-- Перезапис `name/properties` під конкретний провайдер працює через `EventProvider.options`.
+- Перезапис `name/properties` під конкретний провайдер працює через `EventProvider.overrides`.
 - `flush()` для Firebase реалізований як no-op (SDK не має явного API для flush).

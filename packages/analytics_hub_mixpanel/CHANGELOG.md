@@ -1,3 +1,15 @@
+## 0.4.0 - 2026-02-26
+
+### Changed
+- Updated dependency constraint to `analytics_hub: ">=0.4.0 <0.5.0"` to align with
+  the core 0.4.0 release and the new `EventProvider.overrides` API.
+- Renamed provider identifier from `MixpanelAnalyticsHubProviderIdentifier` to
+  `MixpanelAnalyticsHubIdentifier` for consistency with other official providers.
+
+### Breaking Changes
+- Event definitions and imports must now use `MixpanelAnalyticsHubIdentifier`
+  instead of `MixpanelAnalyticsHubProviderIdentifier`.
+
 ## 0.3.3 - 2026-02-24
 
 ### Changed

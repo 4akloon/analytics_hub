@@ -1,7 +1,7 @@
 /// Mixpanel implementation for [AnalyticsHub].
 ///
 /// This library provides [MixpanelAnalyticsHubProvider] and
-/// [MixpanelAnalyticsHubProviderIdentifier] to send [Event]s from
+/// [MixpanelAnalyticsHubIdentifier] to send [Event]s from
 /// [AnalyticsHub]
 /// to Mixpanel via [Mixpanel.track]. Session updates set the Mixpanel identity
 /// via [Mixpanel.identify] or [Mixpanel.reset].

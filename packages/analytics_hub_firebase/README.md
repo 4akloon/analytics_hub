@@ -11,8 +11,8 @@ It uses the core `EventResolver` contract with `ResolvedEvent` payload.
 
 ```yaml
 dependencies:
-  analytics_hub: ^0.3.3
-  analytics_hub_firebase: ^0.3.3
+  analytics_hub: ^0.4.0
+  analytics_hub_firebase: ^0.4.0
   firebase_core: ^2.0.0
   firebase_analytics: ^10.0.0
 ```
@@ -44,7 +44,7 @@ class SignupEvent extends LogEvent {
 
   @override
   List<EventProvider> get providers => const [
-        EventProvider(FirebaseAnalyticsHubProviderIdentifier()),
+        EventProvider(FirebaseAnalyticsHubIdentifier()),
       ];
 }
 ```
@@ -63,5 +63,5 @@ Future<void> setSession(Session? session) async {
 ## Notes
 
 - `FirebaseAnalyticsEventResolver` filters out `null` values from properties before calling `logEvent`.
-- Provider-specific event renaming/properties overrides are supported through `EventProvider.options`.
+- Provider-specific event renaming/properties overrides are supported through `EventProvider.overrides`.
 - `flush()` is intentionally a no-op for Firebase Analytics (SDK has no explicit flush API).

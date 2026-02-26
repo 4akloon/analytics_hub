@@ -48,7 +48,7 @@ class EventDispatcher {
         properties: event.properties,
         context: event.context,
       ),
-      target.eventProvider.options,
+      target.eventProvider.overrides,
     );
     final interceptors = [
       ..._hubInterceptors,

@@ -70,14 +70,14 @@ void main() {
     });
   });
 
-  group('FirebaseAnalyticsHubProviderIdentifier', () {
+  group('FirebaseAnalyticsHubIdentifier', () {
     test('creates with default name', () {
-      const key = FirebaseAnalyticsHubProviderIdentifier();
+      const key = FirebaseAnalyticsHubIdentifier();
       expect(key.name, equals('[DEFAULT]'));
     });
 
     test('creates with custom name', () {
-      const key = FirebaseAnalyticsHubProviderIdentifier(name: 'custom');
+      const key = FirebaseAnalyticsHubIdentifier(name: 'custom');
       expect(key.name, equals('custom'));
     });
   });
@@ -94,7 +94,7 @@ class _TestEvent extends Event {
   @override
   List<EventProvider> get providers => [
         const EventProvider(
-          FirebaseAnalyticsHubProviderIdentifier(name: 'test'),
+          FirebaseAnalyticsHubIdentifier(name: 'test'),
         ),
       ];
 }

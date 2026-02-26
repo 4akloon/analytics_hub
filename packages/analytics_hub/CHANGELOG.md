@@ -1,3 +1,18 @@
+## 0.4.0 - 2026-02-26
+
+### Changed
+- Simplified provider-specific overrides API: `EventProvider` now exposes a direct
+  `overrides: EventOverrides?` field instead of `options: EventOptions?`.
+- `EventOverridesApplier.apply` now accepts `EventOverrides?` and no longer depends
+  on `EventOptions`.
+- Updated core example, tests, and documentation to use `EventProvider(overrides: ...)`
+  and the `EventOverrides` type directly.
+
+### Breaking Changes
+- The `EventOptions` type has been removed from the public API.
+- Code that previously used `EventProvider(options: EventOptions(overrides: ...))`
+  must be updated to use `EventProvider(overrides: EventOverrides(...))` instead.
+
 ## 0.3.3 - 2026-02-24
 
 ### Changed

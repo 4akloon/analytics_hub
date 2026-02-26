@@ -23,7 +23,7 @@ class MixpanelAnalyticsHubProvider extends AnalytycsProvider {
   })  : _mixpanel = mixpanel,
         _getAnonymousId = getAnonymousId,
         super(
-          identifier: MixpanelAnalyticsHubProviderIdentifier(name: name),
+          identifier: MixpanelAnalyticsHubIdentifier(name: name),
           interceptors: const [],
         );
 

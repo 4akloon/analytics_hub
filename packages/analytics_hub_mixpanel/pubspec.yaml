@@ -3,7 +3,7 @@ description: >
   Mixpanel provider for analytics_hub.
   Forwards LogEvents to Mixpanel.track with optional properties and
   supports identify/reset for session and anonymous users.
-version: 0.3.3
+version: 0.4.0
 homepage: https://github.com/4akLoon/analytics_hub
 repository: https://github.com/4akLoon/analytics_hub
 
@@ -11,7 +11,7 @@ environment:
   sdk: ">=3.5.0 <4.0.0"
 
 dependencies:
-  analytics_hub: ">=0.3.3 <0.4.0"
+  analytics_hub: ">=0.4.0 <0.5.0"
   mixpanel_flutter: ">=2.0.0 <4.0.0"
   logging: ">=1.0.0 <2.0.0"
 

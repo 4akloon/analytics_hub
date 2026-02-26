@@ -463,11 +463,9 @@ class _OverriddenProviderEvent extends Event {
   List<EventProvider> get providers => [
         EventProvider(
           key,
-          options: const EventOptions(
-            overrides: EventOverrides(
-              name: 'test_event_overridden',
-              properties: {'key_overridden': 'value_overridden'},
-            ),
+          overrides: const EventOverrides(
+            name: 'test_event_overridden',
+            properties: {'key_overridden': 'value_overridden'},
           ),
         ),
       ];

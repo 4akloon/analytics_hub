@@ -19,7 +19,7 @@ class ExampleEvent extends Event {
 
   @override
   List<EventProvider> get providers => [
-        const EventProvider(FirebaseAnalyticsHubProviderIdentifier()),
+        const EventProvider(FirebaseAnalyticsHubIdentifier()),
       ];
 }
 

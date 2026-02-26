@@ -21,7 +21,7 @@ class ExampleEvent extends Event {
 
   @override
   List<EventProvider> get providers => [
-        const EventProvider(MixpanelAnalyticsHubProviderIdentifier()),
+        const EventProvider(MixpanelAnalyticsHubIdentifier()),
       ];
 }
 

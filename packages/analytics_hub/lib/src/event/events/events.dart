@@ -32,38 +32,13 @@ abstract class Event {
   String toString() => 'Event(name: $name, properties: $properties)';
 }
 
-/// Declares a target provider and optional provider-specific event [options].
+/// Declares a target provider and optional provider-specific event [overrides].
 class EventProvider {
-  /// Creates an event target for [identifier] with optional [options].
-  const EventProvider(this.identifier, {this.options});
+  /// Creates an event target for [identifier] with optional [overrides].
+  const EventProvider(this.identifier, {this.overrides});
 
   /// The provider that should receive the event.
   final ProviderIdentifier identifier;
-
-  /// Optional provider-specific options for this event.
-  final EventOptions? options;
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is EventProvider &&
-          other.identifier == identifier &&
-          other.options == options;
-
-  @override
-  int get hashCode => identifier.hashCode ^ options.hashCode;
-
-  @override
-  String toString() =>
-      'EventProvider(identifier: $identifier, options: $options)';
-}
-
-/// Per-provider options for an [Event].
-///
-/// [overrides] lets a provider override event [Event.name] and/or properties.
-class EventOptions {
-  /// Creates event options.
-  const EventOptions({this.overrides});
 
   /// Optional provider-specific overrides for this event.
   final EventOverrides? overrides;
@@ -71,13 +46,16 @@ class EventOptions {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is EventOptions && other.overrides == overrides;
+      other is EventProvider &&
+          other.identifier == identifier &&
+          other.overrides == overrides;
 
   @override
-  int get hashCode => overrides.hashCode;
+  int get hashCode => identifier.hashCode ^ overrides.hashCode;
 
   @override
-  String toString() => 'EventOptions(overrides: $overrides)';
+  String toString() =>
+      'EventProvider(identifier: $identifier, overrides: $overrides)';
 }
 
 /// Provider-specific overrides for an [Event].

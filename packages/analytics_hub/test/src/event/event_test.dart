@@ -18,10 +18,8 @@ class TestEvent extends Event {
         const EventProvider(TestProviderKey(name: 'test')),
         const EventProvider(
           TestProviderKey(name: 'test'),
-          options: EventOptions(
-            overrides: EventOverrides(
-              name: 'test_overridden',
-            ),
+          overrides: EventOverrides(
+            name: 'test_overridden',
           ),
         ),
       ];

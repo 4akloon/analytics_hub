@@ -9,21 +9,23 @@ Current model is intentionally **single-event**: only `LogEvent` is supported by
 - `packages/analytics_hub` – core hub abstractions.
 - `packages/analytics_hub_firebase` – Firebase provider (`LogEvent` -> `FirebaseAnalytics.logEvent`).
 - `packages/analytics_hub_mixpanel` – Mixpanel provider (`LogEvent` -> `Mixpanel.track`).
+- `packages/analytics_hub_appsflyer` – Appsflyer provider (`LogEvent` -> `AppsflyerSdk.logEvent`).
 
 Per-package docs:
 
 - Core: [English](packages/analytics_hub/README.md), [Українська](packages/analytics_hub/README.ua.md)
 - Firebase: [English](packages/analytics_hub_firebase/README.md), [Українська](packages/analytics_hub_firebase/README.ua.md)
 - Mixpanel: [English](packages/analytics_hub_mixpanel/README.md), [Українська](packages/analytics_hub_mixpanel/README.ua.md)
+- Appsflyer: [English](packages/analytics_hub_appsflyer/README.md), [Українська](packages/analytics_hub_appsflyer/README.ua.md)
 
 ## Quick start
 
 ```yaml
 dependencies:
-  analytics_hub: ^0.3.3
-  analytics_hub_firebase: ^0.3.3
-  analytics_hub_mixpanel: ^0.3.3
-```
+  analytics_hub: ^0.4.0
+  analytics_hub_firebase: ^0.4.0
+  analytics_hub_mixpanel: ^0.4.0
+  # analytics_hub_appsflyer: ^0.4.0 # optional, if you use Appsflyer
 
 ```dart
 class ExampleLogEvent extends LogEvent {
@@ -36,8 +38,8 @@ class ExampleLogEvent extends LogEvent {
 
   @override
   List<EventProvider> get providers => const [
-        EventProvider(FirebaseAnalyticsHubProviderIdentifier()),
-        EventProvider(MixpanelAnalyticsHubProviderIdentifier()),
+        EventProvider(FirebaseAnalyticsHubIdentifier()),
+        EventProvider(MixpanelAnalyticsHubIdentifier()),
       ];
 }
 ```
