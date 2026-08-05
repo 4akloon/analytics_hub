@@ -1,4 +1,4 @@
-/// Identifies an [AnalytycsProvider] for registration and event routing.
+/// Identifies an [AnalyticsProvider] for registration and event routing.
 ///
 /// Each provider should use a distinct [ProviderIdentifier] subclass or
 /// instance.

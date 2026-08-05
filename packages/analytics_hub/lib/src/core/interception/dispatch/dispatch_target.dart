@@ -13,5 +13,5 @@ class DispatchTarget {
   final EventProvider eventProvider;
 
   /// Concrete provider instance resolved by identifier.
-  final AnalytycsProvider provider;
+  final AnalyticsProvider provider;
 }

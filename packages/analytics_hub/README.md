@@ -46,7 +46,7 @@ dependencies:
 - **`AnalyticsHub`** – the facade you use to send events.
 - **`Event`** – base class for events sent by the hub.
 - **`LogEvent`** – simple `name + properties` event.
-- **`AnalytycsProvider`** – abstraction of an analytics provider.
+- **`AnalyticsProvider`** – abstraction of an analytics provider.
 - **`EventResolver`** – provider event handling contract.
 - **`ProviderIdentifier`** – identifies a provider; events list targets via `EventProvider`.
 - **`EventInterceptor`** – middleware that can transform or drop event dispatches.
@@ -103,7 +103,7 @@ A custom provider (e.g. sending events to your backend) consists of:
 
 1. **Provider identifier** (`ProviderIdentifier`).
 2. **Event resolver** (`EventResolver`).
-3. **Provider class** (`AnalytycsProvider`) registered in `AnalyticsHub`.
+3. **Provider class** (`AnalyticsProvider`) registered in `AnalyticsHub`.
 
 ### 1. Provider identifier (`ProviderIdentifier`)
 
@@ -136,13 +136,13 @@ class BackendEventResolver
 }
 ```
 
-### 3. Provider class (`AnalytycsProvider`)
+### 3. Provider class (`AnalyticsProvider`)
 
 ```dart
 import 'package:analytics_hub/analytics_hub.dart';
 
 class BackendAnalyticsProvider
-    extends AnalytycsProvider {
+    extends AnalyticsProvider {
   BackendAnalyticsProvider({String? name})
       : super(
           identifier: BackendAnalyticsProviderIdentifier(name: name),

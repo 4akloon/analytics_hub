@@ -1,7 +1,7 @@
 /// Analytics Hub — a unified analytics abstraction for Dart/Flutter apps.
 ///
 /// This library lets you send events to multiple analytics backends (e.g. Firebase,
-/// Mixpanel) through a single API. You register [AnalytycsProvider]s, then send
+/// Mixpanel) through a single API. You register [AnalyticsProvider]s, then send
 /// [Event]s; each event declares which providers should receive it via [Event.providers].
 ///
 /// Example:

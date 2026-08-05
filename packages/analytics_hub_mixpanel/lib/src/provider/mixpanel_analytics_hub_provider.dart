@@ -4,11 +4,11 @@ import 'package:mixpanel_flutter/mixpanel_flutter.dart';
 import '../resolver/mixpanel_event_resolver.dart';
 import 'mixpanel_analytics_hub_provider_identifier.dart';
 
-/// [AnalytycsProvider] that sends [Event]s to Mixpanel via [Mixpanel.track].
+/// [AnalyticsProvider] that sends [Event]s to Mixpanel via [Mixpanel.track].
 ///
 /// User identification (identify/reset) is managed by the app directly on the
 /// [Mixpanel] instance.
-class MixpanelAnalyticsHubProvider extends AnalytycsProvider {
+class MixpanelAnalyticsHubProvider extends AnalyticsProvider {
   /// Creates a provider that uses the given [mixpanel] instance.
   ///
   /// [name] is used for the provider key (e.g. for event routing).

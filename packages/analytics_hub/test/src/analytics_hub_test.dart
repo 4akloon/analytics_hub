@@ -24,7 +24,7 @@ class TestEventResolver implements EventResolver {
   }
 }
 
-class TestProvider extends AnalytycsProvider {
+class TestProvider extends AnalyticsProvider {
   TestProvider({
     required super.identifier,
     super.interceptors = const [],

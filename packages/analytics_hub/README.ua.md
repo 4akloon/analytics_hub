@@ -11,7 +11,7 @@
 
 - `AnalyticsHub` — центральна точка відправки подій.
 - `LogEvent` — базова подія з `name`, `properties` і `providers`.
-- `AnalytycsProvider` — базовий клас провайдера.
+- `AnalyticsProvider` — базовий клас провайдера.
 - `ProviderIdentifier` — ідентифікатор провайдера.
 - `EventResolver` — контракт обробки подій у провайдері.
 - `EventInterceptor` — middleware для трансформації/дропу подій.
@@ -50,7 +50,7 @@ class ScreenViewEvent extends LogEvent {
 
 1. Створіть `ProviderIdentifier`.
 2. Реалізуйте `EventResolver`.
-3. Успадкуйтесь від `AnalytycsProvider` і поверніть resolver.
+3. Успадкуйтесь від `AnalyticsProvider` і поверніть resolver.
 
 ```dart
 class BackendAnalyticsProviderIdentifier extends ProviderIdentifier {
@@ -70,7 +70,7 @@ class BackendEventResolver implements EventResolver {
   }
 }
 
-class BackendAnalyticsProvider extends AnalytycsProvider {
+class BackendAnalyticsProvider extends AnalyticsProvider {
   BackendAnalyticsProvider({String? name})
       : super(
           identifier: BackendAnalyticsProviderIdentifier(name: name),

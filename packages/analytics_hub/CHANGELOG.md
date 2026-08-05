@@ -11,8 +11,10 @@
 
 ### Breaking Changes
 - Removed session support: `Session`, `HubSessionDelegate`, the
-  `AnalyticsHub.sessionDelegate` parameter, and `AnalytycsProvider.setSession`
+  `AnalyticsHub.sessionDelegate` parameter, and `AnalyticsProvider.setSession`
   are gone. Manage user identity directly on the underlying SDKs.
+- Fixed the misspelled provider base class name: `AnalytycsProvider` is now
+  `AnalyticsProvider`.
 
 ## 0.4.0 - 2026-02-26
 

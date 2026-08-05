@@ -10,12 +10,12 @@ import 'provider_identifier.dart';
 ///
 /// The hub uses [resolver] to dispatch [Event]s that target [identifier].
 /// Override [initialize], [flush], and [dispose] as needed.
-abstract class AnalytycsProvider {
+abstract class AnalyticsProvider {
   /// Creates a provider with the given [identifier].
   ///
   /// The [identifier] must be unique among providers registered with the same
   /// [AnalyticsHub]; it is used to route events via [Event.providers].
-  const AnalytycsProvider({
+  const AnalyticsProvider({
     required this.identifier,
     required this.interceptors,
   });

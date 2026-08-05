@@ -9,7 +9,7 @@ import 'event/events/events.dart';
 import 'provider/analytics_provider.dart';
 import 'provider/provider_identifier.dart';
 
-/// Central hub that routes [Event]s to registered [AnalytycsProvider]s.
+/// Central hub that routes [Event]s to registered [AnalyticsProvider]s.
 ///
 /// Create an [AnalyticsHub] with a list of [providers].
 /// After [initialize], use [sendEvent] to send events to the providers specified
@@ -19,10 +19,10 @@ import 'provider/provider_identifier.dart';
 class AnalyticsHub {
   /// Creates an [AnalyticsHub] with the given [providers].
   ///
-  /// Each provider must have a unique [AnalytycsProvider.identifier]. Duplicate keys
+  /// Each provider must have a unique [AnalyticsProvider.identifier]. Duplicate keys
   /// will overwrite earlier providers in the list.
   AnalyticsHub({
-    required List<AnalytycsProvider> providers,
+    required List<AnalyticsProvider> providers,
     List<EventInterceptor> interceptors = const [],
   })  : _providers = {
           for (final provider in providers) provider.identifier: provider,
@@ -34,14 +34,14 @@ class AnalyticsHub {
           ),
         );
 
-  final Map<ProviderIdentifier, AnalytycsProvider> _providers;
+  final Map<ProviderIdentifier, AnalyticsProvider> _providers;
   final EventDispatcher _dispatcher;
 
   static final _logger = Logger('AnalyticsHub');
 
   /// Initializes the hub and all registered providers.
   ///
-  /// Calls [AnalytycsProvider.initialize] on each provider sequentially.
+  /// Calls [AnalyticsProvider.initialize] on each provider sequentially.
   /// Call this once after creating the hub (e.g. at app startup).
   Future<void> initialize() async {
     _logger.info('Initializing...');

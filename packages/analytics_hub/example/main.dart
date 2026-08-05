@@ -43,7 +43,7 @@ class ExampleEvent extends Event {
       ];
 }
 
-class ExampleAnalyticsProvider extends AnalytycsProvider {
+class ExampleAnalyticsProvider extends AnalyticsProvider {
   ExampleAnalyticsProvider({String? name})
       : super(
           identifier: ExampleAnalyticsProviderKey(name: name),
