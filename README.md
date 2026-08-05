@@ -1,5 +1,8 @@
 ## Analytics Hub
 
+![Dart](https://img.shields.io/badge/Dart-%3E%3D3.5-0175C2?logo=dart&logoColor=white)
+![Style](https://img.shields.io/badge/style-lints-brightgreen)
+
 Monorepo with `analytics_hub` packages for unified analytics routing across providers.
 
 Current model is intentionally **single-event**: only `LogEvent` is supported by core and official providers.
@@ -22,10 +25,11 @@ Per-package docs:
 
 ```yaml
 dependencies:
-  analytics_hub: ^0.4.0
-  analytics_hub_firebase: ^0.4.0
-  analytics_hub_mixpanel: ^0.4.0
-  # analytics_hub_appsflyer: ^0.4.0 # optional, if you use Appsflyer
+  analytics_hub: ^0.5.0
+  analytics_hub_firebase: ^0.5.0
+  analytics_hub_mixpanel: ^0.5.0
+  # analytics_hub_appsflyer: ^0.5.0 # optional, if you use Appsflyer
+```
 
 ```dart
 class ExampleLogEvent extends LogEvent {

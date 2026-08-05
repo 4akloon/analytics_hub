@@ -3,17 +3,15 @@
 /// This library provides [MixpanelAnalyticsHubProvider] and
 /// [MixpanelAnalyticsHubIdentifier] to send [Event]s from
 /// [AnalyticsHub]
-/// to Mixpanel via [Mixpanel.track]. Session updates set the Mixpanel identity
-/// via [Mixpanel.identify] or [Mixpanel.reset].
+/// to Mixpanel via [Mixpanel.track].
 ///
 /// Example:
 /// ```dart
 /// final provider = MixpanelAnalyticsHubProvider(mixpanel: await Mixpanel.init(...));
 /// final hub = AnalyticsHub(
 ///   providers: [provider],
-///   sessionDelegate: mySessionDelegate,
 /// );
-/// await hub.initialize();
+/// await hub.sendEvent(...);
 /// ```
 library;
 

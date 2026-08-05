@@ -30,7 +30,7 @@ class EventDispatchContext implements Context {
   final EventProvider eventProvider;
 
   /// Resolved provider instance for this dispatch.
-  final AnalytycsProvider provider;
+  final AnalyticsProvider provider;
 
   /// Creation timestamp of this dispatch context.
   final DateTime timestamp;

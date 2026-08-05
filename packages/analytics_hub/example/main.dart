@@ -2,24 +2,13 @@
 
 import 'package:analytics_hub/analytics_hub.dart';
 
-class EmptySessionDelegate implements HubSessionDelegate {
-  @override
-  Stream<Session?> get sessionStream => Stream.value(null);
-
-  @override
-  Future<Session?> getSession() async => null;
-}
-
 void main() async {
   final hub = AnalyticsHub(
-    sessionDelegate: EmptySessionDelegate(),
     providers: [
       ExampleAnalyticsProvider(),
       ExampleAnalyticsProvider(name: 'Another Provider'),
     ],
   );
-
-  await hub.initialize();
 
   await hub.sendEvent(const ExampleEvent(exampleProperty: 'example_value'));
 }
@@ -52,7 +41,7 @@ class ExampleEvent extends Event {
       ];
 }
 
-class ExampleAnalyticsProvider extends AnalytycsProvider {
+class ExampleAnalyticsProvider extends AnalyticsProvider {
   ExampleAnalyticsProvider({String? name})
       : super(
           identifier: ExampleAnalyticsProviderKey(name: name),
@@ -61,16 +50,6 @@ class ExampleAnalyticsProvider extends AnalytycsProvider {
 
   @override
   ExampleEventResolver get resolver => const ExampleEventResolver();
-
-  @override
-  Future<void> initialize() async {
-    print('ExampleAnalyticsProvider initialized');
-  }
-
-  @override
-  Future<void> setSession(Session? session) async {
-    print('ExampleAnalyticsProvider set session: $session');
-  }
 }
 
 class ExampleAnalyticsProviderKey extends ProviderIdentifier {

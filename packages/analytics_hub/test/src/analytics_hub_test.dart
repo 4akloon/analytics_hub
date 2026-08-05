@@ -24,7 +24,7 @@ class TestEventResolver implements EventResolver {
   }
 }
 
-class TestProvider extends AnalytycsProvider {
+class TestProvider extends AnalyticsProvider {
   TestProvider({
     required super.identifier,
     super.interceptors = const [],
@@ -37,30 +37,9 @@ class TestProvider extends AnalytycsProvider {
   @override
   EventResolver get resolver => _resolver;
 
-  var _initialized = false;
-  Session? _session;
-  var _disposed = false;
   var _flushed = false;
 
-  bool get initialized => _initialized;
-  Session? get session => _session;
-  bool get disposed => _disposed;
   bool get flushed => _flushed;
-
-  @override
-  Future<void> initialize() async {
-    _initialized = true;
-  }
-
-  @override
-  Future<void> setSession(Session? session) async {
-    _session = session;
-  }
-
-  @override
-  Future<void> dispose() async {
-    _disposed = true;
-  }
 
   @override
   Future<void> flush() async {
@@ -92,60 +71,6 @@ class TestLogEvent extends Event {
 
 void main() {
   group('AnalyticsHub', () {
-    late StreamController<Session?> sessionController;
-
-    setUp(() {
-      sessionController = StreamController<Session?>.broadcast();
-    });
-
-    tearDown(() {
-      sessionController.close();
-    });
-
-    HubSessionDelegate createSessionDelegate({
-      Session? initialSession,
-    }) {
-      return _TestSessionDelegate(
-        sessionController.stream,
-        initialSession: initialSession,
-      );
-    }
-
-    test('initialize calls providers initialize and setSession', () async {
-      final recorder = <ResolvedEvent>[];
-      final contextRecorder = <EventDispatchContext>[];
-      final provider = TestProvider(
-        identifier: const TestProviderKey(name: 'test'),
-        recorder: recorder,
-        contextRecorder: contextRecorder,
-      );
-      const session = Session(id: 'user-123');
-      final hub = AnalyticsHub(
-        sessionDelegate: createSessionDelegate(initialSession: session),
-        providers: [provider],
-      );
-
-      await hub.initialize();
-
-      expect(provider.initialized, isTrue);
-      expect(provider.session, equals(session));
-      await hub.dispose();
-    });
-
-    test('initialize works without sessionDelegate', () async {
-      final provider =
-          TestProvider(identifier: const TestProviderKey(name: 'test'));
-      final hub = AnalyticsHub(
-        providers: [provider],
-      );
-
-      await hub.initialize();
-
-      expect(provider.initialized, isTrue);
-      expect(provider.session, isNull);
-      await hub.dispose();
-    });
-
     test('sendEvent resolves event with correct provider', () async {
       final recorder = <ResolvedEvent>[];
       final contextRecorder = <EventDispatchContext>[];
@@ -155,10 +80,8 @@ void main() {
         contextRecorder: contextRecorder,
       );
       final hub = AnalyticsHub(
-        sessionDelegate: createSessionDelegate(),
         providers: [provider],
       );
-      await hub.initialize();
 
       const event = TestLogEvent('test_event', props: {'key': 'value'});
       await hub.sendEvent(event);
@@ -169,7 +92,6 @@ void main() {
       expect(contextRecorder, hasLength(1));
       expect(contextRecorder.first.originalEvent, equals(event));
       expect(contextRecorder.first.providerIdentifier.name, equals('test'));
-      await hub.dispose();
     });
 
     test('sendEvent applies provider overrides before resolver', () async {
@@ -179,10 +101,8 @@ void main() {
         recorder: recorder,
       );
       final hub = AnalyticsHub(
-        sessionDelegate: createSessionDelegate(),
         providers: [provider],
       );
-      await hub.initialize();
 
       final event = _OverriddenProviderEvent(
         'test_event',
@@ -196,7 +116,6 @@ void main() {
         recorder.first.properties,
         equals({'key_overridden': 'value_overridden'}),
       );
-      await hub.dispose();
     });
 
     test('global and provider interceptors run in order', () async {
@@ -210,13 +129,11 @@ void main() {
         ],
       );
       final hub = AnalyticsHub(
-        sessionDelegate: createSessionDelegate(),
         providers: [provider],
         interceptors: [
           _SpyInterceptor('global', order),
         ],
       );
-      await hub.initialize();
 
       await hub.sendEvent(const TestLogEvent('test_event'));
 
@@ -230,7 +147,6 @@ void main() {
         ]),
       );
       expect(recorder, hasLength(1));
-      await hub.dispose();
     });
 
     test('interceptor can mutate event name and read typed context', () async {
@@ -242,15 +158,11 @@ void main() {
         contextRecorder: contextRecorder,
       );
       final hub = AnalyticsHub(
-        sessionDelegate: createSessionDelegate(
-          initialSession: const Session(id: 'user-123'),
-        ),
         providers: [provider],
         interceptors: [
           _RenameWithContextInterceptor(),
         ],
       );
-      await hub.initialize();
 
       await hub.sendEvent(
         TestLogEvent(
@@ -263,7 +175,6 @@ void main() {
 
       expect(recorder.single.name, equals('test_event_mobile'));
       expect(contextRecorder.single.correlationId, isNotEmpty);
-      await hub.dispose();
     });
 
     test('interceptor can drop event before resolver', () async {
@@ -273,18 +184,15 @@ void main() {
         recorder: recorder,
       );
       final hub = AnalyticsHub(
-        sessionDelegate: createSessionDelegate(),
         providers: [provider],
         interceptors: [
           _DropInterceptor(),
         ],
       );
-      await hub.initialize();
 
       await hub.sendEvent(const TestLogEvent('test_event'));
 
       expect(recorder, isEmpty);
-      await hub.dispose();
     });
 
     test('context contains event metadata', () async {
@@ -294,10 +202,8 @@ void main() {
         contextRecorder: contextRecorder,
       );
       final hub = AnalyticsHub(
-        sessionDelegate: createSessionDelegate(),
         providers: [provider],
       );
-      await hub.initialize();
 
       await hub.sendEvent(
         TestLogEvent(
@@ -313,7 +219,6 @@ void main() {
         context.entry<_SourceContextEntry>()?.source,
         equals('mobile'),
       );
-      await hub.dispose();
     });
 
     test('context does not include provider metadata entries', () async {
@@ -323,10 +228,8 @@ void main() {
         contextRecorder: contextRecorder,
       );
       final hub = AnalyticsHub(
-        sessionDelegate: createSessionDelegate(),
         providers: [provider],
       );
-      await hub.initialize();
 
       await hub.sendEvent(
         TestLogEvent(
@@ -340,7 +243,6 @@ void main() {
       final context = contextRecorder.single;
       expect(context.entry<_SourceContextEntry>()?.source, equals('mobile'));
       expect(context.entries, hasLength(1));
-      await hub.dispose();
     });
 
     test('flush calls provider flush', () async {
@@ -348,27 +250,22 @@ void main() {
         identifier: const TestProviderKey(name: 'test'),
       );
       final hub = AnalyticsHub(
-        sessionDelegate: createSessionDelegate(),
         providers: [provider],
       );
-      await hub.initialize();
 
       await hub.flush();
 
       expect(provider.flushed, isTrue);
-      await hub.dispose();
     });
 
     test('sendEvent throws when provider not found', () async {
       const otherKey = TestProviderKey(name: 'other');
       final event = _UnknownProviderLogEvent('event', otherKey);
       final hub = AnalyticsHub(
-        sessionDelegate: createSessionDelegate(),
         providers: [
           TestProvider(identifier: const TestProviderKey(name: 'test')),
         ],
       );
-      await hub.initialize();
 
       expect(
         () => hub.sendEvent(event),
@@ -382,38 +279,6 @@ void main() {
           ),
         ),
       );
-      await hub.dispose();
-    });
-
-    test('dispose cancels subscription and disposes providers', () async {
-      final provider =
-          TestProvider(identifier: const TestProviderKey(name: 'test'));
-      final hub = AnalyticsHub(
-        sessionDelegate: createSessionDelegate(),
-        providers: [provider],
-      );
-      await hub.initialize();
-
-      await hub.dispose();
-
-      expect(provider.disposed, isTrue);
-    });
-
-    test('session stream changes trigger setSession on providers', () async {
-      final provider =
-          TestProvider(identifier: const TestProviderKey(name: 'test'));
-      final hub = AnalyticsHub(
-        sessionDelegate: createSessionDelegate(),
-        providers: [provider],
-      );
-      await hub.initialize();
-
-      const newSession = Session(id: 'user-456');
-      sessionController.add(newSession);
-      await Future<void>.delayed(Duration.zero);
-
-      expect(provider.session, equals(newSession));
-      await hub.dispose();
     });
   });
 
@@ -425,19 +290,6 @@ void main() {
       expect(exception.key, equals(key));
     });
   });
-}
-
-class _TestSessionDelegate implements HubSessionDelegate {
-  _TestSessionDelegate(this._stream, {this.initialSession});
-
-  final Stream<Session?> _stream;
-  final Session? initialSession;
-
-  @override
-  Future<Session?> getSession() async => initialSession;
-
-  @override
-  Stream<Session?> get sessionStream => _stream;
 }
 
 class _UnknownProviderLogEvent extends Event {

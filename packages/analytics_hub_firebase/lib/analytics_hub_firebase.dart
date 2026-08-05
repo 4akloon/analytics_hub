@@ -9,9 +9,8 @@
 /// final provider = FirebaseAnalyticsHubProvider.fromInstance();
 /// final hub = AnalyticsHub(
 ///   providers: [provider],
-///   sessionDelegate: mySessionDelegate,
 /// );
-/// await hub.initialize();
+/// await hub.sendEvent(...);
 /// ```
 library;
 

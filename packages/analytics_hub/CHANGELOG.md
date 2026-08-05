@@ -1,3 +1,23 @@
+## 0.5.0 - 2026-08-05
+
+### Changed
+- `ProviderIdentifier` equality and `hashCode` now include the runtime type, so
+  identifiers of different subclasses with the same `name` no longer collide.
+  `toString` now prints the concrete subclass name.
+- Reduced logging noise: `sendEvent` logs at `fine` level and the internal
+  dispatch pipeline no longer logs each step.
+
+### Breaking Changes
+- Removed session support: `Session`, `HubSessionDelegate`, the
+  `AnalyticsHub.sessionDelegate` parameter, and `AnalyticsProvider.setSession`
+  are gone. Manage user identity directly on the underlying SDKs.
+- Removed `AnalyticsHub.initialize` / `AnalyticsProvider.initialize` and
+  `AnalyticsHub.dispose` / `AnalyticsProvider.dispose`. SDK lifecycle belongs
+  in the app — pass already-initialized backend instances into provider
+  constructors; call `flush` before shutdown if a provider buffers events.
+- Fixed the misspelled provider base class name: `AnalytycsProvider` is now
+  `AnalyticsProvider`.
+
 ## 0.4.0 - 2026-02-26
 
 ### Changed

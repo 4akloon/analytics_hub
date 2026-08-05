@@ -6,6 +6,10 @@ class TestProviderKey extends ProviderIdentifier {
   const TestProviderKey({super.name});
 }
 
+class OtherProviderKey extends ProviderIdentifier {
+  const OtherProviderKey({super.name});
+}
+
 void main() {
   group('ProviderKey', () {
     test('creates with name', () {
@@ -42,6 +46,19 @@ void main() {
       const a = TestProviderKey(name: 'test');
       const b = TestProviderKey(name: 'test');
       expect(a, equals(b));
+    });
+
+    test('equality returns false for different subclasses with same name', () {
+      const a = TestProviderKey(name: 'test');
+      const b = OtherProviderKey(name: 'test');
+      expect(a, isNot(equals(b)));
+      expect(a.hashCode, isNot(equals(b.hashCode)));
+    });
+
+    test('equality returns false for different subclasses with null names', () {
+      const a = TestProviderKey();
+      const b = OtherProviderKey();
+      expect(a, isNot(equals(b)));
     });
 
     test('toString returns correct format', () {

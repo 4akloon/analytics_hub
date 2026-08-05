@@ -1,5 +1,11 @@
 ## Analytics Hub Mixpanel Provider
 
+![Dart](https://img.shields.io/badge/Dart-%3E%3D3.5-0175C2?logo=dart&logoColor=white)
+![Part of](https://img.shields.io/badge/part_of-analytics__hub-informational)
+
+> Part of the analytics_hub workspace. New here? Start with the
+> [root README](../../README.md).
+
 > Ukrainian version: [README.ua.md](README.ua.md)
 
 `analytics_hub_mixpanel` connects `analytics_hub` to Mixpanel.
@@ -11,8 +17,8 @@ It uses the core `EventResolver` contract with `ResolvedEvent` payload.
 
 ```yaml
 dependencies:
-  analytics_hub: ^0.4.0
-  analytics_hub_mixpanel: ^0.4.0
+  analytics_hub: ^0.5.0
+  analytics_hub_mixpanel: ^0.5.0
   mixpanel_flutter: ^2.0.0
 ```
 
@@ -25,13 +31,11 @@ final mixpanel = await Mixpanel.init(
 );
 
 final hub = AnalyticsHub(
-  sessionDelegate: yourSessionDelegate,
   providers: [
     MixpanelAnalyticsHubProvider(mixpanel: mixpanel),
   ],
 );
 
-await hub.initialize();
 await hub.sendEvent(const SignupEvent('email'));
 ```
 
@@ -53,11 +57,7 @@ class SignupEvent extends LogEvent {
 }
 ```
 
-## Session handling
+## Notes
 
-`MixpanelAnalyticsHubProvider` behavior:
-
-- If session is present: calls `identify(session.id)`.
-- If session is null and `getAnonymousId` callback is provided: identifies with that ID.
-- Otherwise: calls `reset()`.
+- User identification (`identify`/`reset`) is managed by the app directly on the `Mixpanel` instance.
 - `flush()` is supported and delegates to `Mixpanel.flush()`.

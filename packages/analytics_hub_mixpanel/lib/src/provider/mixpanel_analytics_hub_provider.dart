@@ -1,52 +1,32 @@
 import 'package:analytics_hub/analytics_hub.dart';
-import 'package:logging/logging.dart';
 import 'package:mixpanel_flutter/mixpanel_flutter.dart';
 
 import '../resolver/mixpanel_event_resolver.dart';
 import 'mixpanel_analytics_hub_provider_identifier.dart';
 
-/// [AnalytycsProvider] that sends [Event]s to Mixpanel via [Mixpanel.track].
+/// [AnalyticsProvider] that sends [Event]s to Mixpanel via [Mixpanel.track].
 ///
-/// On [setSession]: if [Session] is non-null, calls [Mixpanel.identify] with
-/// [Session.id]; if null and [getAnonymousId] is provided, identifies with that
-/// ID; otherwise calls [Mixpanel.reset].
-class MixpanelAnalyticsHubProvider extends AnalytycsProvider {
+/// User identification (identify/reset) is managed by the app directly on the
+/// [Mixpanel] instance.
+class MixpanelAnalyticsHubProvider extends AnalyticsProvider {
   /// Creates a provider that uses the given [mixpanel] instance.
   ///
-  /// [name] is used for the provider key (e.g. for event routing). [getAnonymousId]
-  /// is called when session becomes null to set an anonymous ID instead of
-  /// resetting; if null, [Mixpanel.reset] is used on logout.
+  /// [name] is used for the provider key (e.g. for event routing).
+  /// [interceptors] are provider-level interceptors executed after hub
+  /// interceptors.
   MixpanelAnalyticsHubProvider({
     required Mixpanel mixpanel,
     String? name,
-    String Function()? getAnonymousId,
+    super.interceptors = const [],
   })  : _mixpanel = mixpanel,
-        _getAnonymousId = getAnonymousId,
         super(
           identifier: MixpanelAnalyticsHubIdentifier(name: name),
-          interceptors: const [],
         );
 
   final Mixpanel _mixpanel;
-  final String Function()? _getAnonymousId;
-
-  static final _logger = Logger('MixpanelAnalyticsHubProvider');
 
   @override
   MixpanelEventResolver get resolver => MixpanelEventResolver(_mixpanel);
-
-  @override
-  Future<void> setSession(Session? session) async {
-    if (session != null) {
-      await _mixpanel.identify(session.id);
-    } else if (_getAnonymousId case final callback?) {
-      final anonymousId = callback();
-      _logger.fine('Identifying with anonymous ID: $anonymousId');
-      await _mixpanel.identify(anonymousId);
-    } else {
-      await _mixpanel.reset();
-    }
-  }
 
   @override
   Future<void> flush() => _mixpanel.flush();

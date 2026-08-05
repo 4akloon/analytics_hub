@@ -2,17 +2,15 @@
 ///
 /// This library provides [AppsflyerAnalyticsHubProvider] and
 /// [AppsflyerAnalyticsHubIdentifier] to send [Event]s from
-/// [AnalyticsHub] to Appsflyer via [AppsflyerSdk.logEvent]. Session updates
-/// set the Appsflyer customer user ID via [AppsflyerSdk.setCustomerUserId].
+/// [AnalyticsHub] to Appsflyer via [AppsflyerSdk.logEvent].
 ///
 /// Example:
 /// ```dart
 /// final provider = AppsflyerAnalyticsHubProvider(appsFlyerSdk: appsFlyer);
 /// final hub = AnalyticsHub(
 ///   providers: [provider],
-///   sessionDelegate: mySessionDelegate,
 /// );
-/// await hub.initialize();
+/// await hub.sendEvent(...);
 /// ```
 library;
 

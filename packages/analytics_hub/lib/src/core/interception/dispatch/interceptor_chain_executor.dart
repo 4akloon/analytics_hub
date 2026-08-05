@@ -1,5 +1,3 @@
-import 'package:logging/logging.dart';
-
 import '../context/event_dispatch_context.dart';
 import '../context/resolved_event.dart';
 import '../interceptor/event_interceptor.dart';
@@ -16,8 +14,6 @@ class InterceptorChainExecutor {
   /// Creates interceptor chain executor.
   const InterceptorChainExecutor();
 
-  static final _logger = Logger('AnalyticsHub.InterceptorChainExecutor');
-
   /// Executes [interceptors] and then [terminal] with the final payload/context.
   Future<InterceptorResult> execute({
     required List<EventInterceptor> interceptors,
@@ -25,19 +21,16 @@ class InterceptorChainExecutor {
     required EventDispatchContext context,
     required TerminalDispatch terminal,
   }) {
-    _logger.fine('Executing interceptor chain: $interceptors');
     Future<InterceptorResult> runAt(
       int index, {
       required ResolvedEvent event,
       required EventDispatchContext context,
     }) async {
       if (index >= interceptors.length) {
-        _logger.fine('Executing terminal dispatch: $terminal');
         return terminal(event, context);
       }
 
       final interceptor = interceptors[index];
-      _logger.fine('Executing interceptor: $interceptor');
       return interceptor.intercept(
         event: event,
         context: context,

@@ -1,5 +1,11 @@
 ## analytics_hub_mixpanel
 
+![Dart](https://img.shields.io/badge/Dart-%3E%3D3.5-0175C2?logo=dart&logoColor=white)
+![Part of](https://img.shields.io/badge/part_of-analytics__hub-informational)
+
+> Частина монорепозиторію analytics_hub. Новачок? Почніть з
+> [кореневого README](../../README.md).
+
 > English version: [README.md](README.md)
 
 `analytics_hub_mixpanel` інтегрує `analytics_hub` з Mixpanel.
@@ -12,8 +18,8 @@
 
 ```yaml
 dependencies:
-  analytics_hub: ^0.4.0
-  analytics_hub_mixpanel: ^0.4.0
+  analytics_hub: ^0.5.0
+  analytics_hub_mixpanel: ^0.5.0
   mixpanel_flutter: ^2.0.0
 ```
 
@@ -26,13 +32,11 @@ final mixpanel = await Mixpanel.init(
 );
 
 final hub = AnalyticsHub(
-  sessionDelegate: yourSessionDelegate,
   providers: [
     MixpanelAnalyticsHubProvider(mixpanel: mixpanel),
   ],
 );
 
-await hub.initialize();
 await hub.sendEvent(const SignupEvent('email'));
 ```
 
@@ -54,11 +58,8 @@ class SignupEvent extends LogEvent {
 }
 ```
 
-## Сесія
+## Нотатки
 
-`MixpanelAnalyticsHubProvider` працює так:
-
-- якщо сесія є — викликає `identify(session.id)`;
-- якщо сесія `null`, але передано `getAnonymousId` — ідентифікує через цей id;
-- інакше викликає `reset()`.
+- Ідентифікацію користувача (`identify`/`reset`) застосунок керує самостійно
+  безпосередньо на інстансі `Mixpanel`.
 - `flush()` підтримується та делегується в `Mixpanel.flush()`.

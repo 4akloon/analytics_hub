@@ -1,0 +1,87 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  analyze-test:
+    name: Analyze & test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      # The provider packages depend on Flutter plugins (firebase_analytics,
+      # mixpanel_flutter, appsflyer_sdk), so the Flutter SDK (which bundles
+      # Dart) is required for resolution, analysis, and tests.
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Install dependencies (workspace)
+        run: flutter pub get
+
+      - name: Verify formatting
+        run: >-
+          dart format --output=none --set-exit-if-changed
+          packages/analytics_hub
+          packages/analytics_hub_firebase
+          packages/analytics_hub_mixpanel
+          packages/analytics_hub_appsflyer
+
+      - name: Analyze
+        run: >-
+          dart analyze
+          packages/analytics_hub
+          packages/analytics_hub_firebase
+          packages/analytics_hub_mixpanel
+          packages/analytics_hub_appsflyer
+
+      - name: Test analytics_hub
+        run: flutter test
+        working-directory: packages/analytics_hub
+
+      - name: Test analytics_hub_firebase
+        run: flutter test
+        working-directory: packages/analytics_hub_firebase
+
+      - name: Test analytics_hub_mixpanel
+        run: flutter test
+        working-directory: packages/analytics_hub_mixpanel
+
+      - name: Test analytics_hub_appsflyer
+        run: flutter test
+        working-directory: packages/analytics_hub_appsflyer
+
+  publish-dry-run:
+    name: Publish dry-run
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Install dependencies (workspace)
+        run: flutter pub get
+
+      # Dry-run each publishable package.
+      - name: Dry-run analytics_hub
+        run: dart pub publish --dry-run
+        working-directory: packages/analytics_hub
+
+      - name: Dry-run analytics_hub_firebase
+        run: dart pub publish --dry-run
+        working-directory: packages/analytics_hub_firebase
+
+      - name: Dry-run analytics_hub_mixpanel
+        run: dart pub publish --dry-run
+        working-directory: packages/analytics_hub_mixpanel
+
+      - name: Dry-run analytics_hub_appsflyer
+        run: dart pub publish --dry-run
+        working-directory: packages/analytics_hub_appsflyer
