@@ -1,6 +1,11 @@
 ## Analytics Hub
 
 [![Pub Version](https://img.shields.io/pub/v/analytics_hub.svg)](https://pub.dev/packages/analytics_hub)
+![Dart](https://img.shields.io/badge/Dart-%3E%3D3.5-0175C2?logo=dart&logoColor=white)
+![Part of](https://img.shields.io/badge/part_of-analytics__hub-informational)
+
+> Part of the analytics_hub workspace. New here? Start with the
+> [root README](../../README.md).
 
 > This documentation is also available in [Ukrainian](README.ua.md).
 
@@ -27,6 +32,19 @@ Current providers (each has its own README with integration steps):
 - **Firebase:** [analytics_hub_firebase](https://pub.dev/packages/analytics_hub_firebase) — log events
 - **Mixpanel:** [analytics_hub_mixpanel](https://pub.dev/packages/analytics_hub_mixpanel) — log events
 - **Appsflyer:** `analytics_hub_appsflyer` — log events via `AppsflyerSdk.logEvent`
+
+## What's inside
+
+| Area | Types | Source |
+|---|---|---|
+| **Hub** | `AnalyticsHub` | `analytics_hub.dart` |
+| **Events** | `Event`, `LogEvent`, `EventProvider`, `EventOverrides` | `event/events/events.dart` |
+| **Providers** | `AnalyticsProvider`, `ProviderIdentifier`, `EventResolver` | `provider/`, `event/event_resolver.dart` |
+| **Interceptors** | `EventInterceptor`, `InterceptorResult`, `NextEventInterceptor` | `core/interception/interceptor/` |
+| **Context** | `Context`, `EventContext`, `ContextEntry`, `EventDispatchContext`, `ResolvedEvent` | `core/interception/context/` |
+| **Dispatch pipeline** | `EventDispatcher`, `DispatchTarget`, `EventDispatchContextBuilder`, `InterceptorChainExecutor`, `EventOverridesApplier`, `CorrelationIdGenerator` | `core/interception/dispatch/` |
+
+Source paths are relative to `lib/src/`.
 
 ## Installation
 
@@ -97,52 +115,13 @@ final class FeatureContextEntry extends ContextEntry {
 }
 ```
 
-## Implementing your own provider (step‑by‑step)
+## Implementing your own provider
 
-A custom provider (e.g. sending events to your backend) consists of:
-
-1. **Provider identifier** (`ProviderIdentifier`).
-2. **Event resolver** (`EventResolver`).
-3. **Provider class** (`AnalyticsProvider`) registered in `AnalyticsHub`.
-
-### 1. Provider identifier (`ProviderIdentifier`)
+A custom provider implements a `ProviderIdentifier`, an `EventResolver`, and an
+`AnalyticsProvider` that ties them together:
 
 ```dart
-import 'package:analytics_hub/analytics_hub.dart';
-
-class BackendAnalyticsProviderIdentifier
-    extends ProviderIdentifier {
-  const BackendAnalyticsProviderIdentifier({super.name});
-}
-```
-
-### 2. Event resolver (`EventResolver`)
-
-```dart
-import 'package:analytics_hub/analytics_hub.dart';
-
-class BackendEventResolver
-    implements EventResolver {
-  const BackendEventResolver();
-
-  @override
-  Future<void> resolve(
-    ResolvedEvent event, {
-    required EventDispatchContext context,
-  }) async {
-    // e.g. POST event.name + event.properties to your backend.
-    // context has event metadata and correlationId for tracing.
-  }
-}
-```
-
-### 3. Provider class (`AnalyticsProvider`)
-
-```dart
-import 'package:analytics_hub/analytics_hub.dart';
-
-class BackendAnalyticsProvider
-    extends AnalyticsProvider {
+class BackendAnalyticsProvider extends AnalyticsProvider {
   BackendAnalyticsProvider({String? name})
       : super(
           identifier: BackendAnalyticsProviderIdentifier(name: name),
@@ -151,53 +130,13 @@ class BackendAnalyticsProvider
 
   @override
   BackendEventResolver get resolver => const BackendEventResolver();
-
-  @override
-  Future<void> initialize() async {
-    // e.g. create HTTP client, auth headers
-  }
-
-  @override
-  Future<void> dispose() async {
-    // close HTTP client, etc.
-  }
 }
 ```
 
-Important details:
-
-- `identifier` must uniquely identify this provider instance (type + name).
-- `resolver` can be cached or created on demand.
-- `initialize` / `flush` / `dispose` help you manage provider lifecycle.
-
-### 4. Registering the provider in `AnalyticsHub`
-
-```dart
-final hub = AnalyticsHub(
-  providers: [
-    BackendAnalyticsProvider(),
-  ],
-);
-
-await hub.initialize();
-await hub.sendEvent(
-  ScreenViewEvent(
-    screenName: 'settings',
-    screenClass: SettingsScreen,
-  ),
-);
-await hub.flush();
-```
-
-Any event that includes `BackendAnalyticsProviderIdentifier` in `providers`
-will be routed to your provider.
-
-## When to create your own provider
-
-- You have an **in‑house analytics system** (logging service, data pipeline, etc.).
-- You need to support **another 3rd‑party SDK** that doesn’t have a ready‑made package.
-- You want to **wrap a complex SDK** behind a simple resolver,
-  so the rest of the app never talks to that SDK directly.
+See [doc/providers.md](doc/providers.md) for the full walkthrough — the
+identifier, the resolver, provider lifecycle (`initialize`/`flush`/`dispose`),
+and registering the provider in `AnalyticsHub` — plus guidance on when a
+custom provider is worth building.
 
 ## Interceptors
 
@@ -228,8 +167,18 @@ final hub = AnalyticsHub(
 );
 ```
 
-## More information
+See [doc/interceptors_and_context.md](doc/interceptors_and_context.md) for
+the interceptor chain execution order and how typed context flows from an
+event through to resolvers.
 
+## Reference
+
+- [doc/getting_started.md](doc/getting_started.md) — install and send your
+  first event.
+- [doc/providers.md](doc/providers.md) — full custom-provider walkthrough.
+- [doc/interceptors_and_context.md](doc/interceptors_and_context.md) —
+  interceptor chain order and typed context.
+- [doc/testing.md](doc/testing.md) — testing code that uses `AnalyticsHub`.
 - Core example: `example/main.dart`.
 - Firebase and Mixpanel providers are in sibling packages in this repository.
 

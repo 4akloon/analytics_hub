@@ -1,5 +1,11 @@
 ## analytics_hub_firebase
 
+![Dart](https://img.shields.io/badge/Dart-%3E%3D3.5-0175C2?logo=dart&logoColor=white)
+![Part of](https://img.shields.io/badge/part_of-analytics__hub-informational)
+
+> Частина монорепозиторію analytics_hub. Новачок? Почніть з
+> [кореневого README](../../README.md).
+
 > English version: [README.md](README.md)
 
 `analytics_hub_firebase` інтегрує `analytics_hub` з Firebase Analytics.

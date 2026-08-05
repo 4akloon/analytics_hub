@@ -1,5 +1,11 @@
 ## Analytics Hub Firebase Provider
 
+![Dart](https://img.shields.io/badge/Dart-%3E%3D3.5-0175C2?logo=dart&logoColor=white)
+![Part of](https://img.shields.io/badge/part_of-analytics__hub-informational)
+
+> Part of the analytics_hub workspace. New here? Start with the
+> [root README](../../README.md).
+
 > Ukrainian version: [README.ua.md](README.ua.md)
 
 `analytics_hub_firebase` connects `analytics_hub` to Firebase Analytics.

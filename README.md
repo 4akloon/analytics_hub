@@ -1,5 +1,8 @@
 ## Analytics Hub
 
+![Dart](https://img.shields.io/badge/Dart-%3E%3D3.5-0175C2?logo=dart&logoColor=white)
+![Style](https://img.shields.io/badge/style-lints-brightgreen)
+
 Monorepo with `analytics_hub` packages for unified analytics routing across providers.
 
 Current model is intentionally **single-event**: only `LogEvent` is supported by core and official providers.
