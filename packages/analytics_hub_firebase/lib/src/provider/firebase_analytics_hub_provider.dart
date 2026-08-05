@@ -8,8 +8,8 @@ import 'firebase_analytics_hub_provider_identifier.dart';
 /// [FirebaseAnalytics].
 ///
 /// Create with [FirebaseAnalyticsHubProvider] (custom instance) or
-/// [FirebaseAnalyticsHubProvider.fromInstance] (default app). On [initialize],
-/// enables analytics collection.
+/// [FirebaseAnalyticsHubProvider.fromInstance] (default app). Enable
+/// collection on the [FirebaseAnalytics] instance in the app if needed.
 class FirebaseAnalyticsHubProvider extends AnalyticsProvider {
   /// Creates a provider that uses the given [analytics] instance.
   ///
@@ -35,7 +35,4 @@ class FirebaseAnalyticsHubProvider extends AnalyticsProvider {
   @override
   FirebaseAnalyticsEventResolver get resolver =>
       FirebaseAnalyticsEventResolver(_analytics);
-
-  @override
-  Future<void> initialize() => _analytics.setAnalyticsCollectionEnabled(true);
 }

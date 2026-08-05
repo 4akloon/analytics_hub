@@ -22,11 +22,8 @@ Future<void> main() async {
     ],
   );
 
-  await hub.initialize();
-
   await hub.sendEvent(
     const ExampleEvent(creativeName: 'creative_name'),
   );
 
-  await hub.dispose();
 }

@@ -10,8 +10,6 @@ void main() async {
     ],
   );
 
-  await hub.initialize();
-
   await hub.sendEvent(const ExampleEvent(exampleProperty: 'example_value'));
 }
 
@@ -52,11 +50,6 @@ class ExampleAnalyticsProvider extends AnalyticsProvider {
 
   @override
   ExampleEventResolver get resolver => const ExampleEventResolver();
-
-  @override
-  Future<void> initialize() async {
-    print('ExampleAnalyticsProvider initialized');
-  }
 }
 
 class ExampleAnalyticsProviderKey extends ProviderIdentifier {

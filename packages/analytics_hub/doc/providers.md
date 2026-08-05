@@ -66,16 +66,6 @@ class BackendAnalyticsProvider
 
   @override
   BackendEventResolver get resolver => const BackendEventResolver();
-
-  @override
-  Future<void> initialize() async {
-    // e.g. create HTTP client, auth headers
-  }
-
-  @override
-  Future<void> dispose() async {
-    // close HTTP client, etc.
-  }
 }
 ```
 
@@ -83,7 +73,8 @@ Important details:
 
 - `identifier` must uniquely identify this provider instance (type + name).
 - `resolver` can be cached or created on demand.
-- `initialize` / `flush` / `dispose` help you manage provider lifecycle.
+- Override `flush` if the backend buffers events. SDK lifecycle belongs in the
+  app (pass a ready backend into the constructor).
 
 ## 4. Registering the provider in `AnalyticsHub`
 
@@ -94,7 +85,6 @@ final hub = AnalyticsHub(
   ],
 );
 
-await hub.initialize();
 await hub.sendEvent(
   ScreenViewEvent(
     screenName: 'settings',

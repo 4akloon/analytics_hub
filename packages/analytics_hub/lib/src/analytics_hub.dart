@@ -11,11 +11,10 @@ import 'provider/provider_identifier.dart';
 
 /// Central hub that routes [Event]s to registered [AnalyticsProvider]s.
 ///
-/// Create an [AnalyticsHub] with a list of [providers].
-/// After [initialize], use [sendEvent] to send events to the providers specified
-/// by each event's [Event.providers].
+/// Create an [AnalyticsHub] with a list of [providers], then use [sendEvent]
+/// to send events to the providers specified by each event's [Event.providers].
 ///
-/// When done, call [dispose] to dispose all providers.
+/// Call [flush] before app shutdown if any provider buffers events.
 class AnalyticsHub {
   /// Creates an [AnalyticsHub] with the given [providers].
   ///
@@ -38,19 +37,6 @@ class AnalyticsHub {
   final EventDispatcher _dispatcher;
 
   static final _logger = Logger('AnalyticsHub');
-
-  /// Initializes the hub and all registered providers.
-  ///
-  /// Calls [AnalyticsProvider.initialize] on each provider sequentially.
-  /// Call this once after creating the hub (e.g. at app startup).
-  Future<void> initialize() async {
-    _logger.info('Initializing...');
-    await Future.forEach(
-      _providers.values,
-      (provider) async => provider.initialize(),
-    );
-    _logger.info('Initialized!');
-  }
 
   /// Sends [event] to every provider whose key is in [Event.providers].
   ///
@@ -85,22 +71,11 @@ class AnalyticsHub {
 
   /// Flushes all providers.
   ///
-  /// This is useful to ensure that all events are sent to the providers before the app is closed.
+  /// Useful before app shutdown to ensure buffered events are sent.
   Future<void> flush() async {
     for (final provider in _providers.values) {
       await provider.flush();
     }
-  }
-
-  /// Disposes all providers.
-  ///
-  /// Call this when the hub is no longer needed (e.g. app shutdown or scope exit).
-  Future<void> dispose() async {
-    _logger.info('Disposing...');
-    for (final provider in _providers.values) {
-      await provider.dispose();
-    }
-    _logger.info('Disposed!');
   }
 }
 

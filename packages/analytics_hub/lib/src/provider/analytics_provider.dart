@@ -9,7 +9,8 @@ import 'provider_identifier.dart';
 /// receive events from [AnalyticsHub].
 ///
 /// The hub uses [resolver] to dispatch [Event]s that target [identifier].
-/// Override [initialize], [flush], and [dispose] as needed.
+/// Override [flush] if the backend buffers events. SDK lifecycle belongs in
+/// the app — pass an already-initialized backend instance into the constructor.
 abstract class AnalyticsProvider {
   /// Creates a provider with the given [identifier].
   ///
@@ -29,15 +30,7 @@ abstract class AnalyticsProvider {
   /// The resolver used by [AnalyticsHub] to send events to this provider.
   EventResolver get resolver;
 
-  /// Called once by [AnalyticsHub.initialize]. Override to set up the backend
-  /// (e.g. SDK init). Default implementation does nothing.
-  FutureOr<void> initialize() async {}
-
   /// Called by [AnalyticsHub.flush]. Override to flush any pending events.
   /// Default implementation does nothing.
   FutureOr<void> flush() {}
-
-  /// Called by [AnalyticsHub.dispose]. Override to clean up (e.g. close SDK).
-  /// Default implementation does nothing.
-  FutureOr<void> dispose() {}
 }

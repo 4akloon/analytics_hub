@@ -134,9 +134,8 @@ class BackendAnalyticsProvider extends AnalyticsProvider {
 ```
 
 See [doc/providers.md](doc/providers.md) for the full walkthrough — the
-identifier, the resolver, provider lifecycle (`initialize`/`flush`/`dispose`),
-and registering the provider in `AnalyticsHub` — plus guidance on when a
-custom provider is worth building.
+identifier, the resolver, optional `flush`, and registering the provider in
+`AnalyticsHub` — plus guidance on when a custom provider is worth building.
 
 ## Interceptors
 

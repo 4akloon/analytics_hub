@@ -40,7 +40,6 @@ Future<void> main() async {
     ],
   );
 
-  await hub.initialize();
   await hub.sendEvent(const SignupEvent('email'));
   await hub.flush();
 }
@@ -48,8 +47,8 @@ Future<void> main() async {
 
 - `providers` on the event lists which registered providers should receive
   it, by `ProviderIdentifier`.
-- `AnalyticsHub.initialize()` initializes every registered provider, in
-  registration order.
+- SDK setup belongs in the app — pass already-initialized backend instances
+  into provider constructors. The hub is ready as soon as you construct it.
 - `sendEvent` resolves the event only for providers it targets; a provider not
   listed in `providers` never sees the event.
 

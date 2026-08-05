@@ -29,11 +29,8 @@ Future<void> main() async {
     ],
   );
 
-  await hub.initialize();
-
   await hub.sendEvent(
     const ExampleEvent(exampleProperty: 'example_property'),
   );
 
-  await hub.dispose();
 }

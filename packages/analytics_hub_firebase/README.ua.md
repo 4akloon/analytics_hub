@@ -33,7 +33,6 @@ final hub = AnalyticsHub(
   ],
 );
 
-await hub.initialize();
 await hub.sendEvent(const SignupEvent('email'));
 ```
 

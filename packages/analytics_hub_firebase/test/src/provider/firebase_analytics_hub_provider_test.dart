@@ -27,16 +27,6 @@ void main() {
       expect(provider.identifier.name, equals('test_app'));
     });
 
-    test('initialize calls setAnalyticsCollectionEnabled', () async {
-      when(() => mockAnalytics.setAnalyticsCollectionEnabled(any()))
-          .thenAnswer((_) async {});
-
-      final provider = FirebaseAnalyticsHubProvider(analytics: mockAnalytics);
-      await provider.initialize();
-
-      verify(() => mockAnalytics.setAnalyticsCollectionEnabled(true)).called(1);
-    });
-
     test('flush is a no-op for firebase analytics', () {
       final provider = FirebaseAnalyticsHubProvider(analytics: mockAnalytics);
 

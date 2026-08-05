@@ -49,7 +49,6 @@ void main() {
         ),
       ],
     );
-    await hub.initialize();
 
     await hub.sendEvent(
       const _SignupEvent('email'),
@@ -59,7 +58,6 @@ void main() {
     expect(recorder.first.name, equals('sign_up'));
     expect(recorder.first.properties, equals({'method': 'email'}));
 
-    await hub.dispose();
   });
 }
 
@@ -89,8 +87,8 @@ Things worth asserting on:
   context, also record `EventDispatchContext` per call (add a
   `List<EventDispatchContext>? contextRecorder` alongside `recorder`) and
   assert on `context.entry<YourContextEntry>()`.
-- **Lifecycle** — track `initialize`/`flush`/`dispose` calls on the fake
-  provider directly if a test needs to verify lifecycle behavior.
+- **Lifecycle** — track `flush` calls on the fake provider directly if a test
+  needs to verify flush behavior.
 
 This is the same pattern `analytics_hub`'s own test suite uses internally —
 see `test/src/analytics_hub_test.dart` for the full `TestProvider`/

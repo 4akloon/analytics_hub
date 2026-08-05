@@ -10,7 +10,7 @@
 /// final hub = AnalyticsHub(
 ///   providers: [provider],
 /// );
-/// await hub.initialize();
+/// await hub.sendEvent(...);
 /// ```
 library;
 

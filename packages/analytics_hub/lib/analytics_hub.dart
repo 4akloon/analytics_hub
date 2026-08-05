@@ -9,7 +9,6 @@
 /// final hub = AnalyticsHub(
 ///   providers: [firebaseProvider, mixpanelProvider],
 /// );
-/// await hub.initialize();
 /// await hub.sendEvent(MyLogEvent('button_clicked'));
 /// ```
 library;
