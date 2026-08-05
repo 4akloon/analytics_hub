@@ -5,6 +5,10 @@
 
 ### Changed
 - Removed the unused `logging` dependency.
+- Raised the `mixpanel_flutter` lower bound to `>=2.3.0` — earlier 2.x
+  releases had a synchronous `Mixpanel.track()` (returning `void`), which
+  does not satisfy `MixpanelEventResolver.resolve`'s `Future<void>` return
+  type.
 
 ### Breaking Changes
 - Removed `setSession` and the `getAnonymousId` parameter along with core session

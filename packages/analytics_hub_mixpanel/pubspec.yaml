@@ -11,7 +11,7 @@ environment:
 
 dependencies:
   analytics_hub: ">=0.5.0 <0.6.0"
-  mixpanel_flutter: ">=2.0.0 <4.0.0"
+  mixpanel_flutter: ">=2.3.0 <4.0.0"
 
 dev_dependencies:
   mocktail: ^1.0.4
