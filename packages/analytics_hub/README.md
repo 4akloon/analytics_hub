@@ -12,7 +12,6 @@ such as Firebase, Mixpanel, and custom providers.
 - Single event model based on `LogEvent`.
 - One routing entry point via `AnalyticsHub`.
 - Provider targeting through `EventProvider`.
-- Centralized session propagation through `HubSessionDelegate`.
 - Global and provider-level event interceptors.
 - Typed event metadata context (`EventContext` / `ContextEntry`).
 
@@ -20,7 +19,7 @@ such as Firebase, Mixpanel, and custom providers.
 
 - You send the **same logical event** to multiple analytics SDKs.
 - You want to **decouple domain/UI code** from concrete analytics dependencies.
-- You need **centralized session and configuration management** for analytics.
+- You need **centralized configuration management** for analytics.
 - You want to be able to toggle providers on/off per environment or product.
 
 Current providers (each has its own README with integration steps):
@@ -35,11 +34,11 @@ In your app `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  analytics_hub: ^0.4.0
+  analytics_hub: ^0.5.0
   # and then any concrete providers you need, e.g.:
-  # analytics_hub_firebase: ^0.4.0
-  # analytics_hub_mixpanel: ^0.4.0
-  # analytics_hub_appsflyer: ^0.4.0
+  # analytics_hub_firebase: ^0.5.0
+  # analytics_hub_mixpanel: ^0.5.0
+  # analytics_hub_appsflyer: ^0.5.0
 ```
 
 ## Core concepts
@@ -50,8 +49,6 @@ dependencies:
 - **`AnalytycsProvider`** – abstraction of an analytics provider.
 - **`EventResolver`** – provider event handling contract.
 - **`ProviderIdentifier`** – identifies a provider; events list targets via `EventProvider`.
-- **`Session` / `HubSessionDelegate`** – session model plus a delegate that supplies the current
-  session and a stream of session changes.
 - **`EventInterceptor`** – middleware that can transform or drop event dispatches.
 - **`EventDispatchContext`** – runtime context available inside interceptors and resolvers.
 
@@ -161,11 +158,6 @@ class BackendAnalyticsProvider
   }
 
   @override
-  Future<void> setSession(Session? session) async {
-    // e.g. send session.id to backend for user association
-  }
-
-  @override
   Future<void> dispose() async {
     // close HTTP client, etc.
   }
@@ -176,14 +168,12 @@ Important details:
 
 - `identifier` must uniquely identify this provider instance (type + name).
 - `resolver` can be cached or created on demand.
-- `setSession` is called whenever the session changes (`HubSessionDelegate.sessionStream`).
 - `initialize` / `flush` / `dispose` help you manage provider lifecycle.
 
 ### 4. Registering the provider in `AnalyticsHub`
 
 ```dart
 final hub = AnalyticsHub(
-  sessionDelegate: yourSessionDelegate,
   providers: [
     BackendAnalyticsProvider(),
   ],
@@ -233,7 +223,6 @@ final class PrefixInterceptor implements EventInterceptor {
 }
 
 final hub = AnalyticsHub(
-  sessionDelegate: yourSessionDelegate,
   providers: [BackendAnalyticsProvider()],
   interceptors: [const PrefixInterceptor('prod')],
 );

@@ -33,38 +33,6 @@ void main() {
       expect(provider.identifier.name, equals('custom'));
     });
 
-    test('setSession with session calls identify', () async {
-      when(() => mockMixpanel.identify(any())).thenAnswer((_) async {});
-
-      final provider = MixpanelAnalyticsHubProvider(mixpanel: mockMixpanel);
-      const session = Session(id: 'user-123');
-      await provider.setSession(session);
-
-      verify(() => mockMixpanel.identify('user-123')).called(1);
-    });
-
-    test('setSession with null and getAnonymousId calls identify with callback',
-        () async {
-      when(() => mockMixpanel.identify(any())).thenAnswer((_) async {});
-
-      final provider = MixpanelAnalyticsHubProvider(
-        mixpanel: mockMixpanel,
-        getAnonymousId: () => 'anon-id',
-      );
-      await provider.setSession(null);
-
-      verify(() => mockMixpanel.identify('anon-id')).called(1);
-    });
-
-    test('setSession with null and no getAnonymousId calls reset', () async {
-      when(() => mockMixpanel.reset()).thenAnswer((_) async {});
-
-      final provider = MixpanelAnalyticsHubProvider(mixpanel: mockMixpanel);
-      await provider.setSession(null);
-
-      verify(() => mockMixpanel.reset()).called(1);
-    });
-
     test('flush delegates to mixpanel', () async {
       when(() => mockMixpanel.flush()).thenAnswer((_) async {});
 

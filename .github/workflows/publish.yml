@@ -1,0 +1,64 @@
+# Publishes one package to pub.dev when its release tag is pushed.
+#
+# Tag convention: <package>-v<version> (e.g. `analytics_hub-v0.5.0`,
+# `analytics_hub_mixpanel-v0.5.1`) — only the tagged package is published,
+# matching the repo's "bump only what changed" release policy.
+#
+# Auth is pub.dev's GitHub Actions OIDC flow (no secrets): `dart-lang/setup-dart`
+# mints a temporary pub.dev credential from the job's `id-token`. For it to be
+# accepted, each package must have automated publishing enabled on pub.dev
+# (Admin → Automated publishing): repository `4akLoon/analytics_hub`, tag pattern
+# `<package>-v{{version}}`, and the `pub.dev` GitHub environment required.
+# NOTE: pub.dev only allows this for *existing* packages — the very first
+# version of each package has to be published manually (`dart pub publish`).
+name: Publish
+
+on:
+  push:
+    tags:
+      - 'analytics_hub-v*'
+      - 'analytics_hub_firebase-v*'
+      - 'analytics_hub_mixpanel-v*'
+      - 'analytics_hub_appsflyer-v*'
+
+jobs:
+  publish:
+    name: Publish to pub.dev
+    runs-on: ubuntu-latest
+    environment: pub.dev
+    permissions:
+      id-token: write # pub.dev OIDC token exchange
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Parse package & version from the tag
+        id: meta
+        run: |
+          TAG="$GITHUB_REF_NAME"
+          echo "package=${TAG%-v*}" >> "$GITHUB_OUTPUT"
+          echo "version=${TAG##*-v}" >> "$GITHUB_OUTPUT"
+
+      - name: Verify the pubspec version matches the tag
+        run: >-
+          grep -qx 'version: ${{ steps.meta.outputs.version }}'
+          'packages/${{ steps.meta.outputs.package }}/pubspec.yaml'
+
+      # Mints the temporary pub.dev credential from the job's OIDC token.
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+
+      # Installed after setup-dart so Flutter's `dart` wins the PATH: the
+      # provider packages depend on Flutter plugins that a plain Dart SDK
+      # can't resolve. The pub credential store is shared between the two SDKs.
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Install dependencies (workspace)
+        run: flutter pub get
+
+      - name: Publish ${{ steps.meta.outputs.package }} ${{ steps.meta.outputs.version }}
+        run: dart pub publish --force
+        working-directory: packages/${{ steps.meta.outputs.package }}

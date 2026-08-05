@@ -12,8 +12,8 @@
 
 ```yaml
 dependencies:
-  analytics_hub: ^0.4.0
-  analytics_hub_appsflyer: ^0.4.0
+  analytics_hub: ^0.5.0
+  analytics_hub_appsflyer: ^0.5.0
   appsflyer_sdk: ^6.15.0
 ```
 
@@ -34,12 +34,8 @@ await sdk.initSdk(
 );
 
 final hub = AnalyticsHub(
-  sessionDelegate: yourSessionDelegate,
   providers: [
-    AppsflyerAnalyticsHubProvider(
-      appsFlyerSdk: sdk,
-      getAnonymousId: () => 'anonymous-user-id',
-    ),
+    AppsflyerAnalyticsHubProvider(appsFlyerSdk: sdk),
   ],
 );
 
@@ -65,11 +61,8 @@ class SignupEvent extends LogEvent {
 }
 ```
 
-## Сесія
+## Нотатки
 
-`AppsflyerAnalyticsHubProvider` працює так:
-
-- якщо сесія є — викликає `setCustomerUserId(session.id)`;
-- якщо сесія `null` — викликає обовʼязковий `getAnonymousId` і передає значення
-  у `setCustomerUserId(...)`.
+- Керування customer user ID застосунок здійснює самостійно через
+  `AppsflyerSdk.setCustomerUserId`.
 

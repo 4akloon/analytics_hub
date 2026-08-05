@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:logging/logging.dart';
 
 import 'core/interception/dispatch/context_builder.dart';
@@ -10,27 +8,21 @@ import 'core/interception/interceptor/event_interceptor.dart';
 import 'event/events/events.dart';
 import 'provider/analytics_provider.dart';
 import 'provider/provider_identifier.dart';
-import 'session/hub_session_delegate.dart';
-import 'session/session.dart';
 
 /// Central hub that routes [Event]s to registered [AnalytycsProvider]s.
 ///
 /// Create an [AnalyticsHub] with a list of [providers].
-/// Optionally provide [sessionDelegate] to enable session propagation.
 /// After [initialize], use [sendEvent] to send events to the providers specified
-/// by each event's [Event.providers]. Session updates from [sessionDelegate]
-/// are propagated to all providers automatically.
+/// by each event's [Event.providers].
 ///
-/// When done, call [dispose] to cancel session subscriptions and dispose
-/// all providers.
+/// When done, call [dispose] to dispose all providers.
 class AnalyticsHub {
-  /// Creates an [AnalyticsHub] with the given [providers] and optional [sessionDelegate].
+  /// Creates an [AnalyticsHub] with the given [providers].
   ///
   /// Each provider must have a unique [AnalytycsProvider.identifier]. Duplicate keys
   /// will overwrite earlier providers in the list.
   AnalyticsHub({
     required List<AnalytycsProvider> providers,
-    HubSessionDelegate? sessionDelegate,
     List<EventInterceptor> interceptors = const [],
   })  : _providers = {
           for (final provider in providers) provider.identifier: provider,
@@ -40,37 +32,22 @@ class AnalyticsHub {
           contextBuilder: const EventDispatchContextBuilder(
             correlationIdGenerator: TimestampCorrelationIdGenerator(),
           ),
-        ),
-        _sessionDelegate = sessionDelegate {
-    _sessionSubscription = _sessionDelegate?.sessionStream.listen(
-      _onSessionChanged,
-    );
-  }
+        );
 
   final Map<ProviderIdentifier, AnalytycsProvider> _providers;
-  final HubSessionDelegate? _sessionDelegate;
   final EventDispatcher _dispatcher;
 
   static final _logger = Logger('AnalyticsHub');
 
-  StreamSubscription<Session?>? _sessionSubscription;
-
   /// Initializes the hub and all registered providers.
   ///
-  /// Fetches the current session from [HubSessionDelegate.getSession], then
-  /// calls [AnalytycsProvider.initialize] and [AnalytycsProvider.setSession]
-  /// on each provider. Call this once after creating the hub (e.g. at app startup).
+  /// Calls [AnalytycsProvider.initialize] on each provider sequentially.
+  /// Call this once after creating the hub (e.g. at app startup).
   Future<void> initialize() async {
     _logger.info('Initializing...');
-    final session = await _sessionDelegate?.getSession();
-    _logger.fine('Session: $session');
-    await Future.wait(
-      _providers.values.map((provider) async {
-        await provider.initialize();
-        if (_sessionDelegate != null) {
-          await provider.setSession(session);
-        }
-      }),
+    await Future.forEach(
+      _providers.values,
+      (provider) async => provider.initialize(),
     );
     _logger.info('Initialized!');
   }
@@ -81,7 +58,7 @@ class AnalyticsHub {
   /// provider key that was not registered with this hub. Returns a [Future]
   /// that completes when all targeted providers have finished handling the event.
   Future<void> sendEvent(Event event) {
-    _logger.info('Sending event: $event');
+    _logger.fine('Sending event: $event');
     return Future.wait(
       event.providers.map((eventProvider) async {
         final provider = _providers[eventProvider.identifier];
@@ -115,23 +92,15 @@ class AnalyticsHub {
     }
   }
 
-  /// Cancels the session stream subscription and disposes all providers.
+  /// Disposes all providers.
   ///
   /// Call this when the hub is no longer needed (e.g. app shutdown or scope exit).
   Future<void> dispose() async {
     _logger.info('Disposing...');
-    await _sessionSubscription?.cancel();
     for (final provider in _providers.values) {
       await provider.dispose();
     }
     _logger.info('Disposed!');
-  }
-
-  Future<void> _onSessionChanged(Session? session) async {
-    _logger.fine('Session changed: $session');
-    await Future.wait(
-      _providers.values.map((provider) => provider.setSession(session)),
-    );
   }
 }
 

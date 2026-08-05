@@ -16,13 +16,12 @@
 - `EventResolver` — контракт обробки подій у провайдері.
 - `EventInterceptor` — middleware для трансформації/дропу подій.
 - `EventContext` + `ContextEntry` — типізований контекст події.
-- `Session` + `HubSessionDelegate` — робота із сесією користувача.
 
 ## Встановлення
 
 ```yaml
 dependencies:
-  analytics_hub: ^0.3.3
+  analytics_hub: ^0.5.0
 ```
 
 ## Приклад події
@@ -80,9 +79,6 @@ class BackendAnalyticsProvider extends AnalytycsProvider {
 
   @override
   BackendEventResolver get resolver => const BackendEventResolver();
-
-  @override
-  Future<void> setSession(Session? session) async {}
 }
 ```
 

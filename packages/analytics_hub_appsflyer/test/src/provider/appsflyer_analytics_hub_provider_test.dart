@@ -23,7 +23,6 @@ void main() {
     test('creates with sdk and null name', () {
       final provider = AppsflyerAnalyticsHubProvider(
         appsFlyerSdk: mockSdk,
-        getAnonymousId: () => 'anon-id',
       );
       expect(provider.identifier.name, isNull);
     });
@@ -32,40 +31,13 @@ void main() {
       final provider = AppsflyerAnalyticsHubProvider(
         appsFlyerSdk: mockSdk,
         name: 'custom',
-        getAnonymousId: () => 'anon-id',
       );
       expect(provider.identifier.name, equals('custom'));
-    });
-
-    test('setSession with session calls setCustomerUserId', () async {
-      when(() => mockSdk.setCustomerUserId(any())).thenReturn(null);
-
-      final provider = AppsflyerAnalyticsHubProvider(
-        appsFlyerSdk: mockSdk,
-        getAnonymousId: () => 'anon-id',
-      );
-      const session = Session(id: 'user-123');
-      await provider.setSession(session);
-
-      verify(() => mockSdk.setCustomerUserId('user-123')).called(1);
-    });
-
-    test('setSession with null and getAnonymousId uses callback', () async {
-      when(() => mockSdk.setCustomerUserId(any())).thenReturn(null);
-
-      final provider = AppsflyerAnalyticsHubProvider(
-        appsFlyerSdk: mockSdk,
-        getAnonymousId: () => 'anon-id',
-      );
-      await provider.setSession(null);
-
-      verify(() => mockSdk.setCustomerUserId('anon-id')).called(1);
     });
 
     test('flush is a no-op for appsflyer', () {
       final provider = AppsflyerAnalyticsHubProvider(
         appsFlyerSdk: mockSdk,
-        getAnonymousId: () => 'anon-id',
       );
 
       expect(() => provider.flush(), returnsNormally);

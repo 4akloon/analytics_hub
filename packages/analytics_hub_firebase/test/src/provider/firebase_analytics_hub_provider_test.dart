@@ -42,27 +42,6 @@ void main() {
       verify(() => mockAnalytics.setAnalyticsCollectionEnabled(true)).called(1);
     });
 
-    test('setSession with session calls setUserId', () async {
-      when(() => mockAnalytics.setUserId(id: any(named: 'id')))
-          .thenAnswer((_) async {});
-
-      final provider = FirebaseAnalyticsHubProvider(analytics: mockAnalytics);
-      const session = Session(id: 'user-123');
-      await provider.setSession(session);
-
-      verify(() => mockAnalytics.setUserId(id: 'user-123')).called(1);
-    });
-
-    test('setSession with null clears userId', () async {
-      when(() => mockAnalytics.setUserId(id: any(named: 'id')))
-          .thenAnswer((_) async {});
-
-      final provider = FirebaseAnalyticsHubProvider(analytics: mockAnalytics);
-      await provider.setSession(null);
-
-      verify(() => mockAnalytics.setUserId(id: null)).called(1);
-    });
-
     test('flush is a no-op for firebase analytics', () {
       final provider = FirebaseAnalyticsHubProvider(analytics: mockAnalytics);
 

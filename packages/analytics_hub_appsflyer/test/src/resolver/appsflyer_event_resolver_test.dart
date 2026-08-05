@@ -23,7 +23,6 @@ void main() {
 
       final provider = AppsflyerAnalyticsHubProvider(
         appsFlyerSdk: mockSdk,
-        getAnonymousId: () => 'anon-id',
       );
       const event = _TestEvent('test_event', {'key': 'value', 'nullKey': null});
 
@@ -59,7 +58,6 @@ void main() {
 
       final provider = AppsflyerAnalyticsHubProvider(
         appsFlyerSdk: mockSdk,
-        getAnonymousId: () => 'anon-id',
       );
       const event = _TestEvent('test_event', null);
 

@@ -5,8 +5,9 @@
 /// Events declare which providers receive them by including the corresponding
 /// identifiers in [Event.providers].
 ///
-/// Equality and [hashCode] are based on [name] so keys with the same name
-/// are considered the same provider.
+/// Equality and [hashCode] are based on the runtime type and [name], so
+/// identifiers of different subclasses never collide even when they share
+/// the same name.
 abstract class ProviderIdentifier {
   /// Creates a key with an optional [name] for debugging and equality.
   const ProviderIdentifier({this.name});
@@ -17,12 +18,14 @@ abstract class ProviderIdentifier {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    return other is ProviderIdentifier && other.name == name;
+    return other is ProviderIdentifier &&
+        other.runtimeType == runtimeType &&
+        other.name == name;
   }
 
   @override
-  int get hashCode => name?.hashCode ?? 0;
+  int get hashCode => Object.hash(runtimeType, name);
 
   @override
-  String toString() => 'ProviderIdentifier(name: $name)';
+  String toString() => '$runtimeType(name: $name)';
 }

@@ -1,5 +1,4 @@
 import 'package:analytics_hub/src/event/events/events.dart';
-import 'package:logging/logging.dart';
 
 import '../context/resolved_event.dart';
 import '../interceptor/event_interceptor.dart';
@@ -27,17 +26,11 @@ class EventDispatcher {
   final EventOverridesApplier _overridesApplier;
   final InterceptorChainExecutor _chainExecutor;
 
-  static final _logger = Logger('AnalyticsHub.EventDispatcher');
-
   /// Dispatches one [event] to one [target] through overrides/interceptors/resolver.
   Future<InterceptorResult> dispatch({
     required Event event,
     required DispatchTarget target,
   }) async {
-    _logger.info(
-      'Dispatching event: $event to target: ${target.provider.identifier}',
-    );
-
     final context = _contextBuilder.build(
       originalEvent: event,
       target: target,
@@ -64,8 +57,6 @@ class EventDispatcher {
         return InterceptorResult.continueWith(event, context: context);
       },
     );
-
-    _logger.info('Dispatch completed: $result');
 
     return result;
   }

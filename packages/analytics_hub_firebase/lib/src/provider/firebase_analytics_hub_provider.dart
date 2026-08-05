@@ -10,18 +10,21 @@ import 'firebase_analytics_hub_provider_identifier.dart';
 ///
 /// Create with [FirebaseAnalyticsHubProvider] (custom instance) or
 /// [FirebaseAnalyticsHubProvider.fromInstance] (default app). On [initialize],
-/// enables analytics collection; on [setSession], sets the Firebase user ID.
+/// enables analytics collection.
 class FirebaseAnalyticsHubProvider extends AnalytycsProvider {
   /// Creates a provider that uses the given [analytics] instance.
   ///
   /// The provider key name is set to [FirebaseAnalytics.app]'s name.
-  FirebaseAnalyticsHubProvider({required FirebaseAnalytics analytics})
-      : _analytics = analytics,
+  /// [interceptors] are provider-level interceptors executed after hub
+  /// interceptors.
+  FirebaseAnalyticsHubProvider({
+    required FirebaseAnalytics analytics,
+    super.interceptors = const [],
+  })  : _analytics = analytics,
         super(
           identifier: FirebaseAnalyticsHubIdentifier(
             name: analytics.app.name,
           ),
-          interceptors: const [],
         );
 
   /// Creates a provider using [FirebaseAnalytics.instance] (default app).
@@ -38,10 +41,6 @@ class FirebaseAnalyticsHubProvider extends AnalytycsProvider {
 
   @override
   Future<void> initialize() => _analytics.setAnalyticsCollectionEnabled(true);
-
-  @override
-  Future<void> setSession(Session? session) =>
-      _analytics.setUserId(id: session?.id);
 
   @override
   void flush() {

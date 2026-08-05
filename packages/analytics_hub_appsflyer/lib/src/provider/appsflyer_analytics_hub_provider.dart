@@ -7,45 +7,30 @@ import 'appsflyer_analytics_hub_provider_identifier.dart';
 
 /// [AnalytycsProvider] that sends [Event]s to Appsflyer via [AppsflyerSdk].
 ///
-/// The provider delegates event resolution to [AppsflyerEventResolver] and
-/// synchronizes [Session.id] with Appsflyer using
-/// [AppsflyerSdk.setCustomerUserId]. When the session becomes null,
-/// [getAnonymousId] is used to set an anonymous customer user ID.
+/// The provider delegates event resolution to [AppsflyerEventResolver].
+/// Customer user ID management ([AppsflyerSdk.setCustomerUserId]) is handled
+/// by the app directly on the [AppsflyerSdk] instance.
 class AppsflyerAnalyticsHubProvider extends AnalytycsProvider {
   /// Creates a provider that uses the given [appsFlyerSdk] instance.
   ///
   /// [name] is used for the provider identifier (e.g. for event routing).
-  /// [getAnonymousId] is called when session becomes null to set an anonymous
-  /// ID instead of clearing.
+  /// [interceptors] are provider-level interceptors executed after hub
+  /// interceptors.
   AppsflyerAnalyticsHubProvider({
     required AppsflyerSdk appsFlyerSdk,
     String? name,
-    required String Function() getAnonymousId,
+    super.interceptors = const [],
   })  : _appsFlyerSdk = appsFlyerSdk,
-        _getAnonymousId = getAnonymousId,
         super(
           identifier: AppsflyerAnalyticsHubIdentifier(name: name),
-          interceptors: const [],
         );
 
   final AppsflyerSdk _appsFlyerSdk;
-  final String Function() _getAnonymousId;
 
   static final _logger = Logger('AppsflyerAnalyticsHubProvider');
 
   @override
   AppsflyerEventResolver get resolver => AppsflyerEventResolver(_appsFlyerSdk);
-
-  @override
-  Future<void> setSession(Session? session) async {
-    if (session != null) {
-      _appsFlyerSdk.setCustomerUserId(session.id);
-    } else {
-      final anonymousId = _getAnonymousId();
-      _logger.fine('Identifying with anonymous ID: $anonymousId');
-      _appsFlyerSdk.setCustomerUserId(anonymousId);
-    }
-  }
 
   @override
   void flush() {

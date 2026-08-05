@@ -11,8 +11,8 @@ It uses the core `EventResolver` contract with `ResolvedEvent` payload.
 
 ```yaml
 dependencies:
-  analytics_hub: ^0.4.0
-  analytics_hub_firebase: ^0.4.0
+  analytics_hub: ^0.5.0
+  analytics_hub_firebase: ^0.5.0
   firebase_core: ^2.0.0
   firebase_analytics: ^10.0.0
 ```
@@ -21,7 +21,6 @@ dependencies:
 
 ```dart
 final hub = AnalyticsHub(
-  sessionDelegate: yourSessionDelegate,
   providers: [
     FirebaseAnalyticsHubProvider.fromInstance(),
   ],
@@ -49,19 +48,9 @@ class SignupEvent extends LogEvent {
 }
 ```
 
-## Session handling
-
-`FirebaseAnalyticsHubProvider` sets Firebase user id from hub session:
-
-```dart
-@override
-Future<void> setSession(Session? session) async {
-  await _analytics.setUserId(id: session?.id);
-}
-```
-
 ## Notes
 
+- User identification is managed by the app directly via `FirebaseAnalytics.setUserId`.
 - `FirebaseAnalyticsEventResolver` filters out `null` values from properties before calling `logEvent`.
 - Provider-specific event renaming/properties overrides are supported through `EventProvider.overrides`.
 - `flush()` is intentionally a no-op for Firebase Analytics (SDK has no explicit flush API).

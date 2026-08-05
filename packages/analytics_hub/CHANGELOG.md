@@ -1,3 +1,19 @@
+## 0.5.0 - 2026-08-05
+
+### Changed
+- `ProviderIdentifier` equality and `hashCode` now include the runtime type, so
+  identifiers of different subclasses with the same `name` no longer collide.
+  `toString` now prints the concrete subclass name.
+- `AnalyticsHub.initialize` now initializes providers sequentially in
+  registration order instead of concurrently.
+- Reduced logging noise: `sendEvent` logs at `fine` level and the internal
+  dispatch pipeline no longer logs each step.
+
+### Breaking Changes
+- Removed session support: `Session`, `HubSessionDelegate`, the
+  `AnalyticsHub.sessionDelegate` parameter, and `AnalytycsProvider.setSession`
+  are gone. Manage user identity directly on the underlying SDKs.
+
 ## 0.4.0 - 2026-02-26
 
 ### Changed

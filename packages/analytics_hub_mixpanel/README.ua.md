@@ -12,8 +12,8 @@
 
 ```yaml
 dependencies:
-  analytics_hub: ^0.4.0
-  analytics_hub_mixpanel: ^0.4.0
+  analytics_hub: ^0.5.0
+  analytics_hub_mixpanel: ^0.5.0
   mixpanel_flutter: ^2.0.0
 ```
 
@@ -26,7 +26,6 @@ final mixpanel = await Mixpanel.init(
 );
 
 final hub = AnalyticsHub(
-  sessionDelegate: yourSessionDelegate,
   providers: [
     MixpanelAnalyticsHubProvider(mixpanel: mixpanel),
   ],
@@ -54,11 +53,8 @@ class SignupEvent extends LogEvent {
 }
 ```
 
-## Сесія
+## Нотатки
 
-`MixpanelAnalyticsHubProvider` працює так:
-
-- якщо сесія є — викликає `identify(session.id)`;
-- якщо сесія `null`, але передано `getAnonymousId` — ідентифікує через цей id;
-- інакше викликає `reset()`.
+- Ідентифікацію користувача (`identify`/`reset`) застосунок керує самостійно
+  безпосередньо на інстансі `Mixpanel`.
 - `flush()` підтримується та делегується в `Mixpanel.flush()`.

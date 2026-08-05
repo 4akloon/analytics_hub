@@ -2,14 +2,6 @@ import 'package:analytics_hub/analytics_hub.dart';
 import 'package:analytics_hub_appsflyer/analytics_hub_appsflyer.dart';
 import 'package:appsflyer_sdk/appsflyer_sdk.dart';
 
-class EmptySessionDelegate implements HubSessionDelegate {
-  @override
-  Stream<Session?> get sessionStream => Stream.value(null);
-
-  @override
-  Future<Session?> getSession() async => null;
-}
-
 class ExampleEvent extends Event {
   const ExampleEvent({required this.exampleProperty})
       : super('example_log_event');
@@ -45,11 +37,9 @@ Future<void> main() async {
   );
 
   final hub = AnalyticsHub(
-    sessionDelegate: EmptySessionDelegate(),
     providers: [
       AppsflyerAnalyticsHubProvider(
         appsFlyerSdk: appsFlyerSdk,
-        getAnonymousId: () => 'anonymous-user-id',
       ),
     ],
   );

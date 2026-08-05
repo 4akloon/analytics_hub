@@ -1,3 +1,13 @@
+## 0.5.0 - 2026-08-05
+
+### Added
+- Optional `interceptors` constructor parameter for provider-level interceptors.
+
+### Breaking Changes
+- Removed `setSession` along with core session support. Set the Firebase user id
+  directly via `FirebaseAnalytics.setUserId`.
+- Updated dependency constraint to `analytics_hub: ">=0.5.0 <0.6.0"`.
+
 ## 0.4.0 - 2026-02-26
 
 ### Changed

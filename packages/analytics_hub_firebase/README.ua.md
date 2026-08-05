@@ -12,8 +12,8 @@
 
 ```yaml
 dependencies:
-  analytics_hub: ^0.4.0
-  analytics_hub_firebase: ^0.4.0
+  analytics_hub: ^0.5.0
+  analytics_hub_firebase: ^0.5.0
   firebase_core: ^2.0.0
   firebase_analytics: ^10.0.0
 ```
@@ -22,7 +22,6 @@ dependencies:
 
 ```dart
 final hub = AnalyticsHub(
-  sessionDelegate: yourSessionDelegate,
   providers: [
     FirebaseAnalyticsHubProvider.fromInstance(),
   ],
@@ -50,19 +49,9 @@ class SignupEvent extends LogEvent {
 }
 ```
 
-## Сесія
-
-Провайдер синхронізує `Session.id` з Firebase user id:
-
-```dart
-@override
-Future<void> setSession(Session? session) async {
-  await _analytics.setUserId(id: session?.id);
-}
-```
-
 ## Нотатки
 
+- Ідентифікацію користувача застосунок керує самостійно через `FirebaseAnalytics.setUserId`.
 - `FirebaseAnalyticsEventResolver` відфільтровує `null`-значення з `properties` перед `logEvent`.
 - Перезапис `name/properties` під конкретний провайдер працює через `EventProvider.overrides`.
 - `flush()` для Firebase реалізований як no-op (SDK не має явного API для flush).
