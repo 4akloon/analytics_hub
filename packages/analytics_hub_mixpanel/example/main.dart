@@ -32,5 +32,4 @@ Future<void> main() async {
   await hub.sendEvent(
     const ExampleEvent(exampleProperty: 'example_property'),
   );
-
 }

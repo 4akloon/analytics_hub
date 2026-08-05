@@ -25,5 +25,4 @@ Future<void> main() async {
   await hub.sendEvent(
     const ExampleEvent(creativeName: 'creative_name'),
   );
-
 }
