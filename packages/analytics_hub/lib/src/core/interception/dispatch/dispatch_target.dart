@@ -1,6 +1,5 @@
 import 'package:analytics_hub/src/event/events/events.dart';
 import 'package:analytics_hub/src/provider/analytics_provider.dart';
-import 'package:analytics_hub/src/provider/provider_identifier.dart';
 
 /// Provider target that receives one event dispatch.
 class DispatchTarget {
@@ -15,7 +14,4 @@ class DispatchTarget {
 
   /// Concrete provider instance resolved by identifier.
   final AnalytycsProvider provider;
-
-  /// Convenience accessor for provider identifier.
-  ProviderIdentifier get providerIdentifier => eventProvider.identifier;
 }

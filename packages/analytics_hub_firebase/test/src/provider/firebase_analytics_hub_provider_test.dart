@@ -1,4 +1,3 @@
-import 'package:analytics_hub/analytics_hub.dart';
 import 'package:analytics_hub_firebase/analytics_hub_firebase.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -14,10 +13,6 @@ void main() {
 
   late MockFirebaseAnalytics mockAnalytics;
   late MockFirebaseApp mockApp;
-
-  setUpAll(() {
-    registerFallbackValue(const _TestEvent('fallback', null));
-  });
 
   setUp(() {
     mockAnalytics = MockFirebaseAnalytics();
@@ -60,20 +55,4 @@ void main() {
       expect(key.name, equals('custom'));
     });
   });
-}
-
-class _TestEvent extends Event {
-  const _TestEvent(super.name, this.props);
-
-  final Map<String, Object>? props;
-
-  @override
-  Map<String, Object>? get properties => props;
-
-  @override
-  List<EventProvider> get providers => [
-        const EventProvider(
-          FirebaseAnalyticsHubIdentifier(name: 'test'),
-        ),
-      ];
 }

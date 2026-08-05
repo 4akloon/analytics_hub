@@ -3,6 +3,10 @@
 ### Added
 - Optional `interceptors` constructor parameter for provider-level interceptors.
 
+### Changed
+- Removed the `logging` dependency; `flush()` no longer logs a "not supported"
+  message and simply inherits the base no-op.
+
 ### Breaking Changes
 - Removed `setSession` and the required `getAnonymousId` parameter along with core
   session support. Manage the customer user ID directly via

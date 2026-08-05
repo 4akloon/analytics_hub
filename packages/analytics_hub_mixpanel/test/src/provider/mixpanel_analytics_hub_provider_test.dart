@@ -1,4 +1,3 @@
-import 'package:analytics_hub/analytics_hub.dart';
 import 'package:analytics_hub_mixpanel/analytics_hub_mixpanel.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mixpanel_flutter/mixpanel_flutter.dart';
@@ -10,10 +9,6 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   late MockMixpanel mockMixpanel;
-
-  setUpAll(() {
-    registerFallbackValue(const _TestEvent('fallback', null));
-  });
 
   setUp(() {
     mockMixpanel = MockMixpanel();
@@ -54,20 +49,4 @@ void main() {
       expect(key.name, equals('custom'));
     });
   });
-}
-
-class _TestEvent extends Event {
-  const _TestEvent(super.name, this.props);
-
-  final Map<String, Object>? props;
-
-  @override
-  Map<String, Object>? get properties => props;
-
-  @override
-  List<EventProvider> get providers => [
-        const EventProvider(
-          MixpanelAnalyticsHubIdentifier(name: 'test'),
-        ),
-      ];
 }

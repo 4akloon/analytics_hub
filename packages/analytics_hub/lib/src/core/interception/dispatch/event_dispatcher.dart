@@ -30,7 +30,7 @@ class EventDispatcher {
   Future<InterceptorResult> dispatch({
     required Event event,
     required DispatchTarget target,
-  }) async {
+  }) {
     final context = _contextBuilder.build(
       originalEvent: event,
       target: target,
@@ -48,7 +48,7 @@ class EventDispatcher {
       ...target.provider.interceptors,
     ];
 
-    final result = await _chainExecutor.execute(
+    return _chainExecutor.execute(
       interceptors: interceptors,
       event: initialEvent,
       context: context,
@@ -57,7 +57,5 @@ class EventDispatcher {
         return InterceptorResult.continueWith(event, context: context);
       },
     );
-
-    return result;
   }
 }

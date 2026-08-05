@@ -1,4 +1,3 @@
-import 'package:analytics_hub/analytics_hub.dart';
 import 'package:analytics_hub_appsflyer/analytics_hub_appsflyer.dart';
 import 'package:appsflyer_sdk/appsflyer_sdk.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -10,10 +9,6 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   late _MockAppsflyerSdk mockSdk;
-
-  setUpAll(() {
-    registerFallbackValue(const _TestEvent('fallback', null));
-  });
 
   setUp(() {
     mockSdk = _MockAppsflyerSdk();
@@ -55,20 +50,4 @@ void main() {
       expect(key.name, equals('custom'));
     });
   });
-}
-
-class _TestEvent extends Event {
-  const _TestEvent(super.name, this.props);
-
-  final Map<String, Object>? props;
-
-  @override
-  Map<String, Object>? get properties => props;
-
-  @override
-  List<EventProvider> get providers => [
-        const EventProvider(
-          AppsflyerAnalyticsHubIdentifier(name: 'test'),
-        ),
-      ];
 }

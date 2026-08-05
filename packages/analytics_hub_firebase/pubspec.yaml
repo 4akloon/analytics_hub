@@ -13,10 +13,8 @@ dependencies:
   analytics_hub: ">=0.5.0 <0.6.0"
   firebase_core: ">=2.0.0 <5.0.0"
   firebase_analytics: ">=10.0.0 <13.0.0"
-  logging: ">=1.0.0 <2.0.0"
 
 dev_dependencies:
-  test: ^1.24.0
   mocktail: ^1.0.4
   flutter_test:
     sdk: flutter

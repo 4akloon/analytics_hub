@@ -26,6 +26,7 @@ dependencies:
   analytics_hub_firebase: ^0.5.0
   analytics_hub_mixpanel: ^0.5.0
   # analytics_hub_appsflyer: ^0.5.0 # optional, if you use Appsflyer
+```
 
 ```dart
 class ExampleLogEvent extends LogEvent {

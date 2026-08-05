@@ -1,6 +1,5 @@
 import 'package:analytics_hub/analytics_hub.dart';
 import 'package:appsflyer_sdk/appsflyer_sdk.dart';
-import 'package:logging/logging.dart';
 
 import '../resolver/appsflyer_event_resolver.dart';
 import 'appsflyer_analytics_hub_provider_identifier.dart';
@@ -27,13 +26,6 @@ class AppsflyerAnalyticsHubProvider extends AnalytycsProvider {
 
   final AppsflyerSdk _appsFlyerSdk;
 
-  static final _logger = Logger('AppsflyerAnalyticsHubProvider');
-
   @override
   AppsflyerEventResolver get resolver => AppsflyerEventResolver(_appsFlyerSdk);
-
-  @override
-  void flush() {
-    _logger.info('Flush is not supported for Appsflyer');
-  }
 }

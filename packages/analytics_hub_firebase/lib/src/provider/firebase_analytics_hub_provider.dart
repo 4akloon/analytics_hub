@@ -1,6 +1,5 @@
 import 'package:analytics_hub/analytics_hub.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
-import 'package:logging/logging.dart';
 
 import '../resolver/firebase_analytics_event_resolver.dart';
 import 'firebase_analytics_hub_provider_identifier.dart';
@@ -31,8 +30,6 @@ class FirebaseAnalyticsHubProvider extends AnalytycsProvider {
   FirebaseAnalyticsHubProvider.fromInstance()
       : this(analytics: FirebaseAnalytics.instance);
 
-  static final _logger = Logger('FirebaseAnalyticsHubProvider');
-
   final FirebaseAnalytics _analytics;
 
   @override
@@ -41,9 +38,4 @@ class FirebaseAnalyticsHubProvider extends AnalytycsProvider {
 
   @override
   Future<void> initialize() => _analytics.setAnalyticsCollectionEnabled(true);
-
-  @override
-  void flush() {
-    _logger.info('Flush is not supported for Firebase Analytics');
-  }
 }

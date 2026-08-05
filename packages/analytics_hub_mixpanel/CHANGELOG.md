@@ -3,6 +3,9 @@
 ### Added
 - Optional `interceptors` constructor parameter for provider-level interceptors.
 
+### Changed
+- Removed the unused `logging` dependency.
+
 ### Breaking Changes
 - Removed `setSession` and the `getAnonymousId` parameter along with core session
   support. Manage identity directly via `Mixpanel.identify`/`Mixpanel.reset`.
