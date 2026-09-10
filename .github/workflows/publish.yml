@@ -44,20 +44,28 @@ jobs:
           grep -qx 'version: ${{ steps.meta.outputs.version }}'
           'packages/${{ steps.meta.outputs.package }}/pubspec.yaml'
 
-      # Mints the temporary pub.dev credential from the job's OIDC token.
-      - uses: dart-lang/setup-dart@v1
-        with:
-          sdk: stable
-
-      # Installed after setup-dart so Flutter's `dart` wins the PATH: the
-      # provider packages depend on Flutter plugins that a plain Dart SDK
-      # can't resolve. The pub credential store is shared between the two SDKs.
+      # Flutter first, and the workspace is resolved BEFORE any pub.dev
+      # credential exists. `dart-lang/setup-dart` runs
+      # `dart pub token add https://pub.dev --env-var PUB_TOKEN`, after which
+      # pub attaches that OIDC token to *every* pub.dev request — including
+      # the anonymous package-listing reads a resolve does. pub.dev rejects
+      # the token on those reads, so pub sees empty version lists and dies
+      # with "... doesn't match any versions" before it ever reaches our
+      # packages. Order matters here; nothing else does.
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
 
       - name: Install dependencies (workspace)
         run: flutter pub get
+
+      # Mints the temporary pub.dev credential from the job's OIDC token.
+      # Deliberately last: the credential exists only for the publish call.
+      # `dart pub publish` works with the plain Dart SDK here because the
+      # workspace is already resolved above.
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
 
       - name: Publish ${{ steps.meta.outputs.package }} ${{ steps.meta.outputs.version }}
         run: dart pub publish --force
