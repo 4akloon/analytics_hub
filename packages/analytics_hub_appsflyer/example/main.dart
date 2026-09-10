@@ -4,7 +4,7 @@ import 'package:appsflyer_sdk/appsflyer_sdk.dart';
 
 class ExampleEvent extends Event {
   const ExampleEvent({required this.exampleProperty})
-      : super('example_log_event');
+    : super('example_log_event');
 
   final String exampleProperty;
 
@@ -13,28 +13,22 @@ class ExampleEvent extends Event {
 
   @override
   List<EventProvider> get providers => [
-        const EventProvider(
-          AppsflyerAnalyticsHubIdentifier(),
-        ),
-      ];
+    const EventProvider(
+      AppsflyerAnalyticsHubIdentifier(),
+    ),
+  ];
 }
 
 Future<void> main() async {
-  // Initialize AppsFlyerSdk with your configuration. Replace placeholders
-  // with your actual dev key and app id. Keep secrets out of source control.
-  final appsFlyerOptions = AppsFlyerOptions(
-    afDevKey: 'YOUR_DEV_KEY',
-    appId: 'YOUR_APP_ID',
-    showDebug: true,
-  );
+  // AppsFlyer SDK 7 exposes a shared singleton instead of a constructor.
+  // Replace the placeholders with your actual dev key and app id, and keep
+  // secrets out of source control.
+  final appsFlyerSdk = AppsFlyerSdk.instance;
 
-  final appsFlyerSdk = AppsflyerSdk(appsFlyerOptions);
+  await appsFlyerSdk.init(devKey: 'YOUR_DEV_KEY', appId: 'YOUR_APP_ID');
 
-  await appsFlyerSdk.initSdk(
-    registerConversionDataCallback: false,
-    registerOnAppOpenAttributionCallback: false,
-    registerOnDeepLinkingCallback: false,
-  );
+  // Initialization no longer sends a session: start once per readiness event.
+  await appsFlyerSdk.registerSessionReadyListener(appsFlyerSdk.start);
 
   final hub = AnalyticsHub(
     providers: [

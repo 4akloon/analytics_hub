@@ -4,22 +4,22 @@ import 'package:appsflyer_sdk/appsflyer_sdk.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-class _MockAppsflyerSdk extends Mock implements AppsflyerSdk {}
+class _MockAppsFlyerSdk extends Mock implements AppsFlyerSdk {}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  late _MockAppsflyerSdk mockSdk;
+  late _MockAppsFlyerSdk mockSdk;
 
   setUp(() {
-    mockSdk = _MockAppsflyerSdk();
+    mockSdk = _MockAppsFlyerSdk();
   });
 
   group('AppsflyerEventResolver', () {
     test('resolve calls logEvent with name and properties', () async {
-      when(() => mockSdk.logEvent(any(), any())).thenAnswer(
-        (_) async => true,
-      );
+      when(
+        () => mockSdk.logEvent(any(), eventValues: any(named: 'eventValues')),
+      ).thenAnswer((_) async {});
 
       final provider = AppsflyerAnalyticsHubProvider(
         appsFlyerSdk: mockSdk,
@@ -46,15 +46,15 @@ void main() {
       verify(
         () => mockSdk.logEvent(
           'test_event',
-          {'key': 'value'},
+          eventValues: {'key': 'value'},
         ),
       ).called(1);
     });
 
     test('resolve with null properties passes null to logEvent', () async {
-      when(() => mockSdk.logEvent(any(), any())).thenAnswer(
-        (_) async => true,
-      );
+      when(
+        () => mockSdk.logEvent(any(), eventValues: any(named: 'eventValues')),
+      ).thenAnswer((_) async {});
 
       final provider = AppsflyerAnalyticsHubProvider(
         appsFlyerSdk: mockSdk,
@@ -81,7 +81,7 @@ void main() {
       verify(
         () => mockSdk.logEvent(
           'test_event',
-          null,
+          eventValues: null,
         ),
       ).called(1);
     });
@@ -98,8 +98,8 @@ class _TestEvent extends Event {
 
   @override
   List<EventProvider> get providers => [
-        const EventProvider(
-          AppsflyerAnalyticsHubIdentifier(name: 'test'),
-        ),
-      ];
+    const EventProvider(
+      AppsflyerAnalyticsHubIdentifier(name: 'test'),
+    ),
+  ];
 }

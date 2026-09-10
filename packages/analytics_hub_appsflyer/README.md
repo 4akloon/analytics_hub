@@ -1,6 +1,6 @@
 ## Analytics Hub Appsflyer Provider
 
-![Dart](https://img.shields.io/badge/Dart-%3E%3D3.5-0175C2?logo=dart&logoColor=white)
+![Dart](https://img.shields.io/badge/Dart-%3E%3D3.9-0175C2?logo=dart&logoColor=white)
 ![Part of](https://img.shields.io/badge/part_of-analytics__hub-informational)
 
 > Part of the analytics_hub workspace. New here? Start with the
@@ -10,7 +10,7 @@
 
 `analytics_hub_appsflyer` connects `analytics_hub` to Appsflyer.
 
-Current scope is log-only: this package maps `LogEvent` to `AppsflyerSdk.logEvent`.
+Current scope is log-only: this package maps `LogEvent` to `AppsFlyerSdk.logEvent`.
 It uses the core `EventResolver` contract with `ResolvedEvent` payload.
 
 ## Installation
@@ -18,25 +18,19 @@ It uses the core `EventResolver` contract with `ResolvedEvent` payload.
 ```yaml
 dependencies:
   analytics_hub: ^0.5.0
-  analytics_hub_appsflyer: ^0.5.0
-  appsflyer_sdk: ^6.15.0
+  analytics_hub_appsflyer: ^0.6.0
+  appsflyer_sdk: ^7.0.0
 ```
 
 ## Usage
 
 ```dart
-final options = AppsFlyerOptions(
-  afDevKey: 'YOUR_DEV_KEY',
-  appId: 'YOUR_APP_ID',
-  showDebug: true,
-);
+final sdk = AppsFlyerSdk.instance;
 
-final sdk = AppsflyerSdk(options);
-await sdk.initSdk(
-  registerConversionDataCallback: false,
-  registerOnAppOpenAttributionCallback: false,
-  registerOnDeepLinkingCallback: false,
-);
+await sdk.init(devKey: 'YOUR_DEV_KEY', appId: 'YOUR_APP_ID');
+
+// SDK 7: init no longer sends a session — start once per readiness event.
+await sdk.registerSessionReadyListener(sdk.start);
 
 final hub = AnalyticsHub(
   providers: [
@@ -68,5 +62,5 @@ class SignupEvent extends LogEvent {
 ## Notes
 
 - Customer user ID management is handled by the app directly via
-  `AppsflyerSdk.setCustomerUserId`.
+  `AppsFlyerSdk.setCustomerUserId`.
 

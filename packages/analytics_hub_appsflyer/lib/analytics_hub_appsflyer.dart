@@ -2,7 +2,7 @@
 ///
 /// This library provides [AppsflyerAnalyticsHubProvider] and
 /// [AppsflyerAnalyticsHubIdentifier] to send [Event]s from
-/// [AnalyticsHub] to Appsflyer via [AppsflyerSdk.logEvent].
+/// [AnalyticsHub] to Appsflyer via [AppsFlyerSdk.logEvent].
 ///
 /// Example:
 /// ```dart

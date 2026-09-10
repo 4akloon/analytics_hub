@@ -12,7 +12,7 @@ Current model is intentionally **single-event**: only `LogEvent` is supported by
 - `packages/analytics_hub` – core hub abstractions.
 - `packages/analytics_hub_firebase` – Firebase provider (`LogEvent` -> `FirebaseAnalytics.logEvent`).
 - `packages/analytics_hub_mixpanel` – Mixpanel provider (`LogEvent` -> `Mixpanel.track`).
-- `packages/analytics_hub_appsflyer` – Appsflyer provider (`LogEvent` -> `AppsflyerSdk.logEvent`).
+- `packages/analytics_hub_appsflyer` – Appsflyer provider (`LogEvent` -> `AppsFlyerSdk.logEvent`).
 
 Per-package docs:
 
