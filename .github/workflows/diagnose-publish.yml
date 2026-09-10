@@ -1,0 +1,90 @@
+# TEMPORARY diagnostic workflow — delete once publish.yml is fixed.
+#
+# publish.yml fails at `flutter pub get` while ci.yml succeeds on the same
+# commit. This isolates the difference by running the same resolution under
+# four toolchain setups. It never publishes anything.
+name: Diagnose publish
+
+on:
+  push:
+    branches: [ci/diagnose-publish]
+
+permissions:
+  id-token: write # so setup-dart mints PUB_TOKEN, as it does in publish.yml
+
+jobs:
+  diagnose:
+    name: ${{ matrix.variant }}
+    runs-on: ubuntu-latest
+    continue-on-error: true # let every variant report, don't stop at the first red
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # A: exactly what publish.yml does today — expected to FAIL.
+          - variant: a-publish-like
+            setup_dart: true
+            dart_first: true
+            flutter_version: ''
+          # B: exactly what ci.yml does — expected to PASS.
+          - variant: b-flutter-only
+            setup_dart: false
+            dart_first: false
+            flutter_version: ''
+          # C: same two SDKs, reversed order — does ordering alone fix it?
+          - variant: c-flutter-first
+            setup_dart: true
+            dart_first: false
+            flutter_version: ''
+          # D: publish.yml's order, pinned to the Flutter that worked in August.
+          - variant: d-pinned-flutter
+            setup_dart: true
+            dart_first: true
+            flutter_version: '3.44.8'
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: setup-dart (before Flutter)
+        if: matrix.setup_dart && matrix.dart_first
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ matrix.flutter_version }}
+
+      - name: setup-dart (after Flutter)
+        if: matrix.setup_dart && !matrix.dart_first
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+
+      - name: Toolchain state
+        run: |
+          echo "PATH dart : $(command -v dart)"
+          echo "PATH flutter: $(command -v flutter)"
+          echo "DART_HOME : ${DART_HOME:-<unset>}"
+          echo "FLUTTER_ROOT: ${FLUTTER_ROOT:-<unset>}"
+          echo "PUB_TOKEN : ${PUB_TOKEN:+<set>}${PUB_TOKEN:-<unset>}"
+          echo "PUB_CACHE : ${PUB_CACHE:-<unset>}"
+          dart --version || true
+          flutter --version || true
+          echo "--- flutter's bundled dart ---"
+          "$FLUTTER_ROOT/bin/cache/dart-sdk/bin/dart" --version || true
+
+      - name: flutter pub get (the failing step)
+        id: get
+        run: |
+          set +e
+          flutter pub get 2>&1 | tail -40
+          code=${PIPESTATUS[0]}
+          echo "exit=$code"
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          exit $code
+
+      - name: Verbose retry on failure
+        if: failure() && steps.get.outputs.code != '0'
+        run: flutter pub get -v 2>&1 | tail -80
