@@ -16,37 +16,19 @@ jobs:
   diagnose:
     name: ${{ matrix.variant }}
     runs-on: ubuntu-latest
-    continue-on-error: true # let every variant report, don't stop at the first red
+    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
-        include:
-          # A: exactly what publish.yml does today — expected to FAIL.
-          - variant: a-publish-like
-            setup_dart: true
-            dart_first: true
-            flutter_version: ''
-          # B: exactly what ci.yml does — expected to PASS.
-          - variant: b-flutter-only
-            setup_dart: false
-            dart_first: false
-            flutter_version: ''
-          # C: same two SDKs, reversed order — does ordering alone fix it?
-          - variant: c-flutter-first
-            setup_dart: true
-            dart_first: false
-            flutter_version: ''
-          # D: publish.yml's order, pinned to the Flutter that worked in August.
-          - variant: d-pinned-flutter
-            setup_dart: true
-            dart_first: true
-            flutter_version: '3.44.8'
+        variant: [g-token-removed, e-get-then-auth-flutterpub, f-get-then-auth-dartpub]
 
     steps:
       - uses: actions/checkout@v5
 
-      - name: setup-dart (before Flutter)
-        if: matrix.setup_dart && matrix.dart_first
+      # G proves causation: publish.yml's exact order, but drop the pub
+      # credential before resolving. If this passes, the token is the cause.
+      - name: setup-dart (G only, before Flutter)
+        if: matrix.variant == 'g-token-removed'
         uses: dart-lang/setup-dart@v1
         with:
           sdk: stable
@@ -54,37 +36,28 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
-          flutter-version: ${{ matrix.flutter_version }}
 
-      - name: setup-dart (after Flutter)
-        if: matrix.setup_dart && !matrix.dart_first
+      - name: Drop the pub.dev credential before resolving (G)
+        if: matrix.variant == 'g-token-removed'
+        run: dart pub token remove https://pub.dev
+
+      - name: flutter pub get
+        run: flutter pub get 2>&1 | tail -20
+
+      # E and F: resolve first, authenticate only afterwards, then exercise
+      # the publish validation path (dry-run only — nothing is uploaded).
+      - name: setup-dart (E/F, after resolution)
+        if: matrix.variant != 'g-token-removed'
         uses: dart-lang/setup-dart@v1
         with:
           sdk: stable
 
-      - name: Toolchain state
-        run: |
-          echo "PATH dart : $(command -v dart)"
-          echo "PATH flutter: $(command -v flutter)"
-          echo "DART_HOME : ${DART_HOME:-<unset>}"
-          echo "FLUTTER_ROOT: ${FLUTTER_ROOT:-<unset>}"
-          echo "PUB_TOKEN : ${PUB_TOKEN:+<set>}${PUB_TOKEN:-<unset>}"
-          echo "PUB_CACHE : ${PUB_CACHE:-<unset>}"
-          dart --version || true
-          flutter --version || true
-          echo "--- flutter's bundled dart ---"
-          "$FLUTTER_ROOT/bin/cache/dart-sdk/bin/dart" --version || true
+      - name: flutter pub publish --dry-run (E)
+        if: matrix.variant == 'e-get-then-auth-flutterpub'
+        run: flutter pub publish --dry-run 2>&1 | tail -20
+        working-directory: packages/analytics_hub_appsflyer
 
-      - name: flutter pub get (the failing step)
-        id: get
-        run: |
-          set +e
-          flutter pub get 2>&1 | tail -40
-          code=${PIPESTATUS[0]}
-          echo "exit=$code"
-          echo "code=$code" >> "$GITHUB_OUTPUT"
-          exit $code
-
-      - name: Verbose retry on failure
-        if: failure() && steps.get.outputs.code != '0'
-        run: flutter pub get -v 2>&1 | tail -80
+      - name: dart pub publish --dry-run (F)
+        if: matrix.variant == 'f-get-then-auth-dartpub'
+        run: dart pub publish --dry-run 2>&1 | tail -20
+        working-directory: packages/analytics_hub_appsflyer
