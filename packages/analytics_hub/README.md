@@ -31,7 +31,7 @@ Current providers (each has its own README with integration steps):
 
 - **Firebase:** [analytics_hub_firebase](https://pub.dev/packages/analytics_hub_firebase) — log events
 - **Mixpanel:** [analytics_hub_mixpanel](https://pub.dev/packages/analytics_hub_mixpanel) — log events
-- **Appsflyer:** `analytics_hub_appsflyer` — log events via `AppsflyerSdk.logEvent`
+- **Appsflyer:** `analytics_hub_appsflyer` — log events via `AppsFlyerSdk.logEvent`
 
 ## What's inside
 

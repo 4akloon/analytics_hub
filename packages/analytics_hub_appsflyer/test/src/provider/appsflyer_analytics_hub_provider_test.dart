@@ -3,15 +3,15 @@ import 'package:appsflyer_sdk/appsflyer_sdk.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-class _MockAppsflyerSdk extends Mock implements AppsflyerSdk {}
+class _MockAppsFlyerSdk extends Mock implements AppsFlyerSdk {}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  late _MockAppsflyerSdk mockSdk;
+  late _MockAppsFlyerSdk mockSdk;
 
   setUp(() {
-    mockSdk = _MockAppsflyerSdk();
+    mockSdk = _MockAppsFlyerSdk();
   });
 
   group('AppsflyerAnalyticsHubProvider', () {

@@ -4,11 +4,11 @@ import 'package:appsflyer_sdk/appsflyer_sdk.dart';
 import '../resolver/appsflyer_event_resolver.dart';
 import 'appsflyer_analytics_hub_provider_identifier.dart';
 
-/// [AnalyticsProvider] that sends [Event]s to Appsflyer via [AppsflyerSdk].
+/// [AnalyticsProvider] that sends [Event]s to Appsflyer via [AppsFlyerSdk].
 ///
 /// The provider delegates event resolution to [AppsflyerEventResolver].
-/// Customer user ID management ([AppsflyerSdk.setCustomerUserId]) is handled
-/// by the app directly on the [AppsflyerSdk] instance.
+/// Customer user ID management ([AppsFlyerSdk.setCustomerUserId]) is handled
+/// by the app directly on the [AppsFlyerSdk] instance.
 class AppsflyerAnalyticsHubProvider extends AnalyticsProvider {
   /// Creates a provider that uses the given [appsFlyerSdk] instance.
   ///
@@ -16,15 +16,15 @@ class AppsflyerAnalyticsHubProvider extends AnalyticsProvider {
   /// [interceptors] are provider-level interceptors executed after hub
   /// interceptors.
   AppsflyerAnalyticsHubProvider({
-    required AppsflyerSdk appsFlyerSdk,
+    required AppsFlyerSdk appsFlyerSdk,
     String? name,
     super.interceptors = const [],
-  })  : _appsFlyerSdk = appsFlyerSdk,
-        super(
-          identifier: AppsflyerAnalyticsHubIdentifier(name: name),
-        );
+  }) : _appsFlyerSdk = appsFlyerSdk,
+       super(
+         identifier: AppsflyerAnalyticsHubIdentifier(name: name),
+       );
 
-  final AppsflyerSdk _appsFlyerSdk;
+  final AppsFlyerSdk _appsFlyerSdk;
 
   @override
   AppsflyerEventResolver get resolver => AppsflyerEventResolver(_appsFlyerSdk);
