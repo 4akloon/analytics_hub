@@ -76,6 +76,10 @@ class _SignupEvent extends LogEvent {
 }
 ```
 
+If app code only sends events, have it depend on `AnalyticsDispatcher`
+rather than `AnalyticsHub` — then a test can pass in either a hub with fake
+providers (as above) or a scope created with `hub.scoped(...)`.
+
 Things worth asserting on:
 
 - **What was sent** — `recorder` (a `List<ResolvedEvent>`) captures the

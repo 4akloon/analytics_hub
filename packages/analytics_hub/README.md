@@ -19,6 +19,9 @@ such as Firebase, Mixpanel, and custom providers.
 - Provider targeting through `EventProvider`.
 - Global and provider-level event interceptors.
 - Typed event metadata context (`EventContext` / `ContextEntry`).
+- Immutable scoped dispatchers (`scoped()`) that apply context to every event
+  sent through them, with opt-in property contribution
+  (`EventPropertiesContributor`).
 
 ### When you might want it
 
@@ -37,12 +40,12 @@ Current providers (each has its own README with integration steps):
 
 | Area | Types | Source |
 |---|---|---|
-| **Hub** | `AnalyticsHub` | `analytics_hub.dart` |
+| **Hub** | `AnalyticsHub`, `AnalyticsDispatcher` | `analytics_hub.dart`, `analytics_dispatcher.dart` |
 | **Events** | `Event`, `LogEvent`, `EventProvider`, `EventOverrides` | `event/events/events.dart` |
 | **Providers** | `AnalyticsProvider`, `ProviderIdentifier`, `EventResolver` | `provider/`, `event/event_resolver.dart` |
 | **Interceptors** | `EventInterceptor`, `InterceptorResult`, `NextEventInterceptor` | `core/interception/interceptor/` |
-| **Context** | `Context`, `EventContext`, `ContextEntry`, `EventDispatchContext`, `ResolvedEvent` | `core/interception/context/` |
-| **Dispatch pipeline** | `EventDispatcher`, `DispatchTarget`, `EventDispatchContextBuilder`, `InterceptorChainExecutor`, `EventOverridesApplier`, `CorrelationIdGenerator` | `core/interception/dispatch/` |
+| **Context** | `Context`, `EventContext`, `ContextEntry`, `EventPropertiesContributor`, `EventDispatchContext`, `ResolvedEvent` | `core/interception/context/` |
+| **Dispatch pipeline** | `EventDispatcher`, `DispatchTarget`, `EventDispatchContextBuilder`, `InterceptorChainExecutor`, `EventOverridesApplier`, `EventContextPropertiesApplier`, `CorrelationIdGenerator` | `core/interception/dispatch/` |
 
 Source paths are relative to `lib/src/`.
 
@@ -52,7 +55,7 @@ In your app `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  analytics_hub: ^0.5.0
+  analytics_hub: ^0.5.1
   # and then any concrete providers you need, e.g.:
   # analytics_hub_firebase: ^0.5.0
   # analytics_hub_mixpanel: ^0.5.0
@@ -62,6 +65,7 @@ dependencies:
 ## Core concepts
 
 - **`AnalyticsHub`** – the facade you use to send events.
+- **`AnalyticsDispatcher`** – the send-events capability implemented by the hub and by its scopes.
 - **`Event`** – base class for events sent by the hub.
 - **`LogEvent`** – simple `name + properties` event.
 - **`AnalyticsProvider`** – abstraction of an analytics provider.
@@ -170,15 +174,40 @@ See [doc/interceptors_and_context.md](doc/interceptors_and_context.md) for
 the interceptor chain execution order and how typed context flows from an
 event through to resolvers.
 
+## Scoped analytics context
+
+`scoped()` returns an immutable `AnalyticsDispatcher` that applies an
+`EventContext` to every event sent through it. Context entries are metadata
+by default; an entry that implements `EventPropertiesContributor` is also
+merged into the provider-facing properties.
+
+```dart
+final flowAnalytics = analyticsHub.scoped(
+  context: const EventContext().withEntry(
+    const FlowSourceContextEntry(page: 'home', element: 'create_video'),
+  ),
+);
+
+// Every provider receives source_flow_page / source_flow_element.
+await flowAnalytics.sendEvent(const GenerationStartedEvent());
+await flowAnalytics.sendEvent(const GenerationCompletedEvent());
+```
+
+Scopes can be nested and are safe to use from concurrent flows. The package
+does not manage flow lifecycle: creating, keeping and dropping a scope is up
+to your app. See
+[doc/interceptors_and_context.md](doc/interceptors_and_context.md#scoped-analytics-context)
+for precedence rules and a full example.
+
 ## Reference
 
 - [doc/getting_started.md](doc/getting_started.md) — install and send your
   first event.
 - [doc/providers.md](doc/providers.md) — full custom-provider walkthrough.
 - [doc/interceptors_and_context.md](doc/interceptors_and_context.md) —
-  interceptor chain order and typed context.
+  interceptor chain order, typed context and scoped analytics context.
 - [doc/testing.md](doc/testing.md) — testing code that uses `AnalyticsHub`.
-- Core example: `example/main.dart`.
+- Core examples: `example/main.dart`, `example/scoped_context.dart`.
 - Firebase and Mixpanel providers are in sibling packages in this repository.
 
 ## Suggestions and improvements

@@ -1,5 +1,6 @@
 import 'package:analytics_hub/src/event/events/events.dart';
 
+import '../context/event_context.dart';
 import '../context/event_dispatch_context.dart';
 import 'correlation_id_generator.dart';
 import 'dispatch_target.dart';
@@ -14,9 +15,13 @@ class EventDispatchContextBuilder {
   final CorrelationIdGenerator _correlationIdGenerator;
 
   /// Builds dispatch context for [originalEvent] and [target].
+  ///
+  /// [context] is the effective context of this dispatch; it defaults to
+  /// [originalEvent]'s [Event.context].
   EventDispatchContext build({
     required Event originalEvent,
     required DispatchTarget target,
+    EventContext? context,
   }) =>
       EventDispatchContext(
         originalEvent: originalEvent,
@@ -24,5 +29,6 @@ class EventDispatchContextBuilder {
         provider: target.provider,
         timestamp: DateTime.now(),
         correlationId: _correlationIdGenerator.nextCorrelationId(),
+        context: context,
       );
 }

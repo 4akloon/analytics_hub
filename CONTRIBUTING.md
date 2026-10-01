@@ -66,10 +66,12 @@ cd packages/<package> && dart pub publish --dry-run
 ## Architecture at a glance
 
 Sending an event goes through a fixed pipeline: per-provider overrides are
-applied first, then hub-level interceptors run, then provider-level
+applied first, then properties from `EventPropertiesContributor` context
+entries are merged in, then hub-level interceptors run, then provider-level
 interceptors, then the provider's `EventResolver` actually delivers the
 event. Each event/provider pair gets its own `EventDispatchContext` built
-for that dispatch. See
+for that dispatch, from the event's context merged on top of any context
+inherited from `scoped()` dispatchers. See
 [doc/interceptors_and_context.md](packages/analytics_hub/doc/interceptors_and_context.md)
 for the full breakdown.
 
@@ -97,6 +99,10 @@ Design conventions worth knowing before you touch core:
   `Session`/`HubSessionDelegate` concept. Apps manage user identity directly
   on the underlying SDK (e.g. `Mixpanel.identify`, `FirebaseAnalytics.setUserId`).
   Don't reintroduce a session abstraction in core.
+- Scoped context is **immutable and value-based**: `scoped()` returns a new
+  dispatcher carrying its merged context. Don't add mutable global/current
+  context (`setContext`, Zones, async-local state) or flow lifecycle APIs —
+  apps own when a scope starts and ends.
 
 ## Tests
 

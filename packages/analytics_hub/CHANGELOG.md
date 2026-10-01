@@ -1,3 +1,23 @@
+## 0.5.1 - 2026-10-01
+
+### Added
+- Added immutable scoped analytics dispatching through `scoped()`. The new
+  `AnalyticsDispatcher` interface (`sendEvent` + `scoped`) is implemented by
+  `AnalyticsHub` and by every scope it returns.
+- Added inherited `EventContext` support across nested analytics scopes.
+  Entries of the same type follow `outer scope < inner scope < event.context`;
+  interceptors, resolvers, `EventDispatchContext` and `ResolvedEvent.context`
+  all see the merged context.
+- Added opt-in context-to-event-property contribution via
+  `EventPropertiesContributor`. Contributed properties are merged after
+  `EventOverrides` and before interceptors, and win over event properties with
+  the same key (a warning is logged on collision). Plain `ContextEntry`s never
+  change properties.
+- Scoped analytics contexts are isolated across concurrent flows.
+- `EventDispatchContext` accepts an optional `context` with the effective
+  entries for the dispatch.
+- Added the "Scoped analytics context" guide and `example/scoped_context.dart`.
+
 ## 0.5.0 - 2026-08-05
 
 ### Changed

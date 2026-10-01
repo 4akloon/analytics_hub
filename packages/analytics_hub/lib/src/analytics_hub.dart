@@ -1,5 +1,7 @@
 import 'package:logging/logging.dart';
 
+import 'analytics_dispatcher.dart';
+import 'core/interception/context/event_context.dart';
 import 'core/interception/dispatch/context_builder.dart';
 import 'core/interception/dispatch/correlation_id_generator.dart';
 import 'core/interception/dispatch/dispatch_target.dart';
@@ -14,8 +16,11 @@ import 'provider/provider_identifier.dart';
 /// Create an [AnalyticsHub] with a list of [providers], then use [sendEvent]
 /// to send events to the providers specified by each event's [Event.providers].
 ///
+/// Use [scoped] to get a dispatcher that applies an [EventContext] to every
+/// event sent through it.
+///
 /// Call [flush] before app shutdown if any provider buffers events.
-class AnalyticsHub {
+class AnalyticsHub implements AnalyticsDispatcher {
   /// Creates an [AnalyticsHub] with the given [providers].
   ///
   /// Each provider must have a unique [AnalyticsProvider.identifier]. Duplicate keys
@@ -43,7 +48,24 @@ class AnalyticsHub {
   /// Throws [AnalyticsProviderNotFoundException] if the event references a
   /// provider key that was not registered with this hub. Returns a [Future]
   /// that completes when all targeted providers have finished handling the event.
-  Future<void> sendEvent(Event event) {
+  @override
+  Future<void> sendEvent(Event event) =>
+      _send(event, inheritedContext: const EventContext());
+
+  /// Returns an immutable dispatcher that applies [context] to every event
+  /// sent through it.
+  ///
+  /// The scope shares this hub's providers, interceptors and routing; it only
+  /// carries [context]. See [AnalyticsDispatcher.scoped] for the precedence
+  /// rules.
+  @override
+  AnalyticsDispatcher scoped({required EventContext context}) =>
+      _ScopedAnalyticsDispatcher(this, context);
+
+  Future<void> _send(
+    Event event, {
+    required EventContext inheritedContext,
+  }) {
     _logger.fine('Sending event: $event');
     return Future.wait(
       event.providers.map((eventProvider) async {
@@ -58,6 +80,7 @@ class AnalyticsHub {
             eventProvider: eventProvider,
             provider: provider,
           ),
+          inheritedContext: inheritedContext,
         );
 
         if (result.isDropped) {
@@ -77,6 +100,25 @@ class AnalyticsHub {
       await provider.flush();
     }
   }
+}
+
+/// Dispatcher returned by [AnalyticsHub.scoped].
+///
+/// Delegates straight to the root hub with its accumulated context, so nested
+/// scopes never build a delegation chain.
+final class _ScopedAnalyticsDispatcher implements AnalyticsDispatcher {
+  const _ScopedAnalyticsDispatcher(this._hub, this._context);
+
+  final AnalyticsHub _hub;
+  final EventContext _context;
+
+  @override
+  Future<void> sendEvent(Event event) =>
+      _hub._send(event, inheritedContext: _context);
+
+  @override
+  AnalyticsDispatcher scoped({required EventContext context}) =>
+      _ScopedAnalyticsDispatcher(_hub, _context.merge(context));
 }
 
 /// Thrown when [AnalyticsHub.sendEvent] is called with an event that targets

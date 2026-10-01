@@ -16,18 +16,20 @@
 ## Що входить у пакет
 
 - `AnalyticsHub` — центральна точка відправки подій.
+- `AnalyticsDispatcher` — контракт відправки подій; його реалізують хаб і scope-и з `scoped()`.
 - `LogEvent` — базова подія з `name`, `properties` і `providers`.
 - `AnalyticsProvider` — базовий клас провайдера.
 - `ProviderIdentifier` — ідентифікатор провайдера.
 - `EventResolver` — контракт обробки подій у провайдері.
 - `EventInterceptor` — middleware для трансформації/дропу подій.
 - `EventContext` + `ContextEntry` — типізований контекст події.
+- `EventPropertiesContributor` — opt-in: `ContextEntry`, що додає свої значення в `properties` події.
 
 ## Встановлення
 
 ```yaml
 dependencies:
-  analytics_hub: ^0.5.0
+  analytics_hub: ^0.5.1
 ```
 
 ## Приклад події
@@ -93,3 +95,28 @@ class BackendAnalyticsProvider extends AnalyticsProvider {
 - `LogEvent.context` дозволяє прикріпити типізовані metadata через `ContextEntry`.
 - Під час dispatch `EventDispatchContext` містить типізований контекст із події (`event.context`).
 - Доступ у резолверах/інтерсепторах: `context.entry<MyEntry>()`.
+
+## Scoped-контекст
+
+`scoped()` повертає незмінний `AnalyticsDispatcher`, який застосовує
+`EventContext` до кожної відправленої через нього події.
+
+```dart
+final flowAnalytics = analyticsHub.scoped(
+  context: const EventContext().withEntry(
+    const FlowSourceContextEntry(page: 'home', element: 'create_video'),
+  ),
+);
+
+await flowAnalytics.sendEvent(const GenerationCompletedEvent());
+```
+
+- Scope-и можна вкладати: `outer < inner < event.context` для записів одного типу.
+- Створення дочірнього scope-а не змінює батьківський; паралельні scope-и ізольовані.
+- `ContextEntry` за замовчуванням — лише metadata. Лише записи, що реалізують
+  `EventPropertiesContributor`, потрапляють у `properties`; при конфлікті ключів
+  значення з контексту перемагає.
+- Пакет не керує життєвим циклом flow: створення, зберігання й відмова від
+  scope-а — відповідальність застосунку.
+
+Детальніше: [doc/interceptors_and_context.md](doc/interceptors_and_context.md#scoped-analytics-context).

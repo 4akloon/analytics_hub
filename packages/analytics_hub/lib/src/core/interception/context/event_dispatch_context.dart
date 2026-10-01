@@ -4,17 +4,24 @@ import 'package:analytics_hub/src/provider/provider_identifier.dart';
 
 import 'context.dart';
 import 'context_entry.dart';
+import 'event_context.dart';
 
 /// Context passed into each interceptor and resolver call.
 class EventDispatchContext implements Context {
   /// Creates dispatch context for a single event-provider pair.
+  ///
+  /// Entries are copied from [context] when provided (e.g. the event context
+  /// merged with an inherited scope context), otherwise from
+  /// [originalEvent]'s [Event.context].
   EventDispatchContext({
     required this.originalEvent,
     required this.eventProvider,
     required this.provider,
     required this.timestamp,
     required this.correlationId,
-  }) : _entries = Map.unmodifiable(originalEvent.context.entriesMap);
+    EventContext? context,
+  }) : _entries =
+            Map.unmodifiable((context ?? originalEvent.context).entriesMap);
 
   EventDispatchContext._(this._entries, EventDispatchContext context)
       : originalEvent = context.originalEvent,
