@@ -17,7 +17,8 @@ export 'src/analytics_dispatcher.dart';
 export 'src/analytics_hub.dart';
 export 'src/core/interception/context/context.dart';
 export 'src/core/interception/context/context_entry.dart';
-export 'src/core/interception/context/event_context.dart';
+export 'src/core/interception/context/event_context.dart'
+    hide mergeEventContexts;
 export 'src/core/interception/context/event_dispatch_context.dart';
 export 'src/core/interception/context/event_properties_contributor.dart';
 export 'src/core/interception/context/resolved_event.dart';

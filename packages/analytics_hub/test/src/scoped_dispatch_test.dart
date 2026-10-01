@@ -75,6 +75,21 @@ final class _EditorContextEntry extends ContextEntry {
   final String tool;
 }
 
+/// Base type used to register entries via `withEntry<_UserEntry>(...)`.
+abstract class _UserEntry extends ContextEntry {
+  const _UserEntry(this.tier);
+
+  final String tier;
+}
+
+final class _FreeUserEntry extends _UserEntry {
+  const _FreeUserEntry() : super('free');
+}
+
+final class _PremiumUserEntry extends _UserEntry {
+  const _PremiumUserEntry() : super('premium');
+}
+
 final class _FlowSourceContextEntry extends ContextEntry
     implements EventPropertiesContributor {
   const _FlowSourceContextEntry({required this.page, required this.element});
@@ -257,6 +272,81 @@ void main() {
           event.name: event.properties?['source_flow_page'],
       };
       expect(pages, equals({'event_a': 'a', 'event_b': 'b'}));
+    });
+  });
+
+  group('entries registered under a base type', () {
+    test('event entry stays reachable by its base type through a scope',
+        () async {
+      final scope = hub.scoped(
+        context: const EventContext().withEntry(
+          const _InternalContextEntry('a'),
+        ),
+      );
+
+      await scope.sendEvent(
+        _TestEvent(
+          'event',
+          ctx: const EventContext().withEntry<_UserEntry>(
+            const _PremiumUserEntry(),
+          ),
+        ),
+      );
+
+      final context = provider.contexts.single;
+      expect(context.entry<_UserEntry>()?.tier, equals('premium'));
+      expect(
+        provider.events.single.context.entry<_UserEntry>()?.tier,
+        equals('premium'),
+      );
+    });
+
+    test('event entry overrides scope entry registered under the same type',
+        () async {
+      final scope = hub.scoped(
+        context: const EventContext().withEntry<_UserEntry>(
+          const _FreeUserEntry(),
+        ),
+      );
+
+      await scope.sendEvent(
+        _TestEvent(
+          'event',
+          ctx: const EventContext().withEntry<_UserEntry>(
+            const _PremiumUserEntry(),
+          ),
+        ),
+      );
+
+      final context = provider.contexts.single;
+      expect(context.entries, hasLength(1));
+      expect(context.entry<_UserEntry>()?.tier, equals('premium'));
+    });
+
+    test('nested scope keeps base-type keys and overrides the parent',
+        () async {
+      final parent = hub.scoped(
+        context: const EventContext().withEntry<_UserEntry>(
+          const _FreeUserEntry(),
+        ),
+      );
+      final child = parent.scoped(
+        context: const EventContext().withEntry<_UserEntry>(
+          const _PremiumUserEntry(),
+        ),
+      );
+
+      await child.sendEvent(const _TestEvent('from_child'));
+      await parent.sendEvent(const _TestEvent('from_parent'));
+
+      expect(
+        provider.contexts.map((context) => context.entries.length),
+        equals([1, 1]),
+      );
+      expect(
+        provider.contexts.map((context) => context.entry<_UserEntry>()?.tier),
+        equals(['premium', 'free']),
+      );
     });
   });
 

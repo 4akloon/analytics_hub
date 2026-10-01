@@ -118,7 +118,7 @@ final class _ScopedAnalyticsDispatcher implements AnalyticsDispatcher {
 
   @override
   AnalyticsDispatcher scoped({required EventContext context}) =>
-      _ScopedAnalyticsDispatcher(_hub, _context.merge(context));
+      _ScopedAnalyticsDispatcher(_hub, mergeEventContexts(_context, context));
 }
 
 /// Thrown when [AnalyticsHub.sendEvent] is called with an event that targets

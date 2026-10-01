@@ -41,9 +41,10 @@ class EventDispatcher {
     required DispatchTarget target,
     EventContext inheritedContext = const EventContext(),
   }) {
-    final effectiveContext = inheritedContext.isEmpty
-        ? event.context
-        : inheritedContext.merge(event.context);
+    final effectiveContext = mergeEventContexts(
+      inheritedContext,
+      event.context,
+    );
     final context = _contextBuilder.build(
       originalEvent: event,
       target: target,

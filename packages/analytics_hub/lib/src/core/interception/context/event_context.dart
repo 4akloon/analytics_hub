@@ -69,3 +69,21 @@ class EventContext implements Context {
     return EventContext._(Map<Type, ContextEntry>.unmodifiable(nextEntries));
   }
 }
+
+/// Returns [base] with entries of [other] layered on top, keeping the type
+/// each entry was registered under.
+///
+/// Unlike [EventContext.merge], which re-keys entries by `runtimeType`, an
+/// entry added as `withEntry<Base>(Sub())` stays reachable via
+/// `entry<Base>()` and overrides `Base` entries in [base]. Used internally
+/// for scope inheritance; not exported.
+EventContext mergeEventContexts(EventContext base, Context other) {
+  if (other.isEmpty) return base;
+  if (base.isEmpty && other is EventContext) return other;
+  return EventContext._(
+    Map<Type, ContextEntry>.unmodifiable({
+      ...base._entries,
+      ...other.entriesMap,
+    }),
+  );
+}
