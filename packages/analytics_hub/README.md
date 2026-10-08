@@ -198,6 +198,9 @@ events. See [doc/interceptors_and_context.md](doc/interceptors_and_context.md)
 for precedence, stage order and the trace format, and
 `example/scoped_context.dart` for a runnable walk-through.
 
+In a Flutter app, `analytics_hub_flutter` puts scopes on the widget tree with
+`AnalyticsScopeProvider`.
+
 ## Reference
 
 - [doc/getting_started.md](doc/getting_started.md) — install and send your

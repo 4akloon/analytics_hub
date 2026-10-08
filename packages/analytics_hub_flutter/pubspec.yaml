@@ -1,0 +1,22 @@
+name: analytics_hub_flutter
+description: >
+  Flutter widgets for analytics_hub.
+  Puts an AnalyticsScope on the widget tree and sends impression events.
+version: 0.6.0
+homepage: https://github.com/4akLoon/analytics_hub
+repository: https://github.com/4akLoon/analytics_hub
+
+environment:
+  sdk: ">=3.5.0 <4.0.0"
+
+dependencies:
+  analytics_hub: ">=0.6.0 <0.7.0"
+  flutter:
+    sdk: flutter
+  visibility_detector: ^0.4.0+2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+resolution: workspace

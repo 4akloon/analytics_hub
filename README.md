@@ -13,6 +13,7 @@ Current model is intentionally **single-event**: only `LogEvent` is supported by
 - `packages/analytics_hub_firebase` – Firebase provider (`LogEvent` -> `FirebaseAnalytics.logEvent`).
 - `packages/analytics_hub_mixpanel` – Mixpanel provider (`LogEvent` -> `Mixpanel.track`).
 - `packages/analytics_hub_appsflyer` – Appsflyer provider (`LogEvent` -> `AppsFlyerSdk.logEvent`).
+- `packages/analytics_hub_flutter` – Flutter widgets (`AnalyticsScopeProvider`, `AnalyticsImpression`).
 
 Per-package docs:
 
@@ -20,6 +21,7 @@ Per-package docs:
 - Firebase: [English](packages/analytics_hub_firebase/README.md), [Українська](packages/analytics_hub_firebase/README.ua.md)
 - Mixpanel: [English](packages/analytics_hub_mixpanel/README.md), [Українська](packages/analytics_hub_mixpanel/README.ua.md)
 - Appsflyer: [English](packages/analytics_hub_appsflyer/README.md), [Українська](packages/analytics_hub_appsflyer/README.ua.md)
+- Flutter: [English](packages/analytics_hub_flutter/README.md), [Українська](packages/analytics_hub_flutter/README.ua.md)
 
 ## Quick start
 
