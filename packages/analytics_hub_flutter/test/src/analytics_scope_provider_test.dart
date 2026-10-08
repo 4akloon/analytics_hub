@@ -251,6 +251,68 @@ void main() {
       expect(inSheet?.chain.map((s) => s.name), equals(['home']));
     });
 
+    testWidgets('a parent scope change reaches nested providers',
+        (tester) async {
+      late StateSetter rebuildOuter;
+      var outerName = 'home';
+      List<String>? chain;
+      final inner = AnalyticsScopeProvider(
+        name: 'create',
+        child: Builder(
+          builder: (context) {
+            chain = AnalyticsScopeProvider.scopeOf(context)!
+                .chain
+                .map((s) => s.name)
+                .toList();
+            return const SizedBox();
+          },
+        ),
+      );
+
+      await tester.pumpWidget(
+        _app(
+          hub,
+          StatefulBuilder(
+            builder: (context, setState) {
+              rebuildOuter = setState;
+              return AnalyticsScopeProvider(name: outerName, child: inner);
+            },
+          ),
+        ),
+      );
+      expect(chain, equals(['home', 'create']));
+
+      rebuildOuter(() => outerName = 'builder');
+      await tester.pump();
+      expect(chain, equals(['builder', 'create']));
+    });
+
+    testWidgets('swapping the hub notifies dependents', (tester) async {
+      var dependencyChanges = 0;
+      late StateSetter rebuildOuter;
+      var currentHub = hub;
+      final otherHub = AnalyticsHub(providers: [_Provider()]);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: StatefulBuilder(
+            builder: (context, setState) {
+              rebuildOuter = setState;
+              return AnalyticsScopeProvider.root(
+                hub: currentHub,
+                child: _DependencyCounter(onChange: () => dependencyChanges++),
+              );
+            },
+          ),
+        ),
+      );
+      expect(dependencyChanges, equals(1));
+
+      rebuildOuter(() => currentHub = otherHub);
+      await tester.pump();
+      expect(dependencyChanges, equals(2));
+    });
+
     testWidgets('rebuilding with equal inputs does not notify dependents',
         (tester) async {
       var dependencyChanges = 0;

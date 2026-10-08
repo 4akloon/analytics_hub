@@ -5,7 +5,7 @@ import 'package:analytics_hub_flutter/analytics_hub_flutter.dart';
 import 'package:flutter/material.dart';
 
 /// Wrap the app once in [AnalyticsScopeProvider.root], then scope pages and
-/// sections. Run with `flutter run example/main.dart` from this package.
+/// sections. This file is meant to be copied into an app's `main.dart`.
 void main() {
   final hub = AnalyticsHub(
     providers: [PrintingProvider()],

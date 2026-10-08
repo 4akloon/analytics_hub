@@ -72,9 +72,12 @@ providers expect (see `example/main.dart`'s `SourceAppendInterceptor`).
 
 ## What crosses a route boundary
 
-The provider is an `InheritedTheme`, so Flutter's own overlay helpers —
+The provider builds an `InheritedTheme`, so Flutter's own overlay helpers —
 `showDialog`, `showModalBottomSheet`, `showMenu`, dropdowns, popups — carry
-the scope of the context they were opened from into what they show. A route
+the scope of the context they were opened from into what they show.
+`showGeneralDialog`, `showCupertinoDialog`, `showCupertinoModalPopup` and
+`SnackBar`s do not capture inherited themes, so they do not see the scope
+unless they apply `InheritedTheme.capture` themselves. A route
 pushed on a `Navigator` is built under the navigator, not under the page
 that pushed it, and does not inherit the scope: give the destination its own
 scope and pass whatever "where I came from" data it needs explicitly (route

@@ -12,10 +12,14 @@ import 'package:flutter/widgets.dart';
 /// the root, a `ScopedAnalytics` under a scope. Hand it to a cubit or an
 /// analytics helper where the screen creates them.
 ///
-/// The widget is an `InheritedTheme`, so a dialog, bottom sheet, menu or
-/// other overlay opened through `showDialog`, `showModalBottomSheet` and
-/// friends sees the scope of the context it was opened from. A route pushed
-/// on a `Navigator` does not: carry what it needs explicitly.
+/// The widget builds an `InheritedTheme`, so an overlay opened through
+/// `showDialog`, `showModalBottomSheet`, `showMenu`/`PopupMenuButton`,
+/// `DropdownButton`, `SearchAnchor` or `showAboutDialog` sees the scope of the
+/// context it was opened from. `showGeneralDialog`, `showCupertinoDialog`,
+/// `showCupertinoModalPopup` and `SnackBar`s do not capture inherited themes,
+/// so they do not see the scope unless they apply `InheritedTheme.capture`
+/// themselves. A route pushed on a `Navigator` does not either: carry what it
+/// needs explicitly.
 class AnalyticsScopeProvider extends StatelessWidget {
   /// Nests a scope named [name] under the nearest provider above.
   ///
@@ -37,6 +41,9 @@ class AnalyticsScopeProvider extends StatelessWidget {
         _interceptors = interceptors;
 
   /// Provides [hub] to the subtree with no scope of its own.
+  ///
+  /// Scopes above a root are not visible below it: a nested root starts a
+  /// fresh tree.
   const AnalyticsScopeProvider.root({
     required AnalyticsHub hub,
     required this.child,

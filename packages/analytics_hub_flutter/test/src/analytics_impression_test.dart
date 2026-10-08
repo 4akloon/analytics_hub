@@ -175,7 +175,7 @@ void main() {
           hub,
           ListView(
             children: [
-              const SizedBox(height: 550),
+              const SizedBox(height: 450),
               AnalyticsImpression(
                 event: () => const _Event('section_viewed'),
                 visibleFraction: 0.9,
@@ -191,10 +191,10 @@ void main() {
       expect(
         provider.resolver.events,
         isEmpty,
-        reason: 'only the top 50 px of 200 are visible on a 600 px screen',
+        reason: '150 of 200 px (0.75) is above the 0.5 default but below 0.9',
       );
 
-      await tester.drag(find.byType(ListView), const Offset(0, -150));
+      await tester.drag(find.byType(ListView), const Offset(0, -50));
       await tester.pumpAndSettle();
       await tester.pump();
 

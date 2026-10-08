@@ -21,7 +21,10 @@ class AnalyticsImpression extends StatefulWidget {
     this.visibleFraction = 0.5,
     required this.child,
     super.key,
-  });
+  }) : assert(
+          visibleFraction > 0 && visibleFraction <= 1,
+          'visibleFraction must be in (0, 1]',
+        );
 
   /// Builds the event to send; called once, when the threshold is reached.
   final Event Function() event;
