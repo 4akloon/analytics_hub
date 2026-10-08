@@ -25,3 +25,4 @@ export 'src/event/event_resolver.dart';
 export 'src/event/events/events.dart';
 export 'src/provider/analytics_provider.dart';
 export 'src/provider/provider_identifier.dart';
+export 'src/scope/analytics_scope.dart';
