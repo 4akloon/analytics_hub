@@ -23,17 +23,19 @@ class AnalyticsHub {
   AnalyticsHub({
     required List<AnalyticsProvider> providers,
     List<EventInterceptor> interceptors = const [],
+    CorrelationIdGenerator correlationIdGenerator =
+        const TimestampCorrelationIdGenerator(),
   })  : _providers = {
           for (final provider in providers) provider.identifier: provider,
         },
+        _correlationIdGenerator = correlationIdGenerator,
         _dispatcher = EventDispatcher(
           hubInterceptors: interceptors,
-          contextBuilder: const EventDispatchContextBuilder(
-            correlationIdGenerator: TimestampCorrelationIdGenerator(),
-          ),
+          contextBuilder: const EventDispatchContextBuilder(),
         );
 
   final Map<ProviderIdentifier, AnalyticsProvider> _providers;
+  final CorrelationIdGenerator _correlationIdGenerator;
   final EventDispatcher _dispatcher;
 
   static final _logger = Logger('AnalyticsHub');
@@ -45,6 +47,7 @@ class AnalyticsHub {
   /// that completes when all targeted providers have finished handling the event.
   Future<void> sendEvent(Event event) {
     _logger.fine('Sending event: $event');
+    final correlationId = _correlationIdGenerator.nextCorrelationId();
     return Future.wait(
       event.providers.map((eventProvider) async {
         final provider = _providers[eventProvider.identifier];
@@ -58,6 +61,7 @@ class AnalyticsHub {
             eventProvider: eventProvider,
             provider: provider,
           ),
+          correlationId: correlationId,
         );
 
         if (result.isDropped) {

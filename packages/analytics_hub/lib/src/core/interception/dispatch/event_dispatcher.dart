@@ -30,10 +30,13 @@ class EventDispatcher {
   Future<InterceptorResult> dispatch({
     required Event event,
     required DispatchTarget target,
+    required String correlationId,
   }) {
     final context = _contextBuilder.build(
       originalEvent: event,
       target: target,
+      context: event.context,
+      correlationId: correlationId,
     );
     final initialEvent = _overridesApplier.apply(
       ResolvedEvent(

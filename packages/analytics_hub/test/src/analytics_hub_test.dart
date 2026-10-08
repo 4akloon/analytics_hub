@@ -242,7 +242,7 @@ void main() {
 
       final context = contextRecorder.single;
       expect(context.entry<_SourceContextEntry>()?.source, equals('mobile'));
-      expect(context.entries, hasLength(1));
+      expect(context.context.all, hasLength(1));
     });
 
     test('flush calls provider flush', () async {
