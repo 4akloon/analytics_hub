@@ -7,6 +7,10 @@ class _Key extends ProviderIdentifier {
   const _Key() : super(name: 'test');
 }
 
+class _OtherKey extends ProviderIdentifier {
+  const _OtherKey() : super(name: 'other');
+}
+
 final class _Page extends ContextEntry {
   const _Page(this.name);
 
@@ -28,19 +32,28 @@ class _Resolver implements EventResolver {
 }
 
 class _Provider extends AnalyticsProvider {
-  _Provider({super.interceptors = const []})
-      : resolver = _Resolver(),
-        super(identifier: const _Key());
+  _Provider({
+    super.identifier = const _Key(),
+    super.interceptors = const [],
+  }) : resolver = _Resolver();
 
   @override
   final _Resolver resolver;
 }
 
 class _Event extends Event {
-  _Event(super.name, {this.props, this.ctx = const EventContext()});
+  _Event(
+    super.name, {
+    this.props,
+    this.ctx = const EventContext(),
+    this.overrides,
+    this.keys = const [_Key()],
+  });
 
   final Map<String, Object?>? props;
   final EventContext ctx;
+  final EventOverrides? overrides;
+  final List<ProviderIdentifier> keys;
 
   @override
   Map<String, Object?>? get properties => props;
@@ -49,7 +62,31 @@ class _Event extends Event {
   EventContext get context => ctx;
 
   @override
-  List<EventProvider> get providers => const [EventProvider(_Key())];
+  List<EventProvider> get providers => [
+        for (final key in keys) EventProvider(key, overrides: overrides),
+      ];
+}
+
+class _MutableEvent extends Event {
+  _MutableEvent(
+    super.name, {
+    required this.currentProps,
+    required this.currentContext,
+    required this.currentProviders,
+  });
+
+  Map<String, Object?> currentProps;
+  EventContext currentContext;
+  List<EventProvider> currentProviders;
+
+  @override
+  Map<String, Object?>? get properties => currentProps;
+
+  @override
+  EventContext get context => currentContext;
+
+  @override
+  List<EventProvider> get providers => currentProviders;
 }
 
 final class _Spy implements EventInterceptor {
@@ -65,7 +102,7 @@ final class _Spy implements EventInterceptor {
     required EventDispatchContext context,
     required NextEventInterceptor next,
   }) {
-    order.add(name);
+    order.add('$name:${event.name}');
     return next(event, context);
   }
 }
@@ -131,10 +168,24 @@ void main() {
         interceptors: [_Spy('root', order)],
       ).child(name: 'leaf', interceptors: [_Spy('leaf', order)]);
 
-      await hub.sendEvent(_Event('click'), scope: scope);
+      await hub.sendEvent(
+        _Event(
+          'click',
+          overrides: const EventOverrides(name: 'click_overridden'),
+        ),
+        scope: scope,
+      );
 
-      expect(order, equals(['root', 'leaf', 'hub', 'provider']));
-      expect(provider.resolver.events, hasLength(1));
+      expect(
+        order,
+        equals([
+          'root:click',
+          'leaf:click',
+          'hub:click_overridden',
+          'provider:click_overridden',
+        ]),
+      );
+      expect(provider.resolver.events.single.name, equals('click_overridden'));
     });
 
     test('scope interceptors see the scope context and run before overrides',
@@ -167,7 +218,7 @@ void main() {
       await ScopedAnalytics(hub, a).sendEvent(_Event('click'));
       await ScopedAnalytics(hub, b).sendEvent(_Event('click'));
 
-      expect(order, equals(['a', 'b']));
+      expect(order, equals(['a:click', 'b:click']));
     });
 
     test('sendEvent without a scope behaves as before', () async {
@@ -199,29 +250,57 @@ void main() {
       expect(provider.resolver.events, hasLength(1));
     });
 
-    test('properties and context are snapshotted when sendEvent is called',
+    test(
+        'name, properties, context and providers are snapshotted when sendEvent is called',
         () async {
       final provider = _Provider();
       final hub = AnalyticsHub(providers: [provider]);
-      final props = <String, Object?>{'step': 1};
-      final event = _Event('click', props: props);
+      final event = _MutableEvent(
+        'click',
+        currentProps: {'step': 1},
+        currentContext: const EventContext().withEntry(const _Page('original')),
+        currentProviders: const [EventProvider(_Key())],
+      );
 
       final pending = hub.sendEvent(event);
-      props['step'] = 2;
+      event.currentProps['step'] = 2;
+      event
+        ..currentProps = {'step': 3}
+        ..currentContext =
+            const EventContext().withEntry(const _Page('changed'))
+        ..currentProviders = const [];
       await pending;
 
-      expect(provider.resolver.events.single.properties, equals({'step': 1}));
+      expect(provider.resolver.events, hasLength(1));
+      final resolved = provider.resolver.events.single;
+      expect(resolved.name, equals('click'));
+      expect(resolved.properties, equals({'step': 1}));
+      expect(resolved.context.entry<_Page>()?.name, equals('original'));
     });
 
     test('every provider dispatch of one send shares a correlation id',
         () async {
-      final a = _Provider();
-      final hub = AnalyticsHub(providers: [a]);
+      final first = _Provider();
+      final second = _Provider(identifier: const _OtherKey());
+      final hub = AnalyticsHub(providers: [first, second]);
+
+      await hub.sendEvent(_Event('click', keys: const [_Key(), _OtherKey()]));
+
+      expect(
+        first.resolver.contexts.single.correlationId,
+        equals(second.resolver.contexts.single.correlationId),
+      );
+    });
+
+    test('two sends get different correlation ids', () async {
+      final provider = _Provider();
+      final hub = AnalyticsHub(providers: [provider]);
 
       await hub.sendEvent(_Event('click'));
       await hub.sendEvent(_Event('click'));
 
-      final ids = a.resolver.contexts.map((c) => c.correlationId).toList();
+      final ids =
+          provider.resolver.contexts.map((c) => c.correlationId).toList();
       expect(ids[0], isNot(equals(ids[1])));
     });
   });
