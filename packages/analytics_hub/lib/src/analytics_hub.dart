@@ -7,6 +7,9 @@ import 'core/interception/dispatch/dispatch_target.dart';
 import 'core/interception/dispatch/event_dispatcher.dart';
 import 'core/interception/dispatch/event_snapshot.dart';
 import 'core/interception/interceptor/event_interceptor.dart';
+import 'core/trace/dispatch_recorder.dart';
+import 'core/trace/dispatch_trace.dart';
+import 'core/trace/trace_sink.dart';
 import 'event/events/events.dart';
 import 'provider/analytics_provider.dart';
 import 'provider/provider_identifier.dart';
@@ -30,10 +33,12 @@ class AnalyticsHub implements AnalyticsSink {
     List<EventInterceptor> interceptors = const [],
     CorrelationIdGenerator correlationIdGenerator =
         const TimestampCorrelationIdGenerator(),
+    List<TraceSink> traceSinks = const [],
   })  : _providers = {
           for (final provider in providers) provider.identifier: provider,
         },
         _correlationIdGenerator = correlationIdGenerator,
+        _traceSinks = List<TraceSink>.unmodifiable(traceSinks),
         _dispatcher = EventDispatcher(
           hubInterceptors: interceptors,
           contextBuilder: const EventDispatchContextBuilder(),
@@ -42,6 +47,7 @@ class AnalyticsHub implements AnalyticsSink {
   final Map<ProviderIdentifier, AnalyticsProvider> _providers;
   final CorrelationIdGenerator _correlationIdGenerator;
   final EventDispatcher _dispatcher;
+  final List<TraceSink> _traceSinks;
 
   static final _logger = Logger('AnalyticsHub');
 
@@ -69,23 +75,48 @@ class AnalyticsHub implements AnalyticsSink {
           throw AnalyticsProviderNotFoundException(eventProvider.identifier);
         }
 
-        final result = await _dispatcher.dispatch(
-          snapshot: snapshot,
-          target: DispatchTarget(
-            eventProvider: eventProvider,
-            provider: provider,
-          ),
-          correlationId: correlationId,
-          scopes: scopes,
-        );
-
-        if (result.isDropped) {
-          _logger.fine(
-            'Event dropped by interceptors: ${snapshot.name} for ${provider.identifier}',
+        final recorder = _traceSinks.isEmpty
+            ? null
+            : DispatchRecorder(
+                correlationId: correlationId,
+                eventName: snapshot.name,
+                provider: provider.identifier,
+              );
+        Object? failure;
+        try {
+          final result = await _dispatcher.dispatch(
+            snapshot: snapshot,
+            target: DispatchTarget(
+              eventProvider: eventProvider,
+              provider: provider,
+            ),
+            correlationId: correlationId,
+            scopes: scopes,
+            recorder: recorder,
           );
+          if (result.isDropped) {
+            _logger.fine(
+              'Event dropped by interceptors: ${snapshot.name} for ${provider.identifier}',
+            );
+          }
+        } catch (error) {
+          failure = error;
+          rethrow;
+        } finally {
+          if (recorder != null) _emit(recorder.finish(error: failure));
         }
       }),
     );
+  }
+
+  void _emit(DispatchTrace trace) {
+    for (final sink in _traceSinks) {
+      try {
+        sink.onTrace(trace);
+      } catch (error, stackTrace) {
+        _logger.warning('TraceSink $sink threw', error, stackTrace);
+      }
+    }
   }
 
   /// Flushes all providers.

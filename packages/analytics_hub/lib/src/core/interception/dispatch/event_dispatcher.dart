@@ -1,4 +1,7 @@
 import '../../../scope/analytics_scope.dart';
+import '../../trace/dispatch_recorder.dart';
+import '../../trace/stage_record.dart';
+import '../../trace/tracing_interceptor.dart';
 import '../context/event_context.dart';
 import '../context/resolved_event.dart';
 import '../interceptor/event_interceptor.dart';
@@ -33,16 +36,23 @@ class EventDispatcher {
   /// Dispatches [snapshot] to [target].
   ///
   /// [scopes] is the scope chain root → leaf; its context precedes the
-  /// event's own and its interceptors run first.
+  /// event's own and its interceptors run first. With [recorder], every stage
+  /// is wrapped and reported to it.
   Future<InterceptorResult> dispatch({
     required EventSnapshot snapshot,
     required DispatchTarget target,
     required String correlationId,
     List<AnalyticsScope> scopes = const [],
+    DispatchRecorder? recorder,
   }) {
     var context = const EventContext();
     for (final scope in scopes) {
       context = context.append(scope.context);
+      recorder?.addContextStage(
+        name: scope.source,
+        kind: StageKind.scope,
+        added: scope.context.records,
+      );
     }
     context = context.append(snapshot.context);
 
@@ -58,32 +68,74 @@ class EventDispatcher {
       context: context,
     );
     final scopeInterceptors = [
-      for (final scope in scopes) ...scope.interceptors,
+      for (final scope in scopes)
+        for (final interceptor in scope.interceptors)
+          _traced(interceptor, StageKind.scopeInterceptor, recorder),
     ];
     final hubAndProviderInterceptors = [
-      ..._hubInterceptors,
-      ...target.provider.interceptors,
+      for (final interceptor in _hubInterceptors)
+        _traced(interceptor, StageKind.hubInterceptor, recorder),
+      for (final interceptor in target.provider.interceptors)
+        _traced(interceptor, StageKind.providerInterceptor, recorder),
     ];
+    final resolverStage = 'resolver:${target.provider.identifier.name}';
 
     return _chainExecutor.execute(
       interceptors: scopeInterceptors,
       event: initialEvent,
       context: dispatchContext,
       terminal: (event, context) {
+        final clock = Stopwatch()..start();
         final overriddenEvent = _overridesApplier.apply(
           event,
           target.eventProvider.overrides,
+        );
+        recorder?.addTransform(
+          name: 'overrides',
+          kind: StageKind.overrides,
+          before: event,
+          after: overriddenEvent,
+          duration: clock.elapsed,
         );
         return _chainExecutor.execute(
           interceptors: hubAndProviderInterceptors,
           event: overriddenEvent,
           context: context,
           terminal: (event, context) async {
-            await target.provider.resolver.resolve(event, context: context);
+            final clock = Stopwatch()..start();
+            try {
+              await target.provider.resolver.resolve(event, context: context);
+            } catch (error) {
+              recorder?.addTransform(
+                name: resolverStage,
+                kind: StageKind.resolver,
+                before: event,
+                after: event,
+                duration: clock.elapsed,
+                error: error,
+              );
+              rethrow;
+            }
+            recorder?.addTransform(
+              name: resolverStage,
+              kind: StageKind.resolver,
+              before: event,
+              after: event,
+              duration: clock.elapsed,
+            );
             return InterceptorResult.continueWith(event, context: context);
           },
         );
       },
     );
   }
+
+  static EventInterceptor _traced(
+    EventInterceptor interceptor,
+    StageKind kind,
+    DispatchRecorder? recorder,
+  ) =>
+      recorder == null
+          ? interceptor
+          : TracingInterceptor(interceptor, kind: kind, recorder: recorder);
 }
