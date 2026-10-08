@@ -14,11 +14,13 @@
 library;
 
 export 'src/analytics_hub.dart';
+export 'src/analytics_sink.dart';
 export 'src/core/interception/context/context_entry.dart';
 export 'src/core/interception/context/context_record.dart';
 export 'src/core/interception/context/event_context.dart';
 export 'src/core/interception/context/event_dispatch_context.dart';
 export 'src/core/interception/context/resolved_event.dart';
+export 'src/core/interception/dispatch/correlation_id_generator.dart';
 export 'src/core/interception/interceptor/event_interceptor.dart';
 export 'src/core/interception/interceptor/interceptor_result.dart';
 export 'src/event/event_resolver.dart';
@@ -26,3 +28,4 @@ export 'src/event/events/events.dart';
 export 'src/provider/analytics_provider.dart';
 export 'src/provider/provider_identifier.dart';
 export 'src/scope/analytics_scope.dart';
+export 'src/scoped_analytics.dart';
