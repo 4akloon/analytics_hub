@@ -31,6 +31,7 @@ jobs:
           packages/analytics_hub_firebase
           packages/analytics_hub_mixpanel
           packages/analytics_hub_appsflyer
+          packages/analytics_hub_flutter
 
       - name: Analyze
         run: >-
@@ -39,6 +40,7 @@ jobs:
           packages/analytics_hub_firebase
           packages/analytics_hub_mixpanel
           packages/analytics_hub_appsflyer
+          packages/analytics_hub_flutter
 
       - name: Test analytics_hub
         run: flutter test
@@ -55,6 +57,10 @@ jobs:
       - name: Test analytics_hub_appsflyer
         run: flutter test
         working-directory: packages/analytics_hub_appsflyer
+
+      - name: Test analytics_hub_flutter
+        run: flutter test
+        working-directory: packages/analytics_hub_flutter
 
   publish-dry-run:
     name: Publish dry-run
@@ -85,3 +91,7 @@ jobs:
       - name: Dry-run analytics_hub_appsflyer
         run: dart pub publish --dry-run
         working-directory: packages/analytics_hub_appsflyer
+
+      - name: Dry-run analytics_hub_flutter
+        run: dart pub publish --dry-run
+        working-directory: packages/analytics_hub_flutter

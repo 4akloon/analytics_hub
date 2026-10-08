@@ -20,6 +20,7 @@ on:
       - 'analytics_hub_firebase-v*'
       - 'analytics_hub_mixpanel-v*'
       - 'analytics_hub_appsflyer-v*'
+      - 'analytics_hub_flutter-v*'
 
 jobs:
   publish:
