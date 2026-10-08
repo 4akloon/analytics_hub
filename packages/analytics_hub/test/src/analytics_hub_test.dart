@@ -326,6 +326,7 @@ class _OverriddenProviderEvent extends Event {
 class _SpyInterceptor implements EventInterceptor {
   _SpyInterceptor(this.name, this.order);
 
+  @override
   final String name;
   final List<String> order;
 
@@ -344,6 +345,9 @@ class _SpyInterceptor implements EventInterceptor {
 
 class _DropInterceptor implements EventInterceptor {
   @override
+  String get name => 'drop';
+
+  @override
   FutureOr<InterceptorResult> intercept({
     required ResolvedEvent event,
     required EventDispatchContext context,
@@ -354,6 +358,9 @@ class _DropInterceptor implements EventInterceptor {
 }
 
 class _RenameWithContextInterceptor implements EventInterceptor {
+  @override
+  String get name => 'rename_with_context';
+
   @override
   FutureOr<InterceptorResult> intercept({
     required ResolvedEvent event,
