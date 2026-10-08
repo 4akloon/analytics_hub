@@ -1,3 +1,53 @@
+## 0.6.0 - 2026-10-08
+
+### Added
+- `AnalyticsSink` — the one-method interface (`sendEvent`) that `AnalyticsHub`
+  and `ScopedAnalytics` implement. Depend on it wherever code only sends.
+- `AnalyticsScope` and `ScopedAnalytics`: an immutable scope (name, context,
+  own interceptors, parent) applied by `AnalyticsHub.sendEvent(event, scope:)`.
+  Scope context precedes the event's; scope interceptors run before provider
+  overrides and hub interceptors; nested scopes compose root → leaf.
+- `ContextRecord`: every context entry now knows who added it
+  (`'event'`, `'scope:<name>'`, `'interceptor:<name>'`).
+- `EventContext.withEntries`, `append`, `attributedTo`, `entries<T>()`, `all`,
+  `records`.
+- `ResolvedEvent.withDefaults` — fill missing/null properties; explicit values
+  win, and a `null` default adds nothing.
+- Dispatch tracing: `AnalyticsHub(traceSinks: [...])` emits a `DispatchTrace`
+  per event/provider dispatch with a `StageRecord` (name/properties/context
+  diff, duration, drop, error) for every stage. `TraceSink`, `LoggingTraceSink`,
+  `DispatchTraceFormatter`. Nothing is recorded when there are no sinks.
+- `sendEvent` snapshots the event's name, properties, context and providers
+  synchronously before any `await`.
+- One `correlationId` per `sendEvent` call, shared by every provider dispatch.
+  `CorrelationIdGenerator` (default `TimestampCorrelationIdGenerator`) and
+  `AnalyticsHub(correlationIdGenerator:)` to supply your own.
+
+### Changed
+- Scope interceptors run before provider overrides; a provider `properties`
+  override replaces what they added.
+
+### Breaking Changes
+- `EventContext` is append-only and a `final class`. Removed `Context`,
+  `entriesMap`, `merge`, `updateEntry`; `withEntry` no longer takes a type
+  argument (`withEntry<T>(e)` → `withEntry(e)`). Two entries of one type
+  coexist; `entry<T>()` returns the nearest (last added) and matches subtypes
+  with `is`.
+- `EventContext.entries` is now a generic method `entries<T>()` (it was a
+  getter); use `all` for every entry.
+- `EventDispatchContext` no longer implements `Context`. Read the typed context
+  through `context.context` or the `entry<T>()` shortcut; replace
+  `context.entries` with `context.context.all`; replace
+  `withEntry`/`merge` with `copyWith(context: ...)`.
+- The `EventDispatchContext` constructor requires `context:`; test fakes must
+  pass `const EventContext()`.
+- `AnalyticsHub.sendEvent` gained `{AnalyticsScope? scope}`; classes
+  implementing `AnalyticsHub` must add it.
+- `EventInterceptor` requires `String get name`.
+- Resolvers and interceptors receive an unmodifiable properties map (the
+  snapshot taken in `sendEvent`): mutating `event.properties` in place throws
+  `UnsupportedError`. Use `copyWith` / `withDefaults`.
+
 ## 0.5.0 - 2026-08-05
 
 ### Changed

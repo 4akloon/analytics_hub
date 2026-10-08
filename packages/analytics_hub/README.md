@@ -19,6 +19,8 @@ such as Firebase, Mixpanel, and custom providers.
 - Provider targeting through `EventProvider`.
 - Global and provider-level event interceptors.
 - Typed event metadata context (`EventContext` / `ContextEntry`).
+- Scoped context: wrap the hub in `ScopedAnalytics` so a screen or section's typed context and interceptors apply to every event sent from it, with provenance on each entry.
+- Dispatch tracing: `traceSinks` get a per-stage diff of what every scope, override, interceptor and resolver did.
 
 ### When you might want it
 
@@ -41,7 +43,7 @@ Current providers (each has its own README with integration steps):
 | **Events** | `Event`, `LogEvent`, `EventProvider`, `EventOverrides` | `event/events/events.dart` |
 | **Providers** | `AnalyticsProvider`, `ProviderIdentifier`, `EventResolver` | `provider/`, `event/event_resolver.dart` |
 | **Interceptors** | `EventInterceptor`, `InterceptorResult`, `NextEventInterceptor` | `core/interception/interceptor/` |
-| **Context** | `Context`, `EventContext`, `ContextEntry`, `EventDispatchContext`, `ResolvedEvent` | `core/interception/context/` |
+| **Context** | `EventContext`, `ContextEntry`, `EventDispatchContext`, `ResolvedEvent` | `core/interception/context/` |
 | **Dispatch pipeline** | `EventDispatcher`, `DispatchTarget`, `EventDispatchContextBuilder`, `InterceptorChainExecutor`, `EventOverridesApplier`, `CorrelationIdGenerator` | `core/interception/dispatch/` |
 
 Source paths are relative to `lib/src/`.
@@ -52,11 +54,11 @@ In your app `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  analytics_hub: ^0.5.0
+  analytics_hub: ^0.6.0
   # and then any concrete providers you need, e.g.:
-  # analytics_hub_firebase: ^0.5.0
-  # analytics_hub_mixpanel: ^0.5.0
-  # analytics_hub_appsflyer: ^0.5.0
+  # analytics_hub_firebase: ^0.5.1
+  # analytics_hub_mixpanel: ^0.5.1
+  # analytics_hub_appsflyer: ^0.6.1
 ```
 
 ## Core concepts
@@ -148,6 +150,9 @@ final class PrefixInterceptor implements EventInterceptor {
   final String prefix;
 
   @override
+  String get name => 'prefix';
+
+  @override
   FutureOr<InterceptorResult> intercept({
     required ResolvedEvent event,
     required EventDispatchContext context,
@@ -170,6 +175,29 @@ See [doc/interceptors_and_context.md](doc/interceptors_and_context.md) for
 the interceptor chain execution order and how typed context flows from an
 event through to resolvers.
 
+## Scopes and tracing
+
+```dart
+final home = ScopedAnalytics(
+  hub,
+  AnalyticsScope(
+    name: 'home',
+    context: const EventContext().withEntry(const PageContextEntry('home')),
+  ),
+);
+await home.child(name: 'create').sendEvent(const ToolTappedEvent('static_ad'));
+
+final tracedHub = AnalyticsHub(
+  providers: [...],
+  traceSinks: [LoggingTraceSink(verbose: true)],
+);
+```
+
+Depend on `AnalyticsSink` (one method, `sendEvent`) wherever code only sends
+events. See [doc/interceptors_and_context.md](doc/interceptors_and_context.md)
+for precedence, stage order and the trace format, and
+`example/scoped_context.dart` for a runnable walk-through.
+
 ## Reference
 
 - [doc/getting_started.md](doc/getting_started.md) — install and send your
@@ -179,6 +207,7 @@ event through to resolvers.
   interceptor chain order and typed context.
 - [doc/testing.md](doc/testing.md) — testing code that uses `AnalyticsHub`.
 - Core example: `example/main.dart`.
+- Scoped example: `example/scoped_context.dart`.
 - Firebase and Mixpanel providers are in sibling packages in this repository.
 
 ## Suggestions and improvements

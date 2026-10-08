@@ -61,7 +61,7 @@ void main() {
   });
 }
 
-class _SignupEvent extends LogEvent {
+class _SignupEvent extends Event {
   const _SignupEvent(this.method) : super('sign_up');
 
   final String method;
@@ -89,6 +89,23 @@ Things worth asserting on:
   assert on `context.entry<YourContextEntry>()`.
 - **Lifecycle** — track `flush` calls on the fake provider directly if a test
   needs to verify flush behavior.
+
+## Code that takes an `AnalyticsSink`
+
+Code that only sends events should depend on `AnalyticsSink`, so a test can
+pass a recording fake with no hub at all:
+
+```dart
+final class RecordingSink implements AnalyticsSink {
+  final List<Event> events = [];
+
+  @override
+  Future<void> sendEvent(Event event) async => events.add(event);
+}
+```
+
+To assert which stage put a key on an event, register a `TraceSink` that
+collects `DispatchTrace`s and inspect `trace.stages`.
 
 This is the same pattern `analytics_hub`'s own test suite uses internally —
 see `test/src/analytics_hub_test.dart` for the full `TestProvider`/

@@ -30,4 +30,17 @@ class ResolvedEvent {
       context: context ?? this.context,
     );
   }
+
+  /// Returns a copy whose properties gain every key of [defaults] that is
+  /// absent or `null` here. Explicit values always win. A `null` default is
+  /// ignored, so `withDefaults({'k': maybeNull})` never adds `k: null`.
+  ResolvedEvent withDefaults(Map<String, Object?> defaults) {
+    if (defaults.isEmpty) return this;
+    final merged = Map<String, Object?>.from(properties ?? const {});
+    for (final MapEntry(:key, :value) in defaults.entries) {
+      if (value == null) continue;
+      merged[key] ??= value;
+    }
+    return copyWith(properties: merged);
+  }
 }

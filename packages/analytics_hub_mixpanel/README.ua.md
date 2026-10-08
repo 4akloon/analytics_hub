@@ -18,8 +18,8 @@
 
 ```yaml
 dependencies:
-  analytics_hub: ^0.5.0
-  analytics_hub_mixpanel: ^0.5.0
+  analytics_hub: ^0.6.0
+  analytics_hub_mixpanel: ^0.5.1
   mixpanel_flutter: ^2.0.0
 ```
 

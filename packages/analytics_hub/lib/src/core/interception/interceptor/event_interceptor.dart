@@ -12,6 +12,10 @@ typedef NextEventInterceptor = FutureOr<InterceptorResult> Function(
 
 /// Intercepts an event before it is resolved by a provider.
 abstract interface class EventInterceptor {
+  /// Stable name used to attribute this interceptor's changes in a trace
+  /// (`'interceptor:<name>'`). Use lower_snake_case, e.g. `'base_metadata'`.
+  String get name;
+
   /// Intercepts [event] and either continues via [next] or short-circuits.
   FutureOr<InterceptorResult> intercept({
     required ResolvedEvent event,

@@ -1,71 +1,83 @@
-import 'context.dart';
 import 'context_entry.dart';
+import 'context_record.dart';
 
-/// Immutable typed metadata container similar to gql_exec `Context`.
+/// Immutable, append-only typed metadata attached to an event.
 ///
-/// Only one entry is stored per type. Adding another entry of the same type
-/// replaces the previous one.
-class EventContext implements Context {
+/// Records are kept in insertion order, root → leaf. A later record of the
+/// same type is "nearer" and wins [entry], but earlier records stay, so a
+/// reader can see every entry and who added it ([ContextRecord.source]).
+/// Nothing is ever merged or replaced.
+final class EventContext {
   /// Creates an empty context.
-  const EventContext() : _entries = const {};
+  const EventContext() : _records = const [];
 
-  /// Creates a context from raw [entries] map.
-  const EventContext._(this._entries);
+  EventContext._(this._records);
 
-  /// Internal storage keyed by entry runtime type.
-  final Map<Type, ContextEntry> _entries;
+  /// The source recorded for entries added without an explicit one.
+  static const String eventSource = 'event';
 
-  @override
-  bool get isEmpty => _entries.isEmpty;
+  final List<ContextRecord> _records;
 
-  @override
-  bool get isNotEmpty => !isEmpty;
+  /// Records in insertion order, root → leaf.
+  List<ContextRecord> get records => List.unmodifiable(_records);
 
-  @override
-  Iterable<ContextEntry> get entries => _entries.values;
+  /// Every entry in insertion order, without its source.
+  Iterable<ContextEntry> get all => _records.map((record) => record.entry);
 
-  @override
-  Map<Type, ContextEntry> get entriesMap => Map.unmodifiable(_entries);
+  /// Whether no record has been added.
+  bool get isEmpty => _records.isEmpty;
 
-  @override
-  T? entry<T extends ContextEntry>() => _entries[T] as T?;
+  /// Whether at least one record has been added.
+  bool get isNotEmpty => _records.isNotEmpty;
 
-  @override
-  EventContext withEntry<T extends ContextEntry>(T entry) {
-    final nextEntries = Map<Type, ContextEntry>.from(_entries);
-    nextEntries[T] = entry;
-    return EventContext._(
-      Map<Type, ContextEntry>.unmodifiable(nextEntries),
-    );
-  }
-
-  @override
-  EventContext updateEntry<T extends ContextEntry>(
-    T Function(T entry) updater, {
-    T Function()? ifAbsent,
-  }) {
-    final currentEntry = entry<T>();
-    if (currentEntry == null) {
-      if (ifAbsent == null) {
-        return this;
-      }
-      return withEntry<T>(ifAbsent());
+  /// The nearest entry of type [T] (the last one added), or `null`.
+  ///
+  /// Matches with `is`, so a sealed base type finds its subtypes.
+  T? entry<T extends ContextEntry>() {
+    for (var i = _records.length - 1; i >= 0; i--) {
+      final entry = _records[i].entry;
+      if (entry is T) return entry;
     }
-    return withEntry<T>(updater(currentEntry));
+    return null;
   }
 
-  /// Returns merged context where entries from [other] override current ones.
-  EventContext merge(Context other) {
-    var merged = this;
-    for (final entry in other.entries) {
-      merged = merged._withEntryByRuntimeType(entry);
-    }
-    return merged;
+  /// Every entry of type [T], root → leaf.
+  Iterable<T> entries<T extends ContextEntry>() => all.whereType<T>();
+
+  /// Returns a context with [entry] appended, attributed to [source].
+  EventContext withEntry(
+    ContextEntry entry, {
+    String source = eventSource,
+  }) =>
+      EventContext._([
+        ..._records,
+        ContextRecord(entry: entry, source: source),
+      ]);
+
+  /// Returns a context with every entry of [entries] appended in order,
+  /// all attributed to [source].
+  EventContext withEntries(
+    Iterable<ContextEntry> entries, {
+    String source = eventSource,
+  }) =>
+      EventContext._([
+        ..._records,
+        for (final entry in entries)
+          ContextRecord(entry: entry, source: source),
+      ]);
+
+  /// Returns a context with [other]'s records appended after this one's.
+  ///
+  /// Entries of [other] become the nearer ones. Returns `this` when [other]
+  /// is empty.
+  EventContext append(EventContext other) {
+    if (other.isEmpty) return this;
+    return EventContext._([..._records, ...other._records]);
   }
 
-  EventContext _withEntryByRuntimeType(ContextEntry entry) {
-    final nextEntries = Map<Type, ContextEntry>.from(_entries);
-    nextEntries[entry.runtimeType] = entry;
-    return EventContext._(Map<Type, ContextEntry>.unmodifiable(nextEntries));
-  }
+  /// Returns a copy with every record attributed to [source].
+  EventContext attributedTo(String source) => EventContext._([
+        for (final record in _records)
+          ContextRecord(entry: record.entry, source: source),
+      ]);
 }
