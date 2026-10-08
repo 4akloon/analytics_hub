@@ -1,4 +1,4 @@
-## 0.5.1 - 2026-10-08
+## 0.6.0 - 2026-10-08
 
 ### Changed
 - Depend on `analytics_hub` `>=0.6.0 <0.7.0`. No code changes: the resolver

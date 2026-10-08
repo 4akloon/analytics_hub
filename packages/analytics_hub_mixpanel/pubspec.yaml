@@ -2,7 +2,7 @@ name: analytics_hub_mixpanel
 description: >
   Mixpanel provider for analytics_hub.
   Forwards LogEvents to Mixpanel.track with optional properties.
-version: 0.5.1
+version: 0.6.0
 homepage: https://github.com/4akLoon/analytics_hub
 repository: https://github.com/4akLoon/analytics_hub
 

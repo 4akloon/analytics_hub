@@ -18,7 +18,7 @@ It uses the core `EventResolver` contract with `ResolvedEvent` payload.
 ```yaml
 dependencies:
   analytics_hub: ^0.6.0
-  analytics_hub_mixpanel: ^0.5.1
+  analytics_hub_mixpanel: ^0.6.0
   mixpanel_flutter: ^2.0.0
 ```
 
