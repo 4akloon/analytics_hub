@@ -97,6 +97,8 @@ void main() {
       await tester.pumpWidget(
         _app(
           hub,
+          // The item sits just past the 600 px viewport, inside the default
+          // 250 px cache extent, so it stays built and keeps its State.
           ListView(
             children: [
               const SizedBox(height: 650),
@@ -128,6 +130,45 @@ void main() {
       expect(provider.resolver.events, hasLength(1), reason: 'sent once');
     });
 
+    testWidgets('a lazy list that disposes the item sends again when rebuilt',
+        (tester) async {
+      await tester.pumpWidget(
+        _app(
+          hub,
+          ListView(
+            children: [
+              const SizedBox(height: 2000),
+              AnalyticsImpression(
+                event: () => const _Event('section_viewed'),
+                child: const SizedBox(height: 100),
+              ),
+              const SizedBox(height: 2000),
+            ],
+          ),
+        ),
+      );
+      await tester.pump();
+      await tester.pump();
+
+      await tester.drag(find.byType(ListView), const Offset(0, -2000));
+      await tester.pumpAndSettle();
+      await tester.pump();
+
+      expect(provider.resolver.events, hasLength(1));
+
+      await tester.drag(find.byType(ListView), const Offset(0, 2000));
+      await tester.pumpAndSettle();
+      await tester.pump();
+
+      expect(find.byType(AnalyticsImpression), findsNothing);
+
+      await tester.drag(find.byType(ListView), const Offset(0, -2000));
+      await tester.pumpAndSettle();
+      await tester.pump();
+
+      expect(provider.resolver.events, hasLength(2));
+    });
+
     testWidgets('respects visibleFraction', (tester) async {
       await tester.pumpWidget(
         _app(
@@ -152,6 +193,12 @@ void main() {
         isEmpty,
         reason: 'only the top 50 px of 200 are visible on a 600 px screen',
       );
+
+      await tester.drag(find.byType(ListView), const Offset(0, -150));
+      await tester.pumpAndSettle();
+      await tester.pump();
+
+      expect(provider.resolver.events, hasLength(1));
     });
   });
 }

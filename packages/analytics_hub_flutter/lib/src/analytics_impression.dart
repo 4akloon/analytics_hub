@@ -8,8 +8,12 @@ import 'analytics_scope_provider.dart';
 /// [child] first has at least [visibleFraction] of its area on screen.
 ///
 /// The event is built lazily by [event] at that moment and sent once per
-/// widget lifetime: scrolling away and back does not send it again. The
-/// default fraction follows the common impression rule of half the view.
+/// [State] lifetime. In a lazy `ListView` or `SliverList` an item scrolled far
+/// enough away is disposed, and it sends again when it is rebuilt. To report
+/// strictly once, keep the item alive (`AutomaticKeepAliveClientMixin` or
+/// `addAutomaticKeepAlives`) or deduplicate in the receiver, for example in
+/// the cubit. The default fraction follows the common impression rule of half
+/// the view.
 class AnalyticsImpression extends StatefulWidget {
   /// Creates an impression sender around [child].
   const AnalyticsImpression({
@@ -42,6 +46,12 @@ class _AnalyticsImpressionState extends State<AnalyticsImpression> {
     }
     _sent = true;
     AnalyticsScopeProvider.of(context).sendEvent(widget.event());
+  }
+
+  @override
+  void dispose() {
+    VisibilityDetectorController.instance.forget(_detectorKey);
+    super.dispose();
   }
 
   @override
