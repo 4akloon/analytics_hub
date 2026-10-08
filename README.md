@@ -26,8 +26,8 @@ Per-package docs:
 ```yaml
 dependencies:
   analytics_hub: ^0.6.0
-  analytics_hub_firebase: ^0.5.1
-  analytics_hub_mixpanel: ^0.5.1
+  analytics_hub_firebase: ^0.6.0
+  analytics_hub_mixpanel: ^0.6.0
   # analytics_hub_appsflyer: ^0.6.1 # optional, if you use Appsflyer
 ```
 

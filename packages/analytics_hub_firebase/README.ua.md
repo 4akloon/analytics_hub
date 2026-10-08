@@ -19,7 +19,7 @@
 ```yaml
 dependencies:
   analytics_hub: ^0.6.0
-  analytics_hub_firebase: ^0.5.1
+  analytics_hub_firebase: ^0.6.0
   firebase_core: ^2.0.0
   firebase_analytics: ^10.0.0
 ```
