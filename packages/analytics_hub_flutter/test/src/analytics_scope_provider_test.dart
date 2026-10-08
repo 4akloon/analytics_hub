@@ -64,6 +64,7 @@ void main() {
     testWidgets('of under the root is the hub and scopeOf is null',
         (tester) async {
       AnalyticsSink? sink;
+      AnalyticsSink? maybe;
       AnalyticsScope? scope;
       await tester.pumpWidget(
         _app(
@@ -71,6 +72,7 @@ void main() {
           Builder(
             builder: (context) {
               sink = AnalyticsScopeProvider.of(context);
+              maybe = AnalyticsScopeProvider.maybeOf(context);
               scope = AnalyticsScopeProvider.scopeOf(context);
               return const SizedBox();
             },
@@ -80,7 +82,29 @@ void main() {
 
       expect(sink, same(hub));
       expect(scope, isNull);
-      expect(AnalyticsScopeProvider.maybeOf, isNotNull);
+      expect(maybe, same(hub));
+    });
+
+    testWidgets('maybeOf under a scope is a ScopedAnalytics of that scope',
+        (tester) async {
+      AnalyticsSink? maybe;
+      await tester.pumpWidget(
+        _app(
+          hub,
+          AnalyticsScopeProvider(
+            name: 'home',
+            child: Builder(
+              builder: (context) {
+                maybe = AnalyticsScopeProvider.maybeOf(context);
+                return const SizedBox();
+              },
+            ),
+          ),
+        ),
+      );
+
+      expect(maybe, isA<ScopedAnalytics>());
+      expect((maybe! as ScopedAnalytics).scope.name, equals('home'));
     });
 
     testWidgets('nested providers compose the chain root to leaf',

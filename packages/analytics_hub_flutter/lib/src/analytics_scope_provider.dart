@@ -21,6 +21,10 @@ class AnalyticsScopeProvider extends StatelessWidget {
   ///
   /// Throws at build time when there is no [AnalyticsScopeProvider.root]
   /// above.
+  ///
+  /// Equal rebuilds do not notify dependents only when `context` entries and
+  /// `interceptors` compare equal — prefer `const` entries and interceptors,
+  /// or give them value equality.
   const AnalyticsScopeProvider({
     required String name,
     EventContext context = const EventContext(),

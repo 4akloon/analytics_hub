@@ -1,4 +1,4 @@
-## 0.1.0 - 2026-10-08
+## 0.6.0 - 2026-10-08
 
 ### Added
 - `AnalyticsScopeProvider`: puts an `AnalyticsScope` on the widget tree.
