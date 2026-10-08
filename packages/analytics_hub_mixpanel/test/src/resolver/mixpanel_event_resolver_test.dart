@@ -32,6 +32,7 @@ void main() {
         provider: provider,
         timestamp: DateTime.now(),
         correlationId: 'test-correlation-id',
+        context: const EventContext(),
       );
       await provider.resolver.resolve(
         ResolvedEvent(
@@ -66,6 +67,7 @@ void main() {
         provider: provider,
         timestamp: DateTime.now(),
         correlationId: 'test-correlation-id',
+        context: const EventContext(),
       );
       await provider.resolver.resolve(
         ResolvedEvent(

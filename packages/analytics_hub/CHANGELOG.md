@@ -1,3 +1,43 @@
+## 0.6.0 - 2026-10-08
+
+### Added
+- `AnalyticsSink` — the one-method interface (`sendEvent`) that `AnalyticsHub`
+  and `ScopedAnalytics` implement. Depend on it wherever code only sends.
+- `AnalyticsScope` and `ScopedAnalytics`: an immutable scope (name, context,
+  own interceptors, parent) applied by `AnalyticsHub.sendEvent(event, scope:)`.
+  Scope context precedes the event's; scope interceptors run before provider
+  overrides and hub interceptors; nested scopes compose root → leaf.
+- `ContextRecord`: every context entry now knows who added it
+  (`'event'`, `'scope:<name>'`, `'interceptor:<name>'`).
+- `EventContext.withEntries`, `append`, `attributedTo`, `entries<T>()`, `all`,
+  `records`.
+- `ResolvedEvent.withDefaults` — fill missing/null properties; explicit values win.
+- Dispatch tracing: `AnalyticsHub(traceSinks: [...])` emits a `DispatchTrace`
+  per event/provider dispatch with a `StageRecord` (name/properties/context
+  diff, duration, drop, error) for every stage. `TraceSink`, `LoggingTraceSink`,
+  `DispatchTraceFormatter`. Nothing is recorded when there are no sinks.
+- `sendEvent` snapshots the event's name, properties, context and providers
+  synchronously before any `await`.
+- One `correlationId` per `sendEvent` call, shared by every provider dispatch;
+  `AnalyticsHub(correlationIdGenerator:)` to supply your own.
+
+### Changed
+- Resolvers and interceptors now receive an unmodifiable properties map (the snapshot taken in `sendEvent`); code that mutated `event.properties` in place must use `copyWith` / `withDefaults`.
+
+### Breaking Changes
+- `EventContext` is append-only. Removed `Context`, `entriesMap`, `merge`,
+  `updateEntry`; `withEntry` no longer takes a type argument (`withEntry<T>(e)`
+  → `withEntry(e)`). Two entries of one type coexist; `entry<T>()` returns the
+  nearest (last added) and matches subtypes with `is`.
+- `EventDispatchContext` no longer implements `Context`. Read the typed context
+  through `context.context` or the `entry<T>()` shortcut; replace
+  `context.entries` with `context.context.all`; replace
+  `withEntry`/`merge` with `copyWith(context: ...)`.
+- `EventInterceptor` requires `String get name`.
+- `EventDispatcher.dispatch` takes an `EventSnapshot`, a `correlationId`,
+  `scopes` and an optional `DispatchRecorder`; `EventDispatchContextBuilder`
+  no longer owns the correlation id generator.
+
 ## 0.5.0 - 2026-08-05
 
 ### Changed
