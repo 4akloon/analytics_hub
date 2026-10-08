@@ -30,6 +30,8 @@ export 'src/core/interception/dispatch/overrides_applier.dart';
 export 'src/core/interception/interceptor/event_interceptor.dart';
 export 'src/core/interception/interceptor/interceptor_result.dart';
 export 'src/core/trace/dispatch_trace.dart';
+export 'src/core/trace/dispatch_trace_formatter.dart';
+export 'src/core/trace/logging_trace_sink.dart';
 export 'src/core/trace/properties_diff.dart';
 export 'src/core/trace/stage_record.dart';
 export 'src/core/trace/trace_sink.dart';
