@@ -78,14 +78,13 @@ class EventDispatcher {
       for (final interceptor in target.provider.interceptors)
         _traced(interceptor, StageKind.providerInterceptor, recorder),
     ];
-    final resolverStage = 'resolver:${target.provider.identifier.name}';
 
     return _chainExecutor.execute(
       interceptors: scopeInterceptors,
       event: initialEvent,
       context: dispatchContext,
       terminal: (event, context) {
-        final clock = Stopwatch()..start();
+        final clock = _startClock(recorder);
         final overriddenEvent = _overridesApplier.apply(
           event,
           target.eventProvider.overrides,
@@ -95,33 +94,33 @@ class EventDispatcher {
           kind: StageKind.overrides,
           before: event,
           after: overriddenEvent,
-          duration: clock.elapsed,
+          duration: clock?.elapsed ?? Duration.zero,
         );
         return _chainExecutor.execute(
           interceptors: hubAndProviderInterceptors,
           event: overriddenEvent,
           context: context,
           terminal: (event, context) async {
-            final clock = Stopwatch()..start();
+            final clock = _startClock(recorder);
             try {
               await target.provider.resolver.resolve(event, context: context);
             } catch (error) {
               recorder?.addTransform(
-                name: resolverStage,
+                name: _resolverStage(target),
                 kind: StageKind.resolver,
                 before: event,
                 after: event,
-                duration: clock.elapsed,
+                duration: clock?.elapsed ?? Duration.zero,
                 error: error,
               );
               rethrow;
             }
             recorder?.addTransform(
-              name: resolverStage,
+              name: _resolverStage(target),
               kind: StageKind.resolver,
               before: event,
               after: event,
-              duration: clock.elapsed,
+              duration: clock?.elapsed ?? Duration.zero,
             );
             return InterceptorResult.continueWith(event, context: context);
           },
@@ -129,6 +128,12 @@ class EventDispatcher {
       },
     );
   }
+
+  static Stopwatch? _startClock(DispatchRecorder? recorder) =>
+      recorder == null ? null : (Stopwatch()..start());
+
+  static String _resolverStage(DispatchTarget target) =>
+      'resolver:${target.provider.identifier.name}';
 
   static EventInterceptor _traced(
     EventInterceptor interceptor,

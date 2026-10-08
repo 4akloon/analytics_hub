@@ -12,12 +12,14 @@ final class DispatchSent extends DispatchOutcome {
   const DispatchSent();
 }
 
-/// A stage dropped the event before the resolver.
+/// A stage dropped the event before the resolver, or ended the pipeline
+/// without reaching it (an interceptor that returned without calling `next`).
 final class DispatchDropped extends DispatchOutcome {
   /// Creates a dropped outcome caused by [stage].
   const DispatchDropped({required this.stage});
 
-  /// Name of the stage that returned `InterceptorResult.drop`.
+  /// Name of the stage that returned `InterceptorResult.drop`, or the last
+  /// stage recorded when the pipeline ended before the resolver.
   final String stage;
 }
 

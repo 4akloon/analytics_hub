@@ -18,8 +18,8 @@
 
 ```yaml
 dependencies:
-  analytics_hub: ^0.5.0
-  analytics_hub_appsflyer: ^0.6.0
+  analytics_hub: ^0.6.0
+  analytics_hub_appsflyer: ^0.6.1
   appsflyer_sdk: ^7.0.0
 ```
 

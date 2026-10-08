@@ -37,6 +37,28 @@ void main() {
       expect(result.properties, equals({'source_page': 'home'}));
     });
 
+    test('ignores a null default for a missing key', () {
+      const event = ResolvedEvent(
+        name: 'click',
+        properties: {'b': 2},
+        context: EventContext(),
+      );
+
+      final result = event.withDefaults({'a': null});
+
+      expect(result.properties, equals({'b': 2}));
+    });
+
+    test('keeps an explicit value over a null default', () {
+      const event = ResolvedEvent(
+        name: 'click',
+        properties: {'a': 1},
+        context: EventContext(),
+      );
+
+      expect(event.withDefaults({'a': null}).properties, equals({'a': 1}));
+    });
+
     test('creates properties when the event has none', () {
       const event = ResolvedEvent(name: 'click', context: EventContext());
 

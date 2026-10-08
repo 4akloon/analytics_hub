@@ -1,10 +1,19 @@
 import 'dart:async';
 
 import 'package:analytics_hub/analytics_hub.dart';
+import 'package:analytics_hub/src/core/interception/dispatch/context_builder.dart';
+import 'package:analytics_hub/src/core/interception/dispatch/dispatch_target.dart';
+import 'package:analytics_hub/src/core/interception/dispatch/event_dispatcher.dart';
+import 'package:analytics_hub/src/core/interception/dispatch/event_snapshot.dart';
+import 'package:analytics_hub/src/core/interception/dispatch/interceptor_chain_executor.dart';
 import 'package:test/test.dart';
 
 class _Key extends ProviderIdentifier {
   const _Key() : super(name: 'test');
+}
+
+class _OtherKey extends ProviderIdentifier {
+  const _OtherKey() : super(name: 'other');
 }
 
 final class _Page extends ContextEntry {
@@ -30,26 +39,35 @@ class _Resolver implements EventResolver {
 }
 
 class _Provider extends AnalyticsProvider {
-  _Provider({super.interceptors = const [], bool throwing = false})
-      : resolver = _Resolver(throwing: throwing),
-        super(identifier: const _Key());
+  _Provider({
+    super.interceptors = const [],
+    super.identifier = const _Key(),
+    bool throwing = false,
+  }) : resolver = _Resolver(throwing: throwing);
 
   @override
   final _Resolver resolver;
 }
 
 class _Event extends Event {
-  _Event(super.name, {this.props, this.overrides});
+  _Event(
+    super.name, {
+    this.props,
+    this.overrides,
+    this.targets = const [_Key()],
+  });
 
   final Map<String, Object?>? props;
   final EventOverrides? overrides;
+  final List<ProviderIdentifier> targets;
 
   @override
   Map<String, Object?>? get properties => props;
 
   @override
   List<EventProvider> get providers => [
-        EventProvider(const _Key(), overrides: overrides),
+        for (final target in targets)
+          EventProvider(target, overrides: overrides),
       ];
 }
 
@@ -85,10 +103,10 @@ final class _Drop implements EventInterceptor {
 }
 
 final class _Throw implements EventInterceptor {
-  const _Throw();
+  const _Throw([this.name = 'boom']);
 
   @override
-  String get name => 'boom';
+  final String name;
 
   @override
   FutureOr<InterceptorResult> intercept({
@@ -97,6 +115,38 @@ final class _Throw implements EventInterceptor {
     required NextEventInterceptor next,
   }) =>
       throw StateError('boom');
+}
+
+final class _ThrowAfterNext implements EventInterceptor {
+  const _ThrowAfterNext();
+
+  @override
+  String get name => 'after_next';
+
+  @override
+  Future<InterceptorResult> intercept({
+    required ResolvedEvent event,
+    required EventDispatchContext context,
+    required NextEventInterceptor next,
+  }) async {
+    await next(event, context);
+    throw StateError('after next');
+  }
+}
+
+final class _ShortCircuit implements EventInterceptor {
+  const _ShortCircuit();
+
+  @override
+  String get name => 'short_circuit';
+
+  @override
+  FutureOr<InterceptorResult> intercept({
+    required ResolvedEvent event,
+    required EventDispatchContext context,
+    required NextEventInterceptor next,
+  }) =>
+      InterceptorResult.continueWith(event, context: context);
 }
 
 final class _AppendContext implements EventInterceptor {
@@ -265,6 +315,81 @@ void main() {
       expect(trace.stages.last.error, isStateError);
     });
 
+    test('records an interceptor that throws after next as its own failure',
+        () async {
+      final sink = _Sink();
+      final provider = _Provider();
+      final hub = AnalyticsHub(
+        providers: [provider],
+        interceptors: const [_ThrowAfterNext()],
+        traceSinks: [sink],
+      );
+
+      await expectLater(hub.sendEvent(_Event('click')), throwsStateError);
+
+      final trace = sink.traces.single;
+      expect(
+        (trace.outcome as DispatchFailed).stage,
+        equals('interceptor:after_next'),
+      );
+      final resolver = trace.stages.singleWhere(
+        (s) => s.kind == StageKind.resolver,
+      );
+      expect(resolver.error, isNull);
+      expect(trace.stages.last.name, equals('interceptor:after_next'));
+      expect(trace.stages.last.error, isStateError);
+      expect(provider.resolver.events, hasLength(1));
+    });
+
+    test('marks a pipeline that ends without reaching the resolver as dropped',
+        () async {
+      final sink = _Sink();
+      final provider = _Provider();
+      final hub = AnalyticsHub(
+        providers: [provider],
+        interceptors: const [_ShortCircuit()],
+        traceSinks: [sink],
+      );
+
+      await hub.sendEvent(_Event('click'));
+
+      final trace = sink.traces.single;
+      expect(
+        (trace.outcome as DispatchDropped).stage,
+        equals('interceptor:short_circuit'),
+      );
+      expect(
+        trace.stages.where((s) => s.kind == StageKind.resolver),
+        isEmpty,
+      );
+      expect(provider.resolver.events, isEmpty);
+    });
+
+    test('does not re-record a downstream error on the upstream interceptor',
+        () async {
+      final sink = _Sink();
+      final hub = AnalyticsHub(
+        providers: [_Provider()],
+        interceptors: const [
+          _Add('a', {'a': 1}),
+          _Throw('b'),
+        ],
+        traceSinks: [sink],
+      );
+
+      await expectLater(hub.sendEvent(_Event('click')), throwsStateError);
+
+      final trace = sink.traces.single;
+      expect(
+        trace.stages.where((s) => s.error != null).map((s) => s.name),
+        equals(['interceptor:b']),
+      );
+      expect(
+        (trace.outcome as DispatchFailed).stage,
+        equals('interceptor:b'),
+      );
+    });
+
     test('records a throwing resolver', () async {
       final sink = _Sink();
       final hub = AnalyticsHub(
@@ -280,6 +405,31 @@ void main() {
 
     test('emits one trace per targeted provider sharing the correlation id',
         () async {
+      final sink = _Sink();
+      final hub = AnalyticsHub(
+        providers: [
+          _Provider(),
+          _Provider(identifier: const _OtherKey()),
+        ],
+        traceSinks: [sink],
+      );
+
+      await hub.sendEvent(
+        _Event('click', targets: const [_Key(), _OtherKey()]),
+      );
+
+      expect(sink.traces, hasLength(2));
+      expect(
+        sink.traces[0].correlationId,
+        equals(sink.traces[1].correlationId),
+      );
+      expect(
+        sink.traces.map((t) => t.provider).toSet(),
+        equals({const _Key(), const _OtherKey()}),
+      );
+    });
+
+    test('gives every sendEvent call its own correlation id', () async {
       final sink = _Sink();
       final hub = AnalyticsHub(providers: [_Provider()], traceSinks: [sink]);
 

@@ -62,6 +62,8 @@ interceptor and to the resolver. It exposes:
 - `timestamp` — when the dispatch context was created.
 - `correlationId` — one id per `sendEvent` call, shared by every provider
   dispatch, for tying together logs and interceptor actions across the chain.
+- `context` — the effective typed context of this dispatch (scope chain records
+  root → leaf, then the event's own); `entry<T>()` is a shortcut.
 
 ## Typed context (`EventContext` / `ContextEntry`)
 
@@ -160,6 +162,12 @@ scope interceptors (root → leaf) → provider overrides → hub interceptors
   → provider interceptors → resolver
 ```
 
+A provider's `EventOverrides.properties` **replaces** the whole property map
+and runs after scope interceptors, so properties a scope interceptor added do
+not survive a provider's properties override. Hub-level interceptors run after
+overrides and are unaffected — when events use property overrides, put shared
+enrichment (such as source mapping) at hub level.
+
 Context precedence is positional: `scope[root] … scope[leaf] … event`, and
 `entry<T>()` picks the nearest. A scope interceptor runs only for events sent
 through that scope or its descendants. Creating a child never changes its
@@ -192,7 +200,7 @@ dropped or threw. `DispatchTraceFormatter` renders the compact line and the
 verbose stage list that `LoggingTraceSink` logs:
 
 ```
-click_create → mixpanel  sent  3ms  6 stages  corr=event-1733…
+click_create → mixpanel  sent  3ms  5 stages  corr=event-1733…
   scope:home            +ctx scope:home: PageContextEntry(home)
   interceptor:source    +source_page=home
   overrides             —

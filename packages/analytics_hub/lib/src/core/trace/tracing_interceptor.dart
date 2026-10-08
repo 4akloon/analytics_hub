@@ -12,9 +12,10 @@ import 'stage_record.dart';
 /// The stage is measured from entry until the interceptor calls `next`, and
 /// the diff is between what it received and what it forwarded. A result
 /// returned without calling `next` is recorded as a drop (or as whatever the
-/// interceptor returned), and an exception thrown before `next` is recorded
-/// as the stage's error. Changes made to the result *after* `next` returned
-/// are not attributed.
+/// interceptor returned). An exception the interceptor throws, before or after
+/// `next`, is recorded as its own error stage; one thrown downstream of `next`
+/// is left to the stage that threw it. Changes made to the result *after*
+/// `next` returned are not attributed.
 final class TracingInterceptor implements EventInterceptor {
   /// Wraps [inner] as a stage of [kind] reporting to [recorder].
   const TracingInterceptor(
@@ -45,11 +46,12 @@ final class TracingInterceptor implements EventInterceptor {
   }) async {
     final clock = Stopwatch()..start();
     var forwarded = false;
+    var downstreamError = false;
     try {
       final result = await inner.intercept(
         event: event,
         context: context,
-        next: (nextEvent, nextContext) {
+        next: (nextEvent, nextContext) async {
           forwarded = true;
           recorder.addTransform(
             name: _stageName,
@@ -58,7 +60,12 @@ final class TracingInterceptor implements EventInterceptor {
             after: nextEvent,
             duration: clock.elapsed,
           );
-          return next(nextEvent, nextContext);
+          try {
+            return await next(nextEvent, nextContext);
+          } catch (_) {
+            downstreamError = true;
+            rethrow;
+          }
         },
       );
       if (!forwarded) {
@@ -73,7 +80,7 @@ final class TracingInterceptor implements EventInterceptor {
       }
       return result;
     } catch (error) {
-      if (!forwarded) {
+      if (!forwarded || !downstreamError) {
         recorder.addTransform(
           name: _stageName,
           kind: kind,

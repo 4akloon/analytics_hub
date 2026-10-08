@@ -33,9 +33,6 @@ final class DispatchRecorder {
   final Stopwatch _clock;
   final List<StageRecord> _stages = [];
 
-  /// Elapsed time since the dispatch started.
-  Duration get elapsed => _clock.elapsed;
-
   /// Records a stage that only appended context records.
   void addContextStage({
     required String name,
@@ -101,16 +98,18 @@ final class DispatchRecorder {
   }
 
   DispatchOutcome _outcome(Object? fallbackError) {
-    for (final stage in _stages.reversed) {
-      if (stage.error case final error?) {
-        return DispatchFailed(stage: stage.name, error: error);
-      }
-      if (stage.dropped) return DispatchDropped(stage: stage.name);
+    final failed = _stages.reversed.where((s) => s.error != null).firstOrNull;
+    if (failed case StageRecord(:final name, :final error?)) {
+      return DispatchFailed(stage: name, error: error);
     }
     if (fallbackError != null) {
-      return DispatchFailed(
+      return DispatchFailed(stage: 'dispatch', error: fallbackError);
+    }
+    final dropped = _stages.reversed.where((s) => s.dropped).firstOrNull;
+    if (dropped != null) return DispatchDropped(stage: dropped.name);
+    if (!_stages.any((s) => s.kind == StageKind.resolver)) {
+      return DispatchDropped(
         stage: _stages.isEmpty ? 'dispatch' : _stages.last.name,
-        error: fallbackError,
       );
     }
     return const DispatchSent();
