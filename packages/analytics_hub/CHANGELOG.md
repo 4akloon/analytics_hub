@@ -1,3 +1,11 @@
+## 0.6.1 - 2026-10-08
+
+### Added
+- `DispatchTrace.resolvedName` and `DispatchTrace.resolvedProperties`: the
+  event as the resolver received it, or its last state when the dispatch
+  dropped or failed. Lets a trace sink show the final payload without
+  replaying the stage diffs.
+
 ## 0.6.0 - 2026-10-08
 
 ### Added

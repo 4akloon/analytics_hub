@@ -19,6 +19,7 @@ DispatchTrace _trace({DispatchOutcome outcome = const DispatchSent()}) =>
     DispatchTrace(
       correlationId: 'event-1',
       eventName: 'click_create',
+      resolvedName: 'click_create',
       provider: const _Key(),
       startedAt: DateTime(2026, 10, 8),
       total: const Duration(milliseconds: 3),

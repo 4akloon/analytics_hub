@@ -46,6 +46,8 @@ final class DispatchTrace {
     required this.total,
     required this.stages,
     required this.outcome,
+    required this.resolvedName,
+    this.resolvedProperties,
   });
 
   /// Id shared by every provider dispatch of the same `sendEvent` call.
@@ -68,4 +70,12 @@ final class DispatchTrace {
 
   /// How the dispatch ended.
   final DispatchOutcome outcome;
+
+  /// The event name as the resolver received it (after overrides and
+  /// interceptors), or as it stood when the dispatch dropped or failed.
+  final String resolvedName;
+
+  /// The event properties as the resolver received them, or as they stood
+  /// when the dispatch dropped or failed.
+  final Map<String, Object?>? resolvedProperties;
 }
