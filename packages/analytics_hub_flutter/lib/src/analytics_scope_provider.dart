@@ -72,6 +72,19 @@ class AnalyticsScopeProvider extends StatelessWidget {
   static AnalyticsSink? maybeOf(BuildContext context) =>
       _maybeInheritedOf(context)?.sink;
 
+  /// Like [of], but registers no dependency: callable from `initState`,
+  /// `BlocProvider.create` and callbacks. The caller keeps the sink it got
+  /// and does not see later scope changes.
+  ///
+  /// Throws a [FlutterError] when no [AnalyticsScopeProvider.root] is above
+  /// [context].
+  static AnalyticsSink read(BuildContext context) {
+    final inherited =
+        context.getInheritedWidgetOfExactType<_AnalyticsScopeInherited>();
+    if (inherited == null) throw _missingRoot(context);
+    return inherited.sink;
+  }
+
   /// The nearest scope, or `null` directly under the root.
   ///
   /// Throws a [FlutterError] when no [AnalyticsScopeProvider.root] is above
@@ -84,20 +97,21 @@ class AnalyticsScopeProvider extends StatelessWidget {
 
   static _AnalyticsScopeInherited _inheritedOf(BuildContext context) {
     final inherited = _maybeInheritedOf(context);
-    if (inherited == null) {
-      throw FlutterError.fromParts([
+    if (inherited == null) throw _missingRoot(context);
+    return inherited;
+  }
+
+  static FlutterError _missingRoot(BuildContext context) =>
+      FlutterError.fromParts([
         ErrorSummary('No AnalyticsScopeProvider found in this context.'),
         ErrorDescription(
-          'AnalyticsScopeProvider.of(), scopeOf() and a nested '
+          'AnalyticsScopeProvider.of(), read(), scopeOf() and a nested '
           'AnalyticsScopeProvider need an AnalyticsScopeProvider.root above '
           'them. Wrap the app (above the router) in '
           'AnalyticsScopeProvider.root(hub: ...).',
         ),
         context.describeElement('The context used was'),
       ]);
-    }
-    return inherited;
-  }
 
   @override
   Widget build(BuildContext context) {

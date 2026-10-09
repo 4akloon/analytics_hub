@@ -16,7 +16,8 @@ final class DispatchRecorder {
     required this.eventName,
     required this.provider,
   })  : startedAt = DateTime.now(),
-        _clock = Stopwatch()..start();
+        _clock = Stopwatch()..start(),
+        _lastName = eventName;
 
   /// See [DispatchTrace.correlationId].
   final String correlationId;
@@ -32,6 +33,8 @@ final class DispatchRecorder {
 
   final Stopwatch _clock;
   final List<StageRecord> _stages = [];
+  String _lastName;
+  Map<String, Object?>? _lastProperties;
 
   /// Records a stage that only appended context records.
   void addContextStage({
@@ -81,6 +84,8 @@ final class DispatchRecorder {
         error: error,
       ),
     );
+    _lastName = after.name;
+    _lastProperties = after.properties;
   }
 
   /// Builds the trace. [error] is an exception not attributed to any stage.
@@ -94,6 +99,8 @@ final class DispatchRecorder {
       total: _clock.elapsed,
       stages: List.unmodifiable(_stages),
       outcome: _outcome(error),
+      resolvedName: _lastName,
+      resolvedProperties: _lastProperties,
     );
   }
 

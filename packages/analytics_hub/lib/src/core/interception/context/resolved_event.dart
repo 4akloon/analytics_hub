@@ -37,10 +37,13 @@ class ResolvedEvent {
   ResolvedEvent withDefaults(Map<String, Object?> defaults) {
     if (defaults.isEmpty) return this;
     final merged = Map<String, Object?>.from(properties ?? const {});
+    var added = false;
     for (final MapEntry(:key, :value) in defaults.entries) {
-      if (value == null) continue;
-      merged[key] ??= value;
+      if (value == null || merged[key] != null) continue;
+      merged[key] = value;
+      added = true;
     }
+    if (!added) return this;
     return copyWith(properties: merged);
   }
 }

@@ -221,6 +221,11 @@ void main() {
       expect(trace.eventName, equals('click'));
       expect(trace.provider, equals(const _Key()));
       expect(trace.outcome, isA<DispatchSent>());
+      expect(trace.resolvedName, equals('Click'));
+      expect(
+        trace.resolvedProperties,
+        equals({'e': 1, 's': 1, 'h': 1, 'p': 1}),
+      );
       expect(
         trace.stages.map((s) => s.name),
         equals([
@@ -291,6 +296,8 @@ void main() {
         (trace.outcome as DispatchDropped).stage,
         equals('interceptor:drop'),
       );
+      expect(trace.resolvedName, equals('click'));
+      expect(trace.resolvedProperties, isNull);
       expect(trace.stages.last.name, equals('interceptor:drop'));
       expect(trace.stages.last.dropped, isTrue);
       expect(provider.resolver.events, isEmpty);
