@@ -344,6 +344,51 @@ void main() {
       await tester.pump();
       expect(dependencyChanges, equals(2));
     });
+
+    testWidgets('read works in initState and registers no dependency',
+        (tester) async {
+      AnalyticsSink? fromInitState;
+      var dependencyChanges = 0;
+      late StateSetter rebuildOuter;
+      var name = 'home';
+
+      await tester.pumpWidget(
+        _app(
+          hub,
+          StatefulBuilder(
+            builder: (context, setState) {
+              rebuildOuter = setState;
+              return AnalyticsScopeProvider(
+                name: name,
+                child: _ReadInInitState(
+                  onRead: (sink) => fromInitState = sink,
+                  onDependencyChange: () => dependencyChanges++,
+                ),
+              );
+            },
+          ),
+        ),
+      );
+
+      expect(fromInitState, isA<ScopedAnalytics>());
+      expect((fromInitState! as ScopedAnalytics).scope.name, equals('home'));
+      expect(dependencyChanges, equals(1));
+
+      rebuildOuter(() => name = 'builder');
+      await tester.pump();
+
+      expect(dependencyChanges, equals(1));
+    });
+
+    testWidgets('read without a root throws a FlutterError', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: _ReadInInitState(onRead: (_) {}, onDependencyChange: () {}),
+        ),
+      );
+
+      expect(tester.takeException(), isA<FlutterError>());
+    });
   });
 }
 
@@ -362,6 +407,36 @@ class _DependencyCounterState extends State<_DependencyCounter> {
     super.didChangeDependencies();
     AnalyticsScopeProvider.of(context);
     widget.onChange();
+  }
+
+  @override
+  Widget build(BuildContext context) => const SizedBox();
+}
+
+class _ReadInInitState extends StatefulWidget {
+  const _ReadInInitState({
+    required this.onRead,
+    required this.onDependencyChange,
+  });
+
+  final void Function(AnalyticsSink sink) onRead;
+  final VoidCallback onDependencyChange;
+
+  @override
+  State<_ReadInInitState> createState() => _ReadInInitStateState();
+}
+
+class _ReadInInitStateState extends State<_ReadInInitState> {
+  @override
+  void initState() {
+    super.initState();
+    widget.onRead(AnalyticsScopeProvider.read(context));
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    widget.onDependencyChange();
   }
 
   @override

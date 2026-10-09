@@ -59,6 +59,8 @@ AnalyticsScopeProvider(
 itself directly under the root, a `ScopedAnalytics` under a scope. Hand it
 to a cubit or an analytics helper where the screen creates them, so they
 send with the screen's scope without knowing about widgets.
+Use `read(context)` where listening is not allowed — `initState`,
+`BlocProvider.create`, callbacks.
 `scopeOf(context)` returns the nearest `AnalyticsScope` (or `null` under the
 root) for code that needs to read the chain.
 

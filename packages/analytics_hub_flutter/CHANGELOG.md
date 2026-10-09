@@ -1,3 +1,10 @@
+## 0.6.1 - 2026-10-09
+
+### Added
+- `AnalyticsScopeProvider.read(context)`: the nearest sink without
+  registering a dependency, for `initState`, `BlocProvider.create` and
+  callbacks.
+
 ## 0.6.0 - 2026-10-08
 
 ### Added
