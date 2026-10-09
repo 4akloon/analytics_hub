@@ -6,6 +6,10 @@
   dropped or failed. Lets a trace sink show the final payload without
   replaying the stage diffs.
 
+### Changed
+- `ResolvedEvent.withDefaults` returns the receiver when it adds nothing, so
+  an event with `null` properties keeps them `null` instead of gaining `{}`.
+
 ## 0.6.0 - 2026-10-08
 
 ### Added

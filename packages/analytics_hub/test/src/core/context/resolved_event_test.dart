@@ -68,6 +68,19 @@ void main() {
       );
     });
 
+    test('returns the receiver when no default is added', () {
+      const event = ResolvedEvent(name: 'click', context: EventContext());
+      const set = ResolvedEvent(
+        name: 'click',
+        properties: {'a': 1},
+        context: EventContext(),
+      );
+
+      expect(identical(event.withDefaults({'a': null}), event), isTrue);
+      expect(identical(set.withDefaults({'a': 2}), set), isTrue);
+      expect(event.withDefaults({'a': null}).properties, isNull);
+    });
+
     test('returns the receiver for empty defaults', () {
       const event = ResolvedEvent(name: 'click', context: EventContext());
 
